@@ -18,7 +18,6 @@ Helpers
 Tokens
 	/* Characters */
 	blank = blank;
-/*	comment = '#' [any-lf]* eol; */
 	pound = '#';
 	ampersand = '&';
 	vertbar = '|';
@@ -45,42 +44,45 @@ Tokens
 	float_lit = ('0' | [digit-'0'] digit*) '.' digit+;
 	
 	/* Keywords */
-	break = 'break';
-	case = 'case';
+	import = 'import';
+	package = 'package';
 	chan = 'chan';
 	const = 'const';
-	continue = 'continue';
 	default = 'default';
 	defer = 'defer';
-	else = 'else';
-	fallthrough = 'fallthrough';
-	for = 'for';
-	func = 'func';
-	go = 'go';
-	goto = 'goto';
-	if = 'if';
-	import = 'import';
-	interface = 'interface';
-	map = 'map';
-	package = 'package';
-	range = 'range';
-	return = 'return';
-	select = 'select';
-	struct = 'struct';
-	switch = 'switch';
-	type = 'type';
 	var = 'var';
-	int = 'int';
+	type = 'type';
+	struct = 'struct';
+	interface = 'interface';
+	func = 'func';
+	return = 'return';
+	if = 'if';
+	else = 'else';
+	switch = 'switch';
+	case = 'case';
+	goto = 'goto';
+	for = 'for';
+	break = 'break';
+	continue = 'continue';
+	fallthrough = 'fallthrough';
+	go = 'go';
+	map = 'map';
+	range = 'range';
+	select = 'select';
 	print = 'print';
-	float64 = 'float64';
+	append = 'append';
 	println = 'println';
 	bool = 'bool';
-	append = 'append';
+	int = 'int';
+	float64 = 'float64';
 	rune = 'rune';
 	string = 'string';
 	
 	/* Comments */
 	
+	commentl = '#' [any-lf]* eol;
+	commentb= '/*' any* '*/';
+
 	/* Literals */
 	
 	/* Identifiers*/
@@ -89,7 +91,7 @@ Tokens
 	/* Semicolons? */
 
 Ignored Tokens
-	blank, comment;
+	blank, commentl, commentb;
 
 Productions
 	cst_grammar {->ast_grammar}
