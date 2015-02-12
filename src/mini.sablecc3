@@ -1,0 +1,118 @@
+Package mini;
+
+Helpers
+	/* regular expression matching all valid 16-bit characters */
+	any = [0..0xFFFF];
+ 	tab   = 9;
+	cr    = 13;
+	lf    = 10;
+	eol   = cr | lf | cr lf;
+	blank = (' ' | tab | eol)+;
+	digit = ['0'..'9'];
+	lowercase = ['a'..'z'];
+	uppercase = ['A'..'Z'];
+	letter  = lowercase | uppercase;
+	idletter = letter | '_';
+	idchar  = letter | '_' | digit;
+
+Tokens
+	blank = blank;
+	comment = '#' [any-lf]* eol;
+	star  = '*';
+	slash = '/';
+	plus  = '+';
+	minus = '-';
+	equal = '=';
+	colon = ':';
+	semicolon = ';';
+	lparen = '(';
+	rparen = ')';
+	int_lit  = '0' | [digit-'0'] digit*;
+	float_lit = ('0' | [digit-'0'] digit*) '.' digit+;
+	var = 'var';
+	int = 'int';
+	float = 'float';
+	while = 'while';
+	do = 'do';
+	done = 'done';
+	if = 'if';
+	then = 'then';
+	else = 'else';
+	endif = 'endif';
+	read = 'read';
+	print = 'print';
+	id = idletter idchar*;
+
+Ignored Tokens
+	blank, comment;
+
+Productions
+	cst_grammar {->ast_grammar}
+					= cst_dec* cst_stm*  {-> New ast_grammar([cst_dec.ast_dec], [cst_stm.ast_stm])};
+	
+	cst_dec {->ast_dec}
+					= {int} var id colon int semicolon {-> New ast_dec.int(id)}
+					| {float} var id colon float semicolon {-> New ast_dec.float(id)};
+	
+	cst_stm {->ast_stm}
+					= {assign} cst_assign {-> cst_assign.ast_stm}
+					| {if} cst_if {-> cst_if.ast_stm}
+					| {while} cst_while {-> cst_while.ast_stm}
+					| {read} cst_read {-> cst_read.ast_stm}
+					| {print} cst_print {-> cst_print.ast_stm};
+	
+	cst_assign {->ast_stm}
+					= id equal cst_exp semicolon {-> New ast_stm.assign(id, cst_exp.ast_exp)};
+	
+	cst_if {->ast_stm}
+					= {ifone} if cst_exp then cst_stm* endif
+						{-> New ast_stm.if(cst_exp.ast_exp, [cst_stm.ast_stm], [])}
+					| {ifelse} if cst_exp then [first]:cst_stm* else [second]:cst_stm* endif
+						{-> New ast_stm.if(cst_exp.ast_exp, [first.ast_stm], [second.ast_stm])};
+	
+	cst_while {->ast_stm}
+					= while cst_exp do cst_stm* done {-> New ast_stm.while(cst_exp.ast_exp, [cst_stm.ast_stm])};
+	
+	cst_read {->ast_stm}
+					= read id semicolon {-> New ast_stm.read(id)};
+	
+	cst_print {->ast_stm}
+					= print cst_exp semicolon {-> New ast_stm.print(cst_exp.ast_exp)};
+	
+	cst_exp {->ast_exp}
+					= {factor} cst_factor {-> cst_factor.ast_exp}
+					| {add} cst_exp plus cst_factor {-> New ast_exp.addition(cst_exp.ast_exp, cst_factor.ast_exp)}
+					| {sub} cst_exp minus cst_factor {-> New ast_exp.subtraction(cst_exp.ast_exp, cst_factor.ast_exp)};
+	
+	cst_factor {->ast_exp}
+					= {term} cst_term {-> cst_term.ast_exp}
+					| {mul} cst_factor star cst_term {-> New ast_exp.multiplication(cst_factor.ast_exp, cst_term.ast_exp)}
+					| {div} cst_factor slash cst_term {-> New ast_exp.division(cst_factor.ast_exp, cst_term.ast_exp)};
+					
+	cst_term {->ast_exp}
+					= {negation} minus cst_term {-> New ast_exp.negation(cst_term.ast_exp)}
+					| {paren} lparen cst_exp rparen {-> cst_exp.ast_exp}
+					| {id} id {-> New ast_exp.variable(id)}
+					| {int} int_lit {-> New ast_exp.int_lit(int_lit)}
+					| {float} float_lit {-> New ast_exp.float_lit(float_lit)};
+
+Abstract Syntax Tree
+	ast_grammar = [declarations]:ast_dec* [statements]:ast_stm*;
+	
+	ast_dec = {int} id
+				| {float} id;
+	
+	ast_stm = {assign} [variable]:id [value]:ast_exp
+				| {if} [condition]:ast_exp [true]:ast_stm* [false]:ast_stm*
+				| {while} [condition]:ast_exp [body]:ast_stm*
+				| {read} id
+				| {print} ast_exp;
+	
+	ast_exp = {addition} [left]:ast_exp [right]:ast_exp
+				| {subtraction} [left]:ast_exp [right]:ast_exp
+				| {multiplication} [left]:ast_exp [right]:ast_exp
+				| {division} [left]:ast_exp [right]:ast_exp
+				| {negation} ast_exp
+				| {variable} id
+				| {int_lit} int_lit
+				| {float_lit} float_lit;
