@@ -1,0 +1,19 @@
+# Compute n! when n <= 12
+# prints 0 on error
+
+var n : int;
+var total : int;
+
+total = 1;
+read n;
+
+# Values too large when n > 12
+if (n - 12) then
+	while n do
+		total = total * n;
+		n = n - 1;
+	done
+	print total * 1.0;
+else
+	print 0;
+endif

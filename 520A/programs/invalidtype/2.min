@@ -1,0 +1,12 @@
+# Type error: variable does not exist
+
+var foo : float;
+
+print bar;
+print foo;
+
+read foo;
+read bar;
+
+foo = -bar * 2;
+bar = 3 + (foo);

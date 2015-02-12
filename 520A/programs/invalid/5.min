@@ -1,0 +1,13 @@
+# Parser error: trying to initialize a variable in its declaration
+# INVALID: line 3: missing semi-colon
+# INVALID (scanner error) at [5,12] expecting: ';'
+
+var x: int = 10;
+var y: float = 1.0;
+
+while x do
+y = y * 2.0;
+x = x - 1;
+done
+
+print y;

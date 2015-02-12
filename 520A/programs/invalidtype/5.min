@@ -1,0 +1,15 @@
+# Parser error: type mismatch for while loop
+
+var a : float;
+var b : int;
+
+while a do #error
+	print 1;
+	print 3.3333;
+done
+
+while b do read b; done #ok
+
+while (b + 6.0) - -b #error
+do a = 4.5;
+done

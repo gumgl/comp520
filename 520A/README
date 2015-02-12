@@ -1,0 +1,14 @@
+Guillaume Labranche, 260585371
+
+To make the type checker, I used SableCC 3.7 and Eclipse for development.
+All the scripts assumes SableCC 3.7 binary is in your PATH.
+
+To run the script "run", be in /guillaume_labranche
+
+For any other action, please be in /src
+	To compile the SableCC grammar and the Java lexer/parser/typechecker/printer:
+		make
+	To clean (delete all .class, SableCC code)
+		make clean
+	Extra: To run the program on everything in /programs (this is set in /src/testfiles)
+		make check

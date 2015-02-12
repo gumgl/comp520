@@ -1,0 +1,16 @@
+# Parser error: type mismatch for if construct
+
+var a : float;
+var b : int;
+
+if a then #error
+	print 1;
+else
+	print 3.3333;
+endif
+
+if b then read b; endif #ok
+
+if (b + 6.0) - -b #error
+then a = 4.5;
+endif

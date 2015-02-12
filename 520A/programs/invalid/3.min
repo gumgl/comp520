@@ -1,0 +1,17 @@
+# Scanner error: < > <= >= not recognized
+# INVALID: line 9: unknown character: <
+# INVALID (lexer error) at [11,7] Unknown token: <
+
+var a : int;
+var b : int;
+
+a = 2;
+b = 5;
+
+if (a < b) then
+	print a;
+else if (a > b) then
+	print b;
+else
+	print 0;
+endif

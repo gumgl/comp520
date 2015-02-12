@@ -1,0 +1,7 @@
+# Parser error: identifier starting with a digit
+# INVALID
+# INVALID (scanner error) at [5,5] expecting: id
+
+var 4four : float;
+
+print 4four;

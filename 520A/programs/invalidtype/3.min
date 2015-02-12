@@ -1,0 +1,30 @@
+# Type error: type mismatch float->int (int->float is allowed)
+
+var a : int;
+var b : float;
+
+a = 1; #ok
+a = -1; #ok
+b = 2; #ok
+b = -2; #ok
+
+a = 3.4; #error
+a = -3.4; #error
+b = 5.6; #ok
+b = -5.6; #ok
+
+a = 1 + 2 + 3.0; #error
+a = 1 * 2 * 3.0; #error
+a = 1.0 + 2 + 3; #error
+a = 1.0 * 2 * 3; #error
+a = 1 + 2.0 + 3; #error
+a = 1 * 2.0 * 3; #error
+a = (1.0 + 2) * 3; #error
+a = 3 * (1.0 + 2); #error
+a = (1.0 * 2) + 3; #error
+a = 3 + (1.0 * 2); #error
+
+a = b; #error
+a = -b; #error
+b = a; #ok
+b = -a; #ok

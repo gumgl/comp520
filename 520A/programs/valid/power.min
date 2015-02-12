@@ -1,0 +1,19 @@
+# Compute x^y
+var x: int;
+var y: int;
+var total: float;
+
+#x = 10;
+#y = 1.0;
+
+read x;
+read y;
+
+total = 1.0;
+
+while y do
+total = total * x;
+y = y - 1;
+done
+
+print total;

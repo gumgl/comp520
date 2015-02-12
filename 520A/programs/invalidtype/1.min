@@ -1,0 +1,23 @@
+# Type error: double declarations after statement
+
+var foo : int;
+
+var bar : float;
+
+#redeclare int over int
+var foo : int;
+
+#random declaration
+var test1 : int;
+
+#redeclare int over float
+var bar : int;
+
+#random declaration
+var test2 : float;
+
+#redeclare float over int
+var foo : float;
+
+#redeclare float over float
+var bar : float;

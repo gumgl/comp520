@@ -1,0 +1,16 @@
+# Parser error: missing done of while loop
+# INVALID: line 10: missing 'done' keyword
+# INVALID (scanner error) at [17,1] expecting: 'done'
+
+var x: int;
+var y: float;
+
+x = 10;
+y = 1.0;
+
+while x do
+y = y * 2.0;
+x = x - 1;
+#done
+
+print y;

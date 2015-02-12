@@ -1,0 +1,9 @@
+# Parser error: declaration after statement
+# INVALID
+# INVALID (scanner error) at [9,1] expecting: EOF
+
+var two : int;
+
+two = two + 1;
+
+var three : int;
