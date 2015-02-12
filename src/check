@@ -1,0 +1,59 @@
+#!/bin/bash
+
+#if [ -f result ] ; then
+# rm result
+#fi
+compile() {
+	echo "Compiling $1..."
+    java Main $1
+}
+
+prettyname () {
+	filename="${1%.*}"
+	extension="${1##*.}"
+	echo "${filename}.pretty.${extension}"
+}
+
+cname () {
+	filename="${1%.*}"
+	extension="${1##*.}"
+	echo "${filename}.c"
+}
+
+compiled () {
+	filename="${1%.*}"
+	extension="${1##*.}"
+	echo "${filename}.bin"
+}
+
+for file in `cat testcases`; do
+
+	# compile the file
+	compile $file
+    
+    #compile the 
+    ccode=$(cname $file)
+    
+    
+    # compile the outputted C file
+	if [ -e $ccode ]; then
+		echo "GCC Compiling $ccode..."
+		gcc $ccode -o $(compiled $file)
+	else
+		echo "No C code to compile"
+	fi
+    
+	pretty=$(prettyname $file)
+	
+	# compile the PrettyPrint version
+	if [ -e $pretty ]; then
+		compile $pretty
+		# then compare them
+		pretty2=$(prettyname $pretty)
+		diff -qs $pretty $pretty2
+	else
+		echo "No pretty version to compile"
+	fi
+done
+
+exit 0
