@@ -1,0 +1,31 @@
+#!/bin/bash
+
+function test_file() {
+    ./mini -ps -f $filename
+}
+
+function print_fname_with_test() {
+    echo "File \"$filename\":"
+    test_file
+    echo ""
+}
+
+# Allow the input of multiple files or of a directory
+if [[ $# -eq 1 && -f $1 ]]; then
+    filename=$1
+    test_file
+    exit $?
+else
+    while [[ $# -gt 0 ]]; do
+        if [[ -d $1 ]]; then
+            for filename in $(find $1 -type f); do
+                print_fname_with_test
+            done
+        else
+            filename=$1
+            print_fname_with_test
+        fi
+
+        shift
+    done
+fi

@@ -1,0 +1,25 @@
+var x : int;
+var y : int;
+var f : float;
+
+read x;
+y = x;
+
+f = 3.751;
+
+# This doesn't do anything very interesting
+while x do
+    if x - 2 then
+        # We achieve negation by having an empty if block
+    else
+        f = f * (y / f);
+    endif
+
+    f = f * f - (f / 2);
+    x = x - 1;
+done
+
+if y then
+   print y;
+endif
+

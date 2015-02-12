@@ -1,0 +1,3 @@
+*     text=auto
+test  eol=lf
+run   eol=lf

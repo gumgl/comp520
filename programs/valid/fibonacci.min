@@ -1,0 +1,25 @@
+# Print the first n fibonacci numbers
+
+var n : int;
+var x : int;
+var y : int;
+var z : int;
+
+read # This will be the number of Fibonacci numbers that we print
+	n
+;
+
+x = # This will be the number that we print
+	1
+;
+
+y = 1;
+
+while n do
+	n = n - 1;
+
+	print y;
+	z = x;
+	x = y + z;
+	y = z;
+done

@@ -1,0 +1,49 @@
+#!/bin/bash
+
+shopt -s extglob
+
+function test_directory() {
+    mkdir test_output || exit
+
+    cp $dir/*.min test_output
+
+    for f in test_output/*.min; do
+        no_ext=$( echo "$f" | sed -r 's/\.min$//' )
+
+        printf "\n===== FILE: $f =====\n"
+        ./mini -ps -f $f
+        if [ $? -eq 0 ]; then
+            echo "(SUCCESS)"
+        else
+            echo "(FAILURE)"
+        fi
+
+        echo ""
+
+        if [ -f "$no_ext.pretty.min" ]; then
+            ./mini -pd -f "$no_ext.pretty.min" 2> /dev/null
+            diffout=$( diff "$no_ext.pretty.min" "$no_ext.pretty.pretty.min" )
+            if [[ $diffout -ne "" ]]; then
+                echo "Pretty invariant failed!"
+                echo $diffout
+            fi
+        fi
+
+        echo "----- PRETTY -----"
+        cat "$no_ext.pretty.min"
+        echo ""
+        echo "----- SYMBOL -----"
+        cat "$no_ext.symbol.txt"
+        echo ""
+        echo "-----   C    -----"
+        cat "$no_ext.c"
+    done
+
+    rm -r test_output
+}
+
+dir=programs/invalidtype
+test_directory
+
+dir=programs/valid
+test_directory

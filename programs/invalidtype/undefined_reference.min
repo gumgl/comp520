@@ -1,0 +1,3 @@
+var qwerty : int;
+
+print qwertty + 2;

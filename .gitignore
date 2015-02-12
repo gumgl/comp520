@@ -1,0 +1,7 @@
+mini.exe
+mini.out
+william_bain.tar.gz
+src/*.o
+src/lex.yy.c
+src/mini.tab.c
+src/mini.tab.h

@@ -1,0 +1,7 @@
+var i : int;
+var f : float;
+
+i = 1;
+f = i - 12;
+i = 2 - (7 * f);
+
