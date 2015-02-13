@@ -1,6 +1,6 @@
 
 # assumes sablecc script is on your PATH
-.PHONY: check clean
+.PHONY: grammar check clean
 
 # to compile the code
 main: clean grammar
@@ -14,4 +14,4 @@ check:
 	./check
 
 clean:
-	rm -rf golite/*.class golite/lexer/ golite/parser/ golite/node/ golite/analysis/ result
+	rm -rf golite/ results
