@@ -1,4 +1,4 @@
-Package mini;
+Package golite;
 
 Helpers
 	/* regular expression matching all valid 16-bit characters */

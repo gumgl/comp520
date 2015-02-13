@@ -16,4 +16,7 @@ hs_err_pid*
 
 #gedit temporary files
 *~
+
+#generated files
 /bin/
+/src/golite/

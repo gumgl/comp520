@@ -6,8 +6,8 @@ import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.Hashtable;
 
-import mini.node.* ;
-import mini.analysis.* ;
+import golite.node.* ;
+import golite.analysis.* ;
 
 
 public class TypeChecker extends DepthFirstAdapter {

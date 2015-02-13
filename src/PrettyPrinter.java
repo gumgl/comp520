@@ -1,6 +1,6 @@
 
-import mini.node.* ; 
-import mini.analysis.* ; 
+import golite.node.* ;
+import golite.analysis.* ;
 
 import java.io.PrintWriter;
 import java.io.Writer;
