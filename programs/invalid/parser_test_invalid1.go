@@ -10,6 +10,9 @@ func main() {
   a_float := func() float64 {return "lalala"} 
   a_float()  
   
+  /*error:  trailing comma not allowed, golite 2.9.6*/
+  println("jibber jabber,"trailing coma",)
+  
 }
 
 
