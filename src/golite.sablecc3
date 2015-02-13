@@ -31,6 +31,7 @@ Tokens
 	equal = '=';
 	colon = ':';
 	semicolon = ';';
+	comma = ',';
 	anglel = '<';
 	angler = '>';
 	parenl = '(';
@@ -97,19 +98,77 @@ Productions
 
 	package_dec {-> id} = package id semicolon {-> id};
 
-	declaration = {variable_dec} var id type? equal exp semicolon {-> New declaration.variable_dec(id, type, exp)};
+	declaration =
+		  {variable} var variable_specs semicolon {-> New declaration.variable([variable_specs.variable_spec])}
+		| {type}     type type_specs semicolon    {-> New declaration.type([type_specs.type_spec])}
+	;
+
+	/* Variable declarations */
+	variable_specs {-> variable_spec*} =
+				  {single_spec} variable_spec {-> [variable_spec]}
+				| {multi_spec} parenl variable_spec_with_semicolon* parenr {-> [variable_spec_with_semicolon.variable_spec]}
+	;
+
+	variable_spec_with_semicolon {-> variable_spec} = variable_spec semicolon {-> variable_spec};
+
+	variable_spec =
+				  {no_expr} id_list type_id {-> New variable_spec.typed([id_list.id], type_id, [])}
+				| {with_expr} id_list type_id equal exp_list {-> New variable_spec.typed([id_list.id], type_id, [exp_list.exp])}
+				| {with_expr_no_type} id_list equal exp_list {-> New variable_spec.untyped([id_list.id], [exp_list.exp])}
+	;
+
+	id_list {-> id*} = id id_list_tail* {-> [id, id_list_tail.id]};
+
+	id_list_tail {-> id} = comma id {-> id};
+
+	exp_list {-> exp*} = exp exp_list_tail* {-> [exp, exp_list_tail.exp]};
+
+	exp_list_tail {-> exp} = comma exp {-> exp};
+
+	/* Type declarations */
+	type_specs {-> type_spec*} =
+		  {single_spec} type_spec {-> [type_spec]}
+		| {multi_spec} parenl type_spec_with_semicolon* parenr {-> [type_spec_with_semicolon.type_spec]}
+	;
+
+	type_spec_with_semicolon {-> type_spec} = type_spec semicolon {-> type_spec};
+
+	type_spec = id type_id;
+
+	type_id =
+		  {var} id {-> New type_id.var(id)}
+		| {int} int {-> New type_id.int()}
+		| {float64} float64 {-> New type_id.float64()}
+		| {bool} bool {-> New type_id.bool()}
+		| {rune} rune {-> New type_id.rune()}
+		| {string} string {-> New type_id.string()}
+	;
 
 	exp =
 		  {variable} id
 		| {int_lit} int_lit
-		| {float_lit} float_lit;
+		| {float_lit} float_lit
+	;
 
 Abstract Syntax Tree
 	program = [package_name]:id [declarations]:declaration*;
 
-	declaration = {variable_dec} id type? exp?;
+	declaration =
+		  {variable} variable_spec*
+		| {type} type_spec*
+	;
+
+	variable_spec =
+		  {typed} id+ type_id exp*
+		| {untyped} id+ exp+
+	;
+
+	type_spec = id type_id;
+
+	type_id = {var} id | {int} | {float64} | {bool} | {rune} | {string};
 
 	exp =
 		  {variable} id
 		| {int_lit} int_lit
-		| {float_lit} float_lit;
+		| {float_lit} float_lit
+	;
