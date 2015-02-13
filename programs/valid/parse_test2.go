@@ -17,12 +17,13 @@ func funky(n int){
   s1 := append(s0, 2) 
   s2 := append(s1, 3+5) 
 
-	switch n {
-	default: println(s2[1])
-	case 1,2,3,4: println(s0[1])
-	case 5,6: println(s2[3]) 
-	}
-	return 
+ switch n {
+  default: println(s2[1])
+  case 1,2,3,4: println(s0[1])
+  case 5,6: println(s2[3]) 
+}
+
+ return 
 }
 
 func number(a int) int {
@@ -31,14 +32,14 @@ func number(a int) int {
 /* Print and println statements, golite 2.8.7 */
 
 if a<0 {
-	println(a,"is negative.")
+  println(a,"is negative.")
 }
 
 
 if a%2 == 0 {
   println(a,"is even.")
 } else {
-	println(a,"is odd.") 
+  println(a,"is odd.") 
 }
 
 
@@ -48,7 +49,7 @@ c:=b-a
 
 
 if c>0 {
-	println(a,"<50.")
+  println(a,"<50.")
 } else if c<0 {
   println(a,">50.")
 } else {
