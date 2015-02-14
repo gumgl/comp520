@@ -1,5 +1,5 @@
 /* Package declaration, golite 2.2 */
-package parser_test_invalid2
+package parser_invalid2
 
 
 func main(){
