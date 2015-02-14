@@ -30,7 +30,7 @@ loop_a:
 // "While" loop_b
 for j < 11 {
  sum2+=j
- j++
+ j-=(-1)
 }
 
 // Three-part loop_c
