@@ -19,11 +19,11 @@ public class TypeChecker extends DepthFirstAdapter {
 	PrintWriter stderr;
 	public boolean success = true;
 	
-	
 	public TypeChecker(PrintWriter out, PrintWriter err) {
 		stdout = out;
 		stderr = err;
 	}
+	/*
 	private void error(Node node, String message) {
 		Token token = Main.getFirstToken(node);
 		stderr.println("INVALID (type error) at ["+token.getLine()+","+token.getPos()+"]: " + message);
@@ -171,5 +171,5 @@ public class TypeChecker extends DepthFirstAdapter {
     {
     	types.put(node, Type.Float);
         defaultOut(node);
-    }
+    }*/
 }
