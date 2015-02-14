@@ -20,18 +20,18 @@ import golite.node.*;
  */
 public class ASTPrinter extends ReversedDepthFirstAdapter
 {
-	
+
 	//---Constants------------------------------------------------
 	public static char ESC = 27;
-	
+
 	// Text attributes
-	public static final int NORMAL = 0;	
+	public static final int NORMAL = 0;
 	public static final int BOLD = 1;
 	public static final int UNDERSCORE = 4;
 	public static final int BLINK = 5;
 	public static final int REVERSE = 7;
 	public static final int CONCEALED = 8;
-	
+
 	// Foreground colors
 	public static final int FG_BLACK  = 30;
 	public static final int FG_RED = 31;
@@ -57,7 +57,7 @@ public class ASTPrinter extends ReversedDepthFirstAdapter
     private boolean last = false;
     private Stack indentchar = new Stack();
 	private boolean color = false;
-	
+
 	public HashMap<Node,TypeChecker.Type> types;
 
 	public ASTPrinter(HashMap<Node,TypeChecker.Type> intypes) {
@@ -72,7 +72,7 @@ public class ASTPrinter extends ReversedDepthFirstAdapter
 		System.out.println( treeColor() + "\n  >" + output.substring
 							(3, output.length()) + "\n" + resetColor());
     }
-	
+
 
 	/*
 	 * As we visit each non-terminal node push on the indent we need
@@ -130,13 +130,13 @@ public class ASTPrinter extends ReversedDepthFirstAdapter
 		indent = indent.substring(0, indent.length() - 1) + '|';
 		last = false;
     }
-	
+
     public void caseEOF(EOF node)
     {
 		last = false;
     }
-	
-	
+
+
 	/*
 	 * A method to change the color codes. This only works on
 	 * color-enabled terminals. In Windows/MS-DOS you need to load the
@@ -152,7 +152,7 @@ public class ASTPrinter extends ReversedDepthFirstAdapter
 		else return "";
 	}
 
-	public String resetColor() 
+	public String resetColor()
 	{
 		return (setColor(NORMAL, FG_WHITE, BG_BLACK));
 	}

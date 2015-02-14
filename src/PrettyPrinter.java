@@ -4,7 +4,7 @@ import golite.analysis.* ;
 
 import java.io.PrintWriter;
 import java.io.Writer;
-import java.lang.System; 
+import java.lang.System;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,11 +12,11 @@ public class PrettyPrinter extends DepthFirstAdapter {
 	static String indent = "\t";
 	StringBuilder prepend = new StringBuilder("");
 	PrintWriter output;
-	
+
 	public PrettyPrinter(PrintWriter writer) {
 		output = writer;
 	}
-	
+
 	private void p(String text) {
 		output.print(text);
 	}
@@ -54,7 +54,7 @@ public class PrettyPrinter extends DepthFirstAdapter {
     {
     	pln("var " + node.getId().getText() + ": float;");
     }
-    
+
     @Override
     public void inAAssignAstStm(AAssignAstStm node)
     {
@@ -69,7 +69,7 @@ public class PrettyPrinter extends DepthFirstAdapter {
     	p(";");
     	endl();
     }
-    
+
     @Override
     public void caseAIfAstStm(AIfAstStm node)
     {
@@ -104,7 +104,7 @@ public class PrettyPrinter extends DepthFirstAdapter {
         pln("endif");
         outAIfAstStm(node);
     }
-    
+
     @Override
     public void caseAWhileAstStm(AWhileAstStm node)
     {
@@ -134,7 +134,7 @@ public class PrettyPrinter extends DepthFirstAdapter {
     {
     	pln("read " + node.getId().getText() + ";");
     }
-    
+
     @Override
     public void inAPrintAstStm(APrintAstStm node)
     {
@@ -147,7 +147,7 @@ public class PrettyPrinter extends DepthFirstAdapter {
         p(";");
         endl();
     }
-    
+
     @Override
     public void caseAAdditionAstExp(AAdditionAstExp node)
     {
@@ -165,7 +165,7 @@ public class PrettyPrinter extends DepthFirstAdapter {
         p(")");
         outAAdditionAstExp(node);
     }
-    
+
     @Override
     public void caseASubtractionAstExp(ASubtractionAstExp node)
     {
@@ -183,7 +183,7 @@ public class PrettyPrinter extends DepthFirstAdapter {
         p(")");
         outASubtractionAstExp(node);
     }
-    
+
     @Override
     public void caseAMultiplicationAstExp(AMultiplicationAstExp node)
     {
@@ -201,7 +201,7 @@ public class PrettyPrinter extends DepthFirstAdapter {
         p(")");
         outAMultiplicationAstExp(node);
     }
-    
+
     @Override
     public void caseADivisionAstExp(ADivisionAstExp node)
     {
@@ -219,7 +219,7 @@ public class PrettyPrinter extends DepthFirstAdapter {
         p(")");
         outADivisionAstExp(node);
     }
-    
+
     @Override
     public void caseANegationAstExp(ANegationAstExp node)
     {
@@ -232,19 +232,19 @@ public class PrettyPrinter extends DepthFirstAdapter {
         p(")");
         outANegationAstExp(node);
     }
-    
+
     @Override
     public void inAVariableAstExp(AVariableAstExp node)
     {
     	p(node.getId().getText());
     }
-    
+
     @Override
     public void inAIntLitAstExp(AIntLitAstExp node)
     {
     	p(node.getIntLit().getText());
     }
-    
+
     @Override
     public void inAFloatLitAstExp(AFloatLitAstExp node)
     {

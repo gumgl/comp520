@@ -12,13 +12,12 @@ import golite.analysis.* ;
 
 public class TypeChecker extends DepthFirstAdapter {
 	public enum Type {Null, Int, Float, Poly};
-	
+
 	public Hashtable<String,Type> symbols = new Hashtable<String,Type>();
 	public HashMap<Node,Type> types = new HashMap<Node,Type>(); // to tag every node
 	PrintWriter stdout;
 	PrintWriter stderr;
 	public boolean success = true;
-	
 	public TypeChecker(PrintWriter out, PrintWriter err) {
 		stdout = out;
 		stderr = err;
@@ -33,7 +32,7 @@ public class TypeChecker extends DepthFirstAdapter {
     {
         types.put(node, Type.Null);
     }
-    
+
     public void inAIntAstDec(AIntAstDec node)
     {
         defaultIn(node);
@@ -65,7 +64,7 @@ public class TypeChecker extends DepthFirstAdapter {
     		error(node,"[assignment] variable " + id + " does not exist");
     	else if (types.get(node.getValue()) == Type.Float && symbols.get(id) == Type.Int )
     		error(node,"[assignment] cannot put float in " + id + " (of type int)");
-    	
+
         defaultOut(node);
     }
 
@@ -73,7 +72,7 @@ public class TypeChecker extends DepthFirstAdapter {
     {
     	if (! types.containsKey(node.getCondition()) || types.get(node.getCondition()) != Type.Int)
     		error(node,"[if] condition is not of type int");
-    	
+
         defaultOut(node);
     }
 
@@ -81,7 +80,7 @@ public class TypeChecker extends DepthFirstAdapter {
     {
     	if (! types.containsKey(node.getCondition()) || types.get(node.getCondition()) != Type.Int)
     		error(node,"[while] condition is not of type int");
-    	
+
         defaultOut(node);
     }
 
