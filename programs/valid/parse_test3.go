@@ -6,7 +6,7 @@ func main() {
 /* Type casts, golite 2.9.8 */
 a:= 7.1415726
 b:= int64(a) // losing the decimals here
-println("should be 7 and we have...",b) //should be 7
+println("should be 7"+" and we have...",b) //should be 7
  
 //initialize sum to 0
 var i,j,k,sum1,sum2,sum3 int 
