@@ -1,4 +1,4 @@
-package parser_test_invalid5
+package parser_invalid5
 
 
 //valid in Go, not in Golite. 
