@@ -22,7 +22,6 @@ public class CGenerator extends DepthFirstAdapter {
 		output = writer;
 		symbols = insymbols;
 	}
-	
 	private void p(String text) {
 		output.print(text);
 	}
@@ -44,6 +43,7 @@ public class CGenerator extends DepthFirstAdapter {
 		p("\n");
 	}
 
+	/*
     @Override
 	public void inAAstGrammar(AAstGrammar node)
     {
@@ -272,5 +272,5 @@ public class CGenerator extends DepthFirstAdapter {
     {
     	p(node.getFloatLit().getText());
     }
-
+    */
 }

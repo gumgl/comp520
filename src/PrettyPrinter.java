@@ -37,7 +37,7 @@ public class PrettyPrinter extends DepthFirstAdapter {
 	private void endl() {
 		p("\n");
 	}
-
+	/*
     @Override
 	public void inAAstGrammar(AAstGrammar node)
     {
@@ -250,5 +250,5 @@ public class PrettyPrinter extends DepthFirstAdapter {
     {
     	p(node.getFloatLit().getText());
     }
-
+    */
 }
