@@ -99,8 +99,12 @@ Productions
 	package_dec {-> id} = package id semicolon {-> id};
 
 	declaration =
-		  {variable} var variable_specs semicolon {-> New declaration.variable([variable_specs.variable_spec])}
-		| {type}     type type_specs semicolon    {-> New declaration.type([type_specs.type_spec])}
+		  {variable} var variable_specs semicolon
+		  		{-> New declaration.variable([variable_specs.variable_spec])}
+		| {type} type type_specs semicolon
+				{-> New declaration.type([type_specs.type_spec])}
+		| {function} func id func_arg_spec curlyl  stm* curlyr
+				{-> New declaration.function(id, [func_arg_spec.func_param], [stm])}
 	;
 
 	/* Variable declarations */
@@ -135,6 +139,19 @@ Productions
 
 	type_spec = id type_exp;
 
+	/* Function declarations */
+	func_arg_spec {-> func_param*} =
+		  {nonempty} parenl func_param func_param_list_tail* parenr
+				{-> [func_param, func_param_list_tail.func_param]}
+		| {empty} parenl parenr {-> []}
+	;
+
+	func_param = id_list type_exp {-> New func_param([id_list.id], type_exp)};
+
+	func_param_list_tail {-> func_param} = comma func_param {-> func_param};
+
+	variable_spec_list_tail {-> variable_spec} = comma variable_spec {-> variable_spec};
+
 	type_exp =
 		  {alias}   id                       {-> New type_exp.alias(id)}
 		| {int}     int                      {-> New type_exp.int()}
@@ -150,6 +167,9 @@ Productions
 		| {recurse} parenl type_exp parenr   {-> type_exp}
 	;
 
+	/* Statements */
+	stm = exp;
+
 	exp =
 		  {variable} id
 		| {int_lit} int_lit
@@ -162,6 +182,7 @@ Abstract Syntax Tree
 	declaration =
 		  {variable} variable_spec*
 		| {type} type_spec*
+		| {function} id func_param* stm*
 	;
 
 	variable_spec =
@@ -170,6 +191,8 @@ Abstract Syntax Tree
 	;
 
 	type_spec = id type_exp;
+
+	func_param = id+ type_exp;
 
 	type_exp =
 		  {alias} id
@@ -182,6 +205,8 @@ Abstract Syntax Tree
 		| {slice} type_exp
 		| {array} int_lit type_exp
 	;
+
+	stm = exp;
 
 	exp =
 		  {variable} id

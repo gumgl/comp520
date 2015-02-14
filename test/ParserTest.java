@@ -65,6 +65,14 @@ public class ParserTest {
 		);
 	}
 
+	@Test
+	public void testFunctionDeclaration() throws ParserException, LexerException, IOException {
+		assertEquals(
+			"Program(test,FunctionDeclaration(f,FuncParam(a,b,IntTypeExp()),FuncParam(c,ArrayTypeExp(3,Float64TypeExp()))))",
+			serializeAST("package test; func f(a, b int, c [3]float64) {}")
+		);
+	}
+
 	private Node getAST(String input) throws ParserException, LexerException, IOException {
 		Lexer lexer = new Lexer(new PushbackReader(new StringReader(input), 1024));
 		Parser parser = new Parser(lexer);
