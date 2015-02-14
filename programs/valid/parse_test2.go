@@ -6,6 +6,22 @@ func main() {
   funky(n)
   
   number(35)
+
+/* Type declaration, golite 2.5 */
+/*2 forms of type declaration*/
+
+type (
+ a int
+ point struct {
+	x, y string 
+ }
+)
+
+var z a
+z=2
+//wanted to println point{"what","what"} also, but fmt.Pringln is not supported and println doesn't support struct.
+println(z)
+
 }
 
 
