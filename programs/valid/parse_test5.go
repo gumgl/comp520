@@ -15,7 +15,8 @@ var i, j int
 /* output each array element's value */
 for  i = 0; i < 5; i++ {
 for j = 0; j < 2; j++ {
-println( i, j, a[i][j] )
+/* legal backslash sequence */
+println( i, j, a[i][j],"hello\"there")
   };
 }
 
