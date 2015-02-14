@@ -1,4 +1,4 @@
-package parser_test_invalid3
+package parser_invalid3
 
 func main(){
  
