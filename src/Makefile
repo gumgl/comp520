@@ -1,17 +1,18 @@
-
-# assumes sablecc script is on your PATH
+SHELL := /bin/bash -O extglob
+# assumes sablecc script is in your PATH
 .PHONY: check clean
 
 # to compile the code
 mini: clean grammar
-	javac mini/*.java mini/lexer/*.java mini/parser/*.java mini/node/*.java mini/analysis/*.java 
+	javac *.java golite/*/*.java 
 
 # to generate the compiler code
-grammar: mini.sablecc
-	sablecc mini.sablecc
+grammar:
+	sablecc golite.sablecc3
 
 check:
 	./check
 
+# remove SableCC files, pretty.golite files and then anything not .min
 clean:
-	rm -rf mini/*.class mini/lexer/ mini/parser/ mini/node/ mini/analysis/ result
+	rm -rf *.class golite/* ../programs/*/*.pretty.golite ../programs/*/!(*.go)
