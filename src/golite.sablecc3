@@ -155,74 +155,126 @@ Ignored Tokens
 	whitespace, comment; /*_line, comment_block;*/
 
 Productions
-	cst_grammar = lit_int;
-/* 	cst_grammar {->ast_grammar}
-					= cst_dec* cst_stm*  {-> New ast_grammar([cst_dec.ast_dec], [cst_stm.ast_stm])};
-	
-	cst_dec {->ast_dec}
-					= {int} var id colon int semicolon {-> New ast_dec.int(id)}
-					| {float} var id colon float semicolon {-> New ast_dec.float(id)};
-	
-	cst_stm {->ast_stm}
-					= {assign} cst_assign {-> cst_assign.ast_stm}
-					| {if} cst_if {-> cst_if.ast_stm}
-					| {while} cst_while {-> cst_while.ast_stm}
-					| {read} cst_read {-> cst_read.ast_stm}
-					| {print} cst_print {-> cst_print.ast_stm};
-	
-	cst_assign {->ast_stm}
-					= id equal cst_exp semicolon {-> New ast_stm.assign(id, cst_exp.ast_exp)};
-	
-	cst_if {->ast_stm}
-					= {ifone} if cst_exp then cst_stm* endif
-						{-> New ast_stm.if(cst_exp.ast_exp, [cst_stm.ast_stm], [])}
-					| {ifelse} if cst_exp then [first]:cst_stm* else [second]:cst_stm* endif
-						{-> New ast_stm.if(cst_exp.ast_exp, [first.ast_stm], [second.ast_stm])};
-	
-	cst_while {->ast_stm}
-					= while cst_exp do cst_stm* done {-> New ast_stm.while(cst_exp.ast_exp, [cst_stm.ast_stm])};
-	
-	cst_read {->ast_stm}
-					= read id semicolon {-> New ast_stm.read(id)};
-	
-	cst_print {->ast_stm}
-					= print cst_exp semicolon {-> New ast_stm.print(cst_exp.ast_exp)};
-	
-	cst_exp {->ast_exp}
-					= {factor} cst_factor {-> cst_factor.ast_exp}
-					| {add} cst_exp plus cst_factor {-> New ast_exp.addition(cst_exp.ast_exp, cst_factor.ast_exp)}
-					| {sub} cst_exp minus cst_factor {-> New ast_exp.subtraction(cst_exp.ast_exp, cst_factor.ast_exp)};
-	
-	cst_factor {->ast_exp}
-					= {term} cst_term {-> cst_term.ast_exp}
-					| {mul} cst_factor star cst_term {-> New ast_exp.multiplication(cst_factor.ast_exp, cst_term.ast_exp)}
-					| {div} cst_factor slash cst_term {-> New ast_exp.division(cst_factor.ast_exp, cst_term.ast_exp)};
-					
-	cst_term {->ast_exp}
-					= {negation} minus cst_term {-> New ast_exp.negation(cst_term.ast_exp)}
-					| {paren} lparen cst_exp rparen {-> cst_exp.ast_exp}
-					| {id} id {-> New ast_exp.variable(id)}
-					| {int} int_lit {-> New ast_exp.int_lit(int_lit)}
-					| {float} float_lit {-> New ast_exp.float_lit(float_lit)};
+	program = package_dec declaration* {-> New program(package_dec.id, [declaration])};
+
+	package_dec {-> id} = package id semicolon {-> id};
+
+	declaration =
+		  {variable} var variable_specs semicolon
+		  		{-> New declaration.variable([variable_specs.variable_spec])}
+		| {type} type type_specs semicolon
+				{-> New declaration.type([type_specs.type_spec])}
+		| {function} func id func_arg_spec curlyl  stm* curlyr
+				{-> New declaration.function(id, [func_arg_spec.func_param], [stm])}
+	;
+
+	/* Variable declarations */
+	variable_specs {-> variable_spec*} =
+				  {single_spec} variable_spec {-> [variable_spec]}
+				| {multi_spec} parenl variable_spec_with_semicolon* parenr
+						{-> [variable_spec_with_semicolon.variable_spec]}
+	;
+
+	variable_spec_with_semicolon {-> variable_spec} = variable_spec semicolon {-> variable_spec};
+
+	variable_spec =
+				  {no_expr} id_list type_exp
+				  		{-> New variable_spec.typed([id_list.id], type_exp, [])}
+				| {with_expr} id_list type_exp equal exp_list
+						{-> New variable_spec.typed([id_list.id], type_exp, [exp_list.exp])}
+				| {with_expr_no_type} id_list equal exp_list
+						{-> New variable_spec.untyped([id_list.id], [exp_list.exp])}
+	;
+
+	id_list {-> id*} = id id_list_tail* {-> [id, id_list_tail.id]};
+
+	id_list_tail {-> id} = comma id {-> id};
+
+	exp_list {-> exp*} = exp exp_list_tail* {-> [exp, exp_list_tail.exp]};
+
+	exp_list_tail {-> exp} = comma exp {-> exp};
+
+	/* Type declarations */
+	type_specs {-> type_spec*} =
+		  {single_spec} type_spec {-> [type_spec]}
+		| {multi_spec} parenl type_spec_with_semicolon* parenr {-> [type_spec_with_semicolon.type_spec]}
+	;
+
+	type_spec_with_semicolon {-> type_spec} = type_spec semicolon {-> type_spec};
+
+	type_spec = id type_exp;
+
+	/* Function declarations */
+	func_arg_spec {-> func_param*} =
+		  {nonempty} parenl func_param func_param_list_tail* parenr
+				{-> [func_param, func_param_list_tail.func_param]}
+		| {empty} parenl parenr {-> []}
+	;
+
+	func_param = id_list type_exp {-> New func_param([id_list.id], type_exp)};
+
+	func_param_list_tail {-> func_param} = comma func_param {-> func_param};
+
+	variable_spec_list_tail {-> variable_spec} = comma variable_spec {-> variable_spec};
+
+	type_exp =
+		  {alias}   id                       {-> New type_exp.alias(id)}
+		| {int}     int                      {-> New type_exp.int()}
+		| {float64} float64                  {-> New type_exp.float64()}
+		| {bool}    bool                     {-> New type_exp.bool()}
+		| {rune}    rune                     {-> New type_exp.rune()}
+		| {string}  string                   {-> New type_exp.string()}
+		| {struct}  struct curlyl type_spec_with_semicolon* curlyr
+                                             {-> New type_exp.struct([type_spec_with_semicolon.type_spec])}
+		| {slice}   squarel squarer type_exp {-> New type_exp.slice(type_exp)}
+		| {array}   squarel int_lit squarer type_exp
+                                             {-> New type_exp.array(int_lit, type_exp)}
+		| {recurse} parenl type_exp parenr   {-> type_exp}
+	;
+
+	/* Statements */
+	stm = exp;
+
+	exp =
+		  {variable} id
+		| {int_lit} int_lit
+		| {float_lit} float_lit
+	;
 
 Abstract Syntax Tree
-	ast_grammar = [declarations]:ast_dec* [statements]:ast_stm*;
-	
-	ast_dec = {int} id
-				| {float} id;
-	
-	ast_stm = {assign} [variable]:id [value]:ast_exp
-				| {if} [condition]:ast_exp [true]:ast_stm* [false]:ast_stm*
-				| {while} [condition]:ast_exp [body]:ast_stm*
-				| {read} id
-				| {print} ast_exp;
-	
-	ast_exp = {addition} [left]:ast_exp [right]:ast_exp
-				| {subtraction} [left]:ast_exp [right]:ast_exp
-				| {multiplication} [left]:ast_exp [right]:ast_exp
-				| {division} [left]:ast_exp [right]:ast_exp
-				| {negation} ast_exp
-				| {variable} id
-				| {int_lit} int_lit
-				| {float_lit} float_lit;
-*/
+	program = [package_name]:id [declarations]:declaration*;
+
+	declaration =
+		  {variable} variable_spec*
+		| {type} type_spec*
+		| {function} id func_param* stm*
+	;
+
+	variable_spec =
+		  {typed} id+ type_exp exp*
+		| {untyped} id+ exp+
+	;
+
+	type_spec = id type_exp;
+
+	func_param = id+ type_exp;
+
+	type_exp =
+		  {alias} id
+		| {int}
+		| {float64}
+		| {bool}
+		| {rune}
+		| {string}
+		| {struct} type_spec*
+		| {slice} type_exp
+		| {array} int_lit type_exp
+	;
+
+	stm = exp;
+
+	exp =
+		  {variable} id
+		| {int_lit} int_lit
+		| {float_lit} float_lit
+	;
