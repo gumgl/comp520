@@ -21,7 +21,7 @@ public class ParserTest {
 	@Test
 	public void testVariableDeclaration() throws ParserException, LexerException, IOException {
 		assertEquals(
-			"Program(test,VariableDeclaration(UntypedVariableSpec(x,IntLitExp(1))))",
+			"Program(test,VariableDeclaration(UntypedVariableSpec(x,LitIntExp(1))))",
 			serializeAST("package test; var x = 1;")
 		);
 
@@ -36,17 +36,17 @@ public class ParserTest {
 		);
 
 		assertEquals(
-			"Program(test,VariableDeclaration(UntypedVariableSpec(x,y,IntLitExp(1),IntLitExp(2))))",
+			"Program(test,VariableDeclaration(UntypedVariableSpec(x,y,LitIntExp(1),LitIntExp(2))))",
 			serializeAST("package test; var x, y = 1, 2;")
 		);
 
 		assertEquals(
-			"Program(test,VariableDeclaration(TypedVariableSpec(x,y,IntTypeExp(),IntLitExp(1),IntLitExp(2))))",
+			"Program(test,VariableDeclaration(TypedVariableSpec(x,y,IntTypeExp(),LitIntExp(1),LitIntExp(2))))",
 			serializeAST("package test; var x, y int = 1, 2;")
 		);
 
 		assertEquals(
-			"Program(test,VariableDeclaration(UntypedVariableSpec(x,y,IntLitExp(1),IntLitExp(2)),"+
+			"Program(test,VariableDeclaration(UntypedVariableSpec(x,y,LitIntExp(1),LitIntExp(2)),"+
 				"TypedVariableSpec(a,ArrayTypeExp(5,Float64TypeExp()))))",
 			serializeAST("package test; var (x, y = 1, 2; a [5]float64;);")
 		);
