@@ -3,8 +3,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import mini.node.*;
-import mini.analysis.ReversedDepthFirstAdapter;
+import golite.node.*;
+import golite.analysis.ReversedDepthFirstAdapter;
 
 
 public class TokenMapper extends ReversedDepthFirstAdapter {

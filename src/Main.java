@@ -1,8 +1,8 @@
 
 //import Interpreter; 
-import mini.parser.* ; 
-import mini.lexer.* ; 
-import mini.node.* ; 
+import golite.parser.* ; 
+import golite.lexer.* ; 
+import golite.node.* ; 
 
 import java.io.* ; 
 import java.util.Map;
@@ -62,9 +62,9 @@ public class Main {
 				for (String id : typechecker.symbols.keySet())
 					System.out.println("<" + id + "> is " + String.valueOf(typechecker.symbols.get(id)));
 				*/
-			} catch (mini.lexer.LexerException e) {
+			} catch (golite.lexer.LexerException e) {
 				System.out.println("INVALID (lexer error) at " + e.getMessage());
-			} catch (mini.parser.ParserException e) { 
+			} catch (golite.parser.ParserException e) { 
 				System.out.println("INVALID (scanner error) at " + e.getMessage());
 			} catch (FileNotFoundException e) {
 				System.out.println("Error: File \"" + args[0] + "\" not found.");
@@ -73,7 +73,7 @@ public class Main {
 				System.out.println(e);
 			}
 		} else { 
-			System.err.println("Usage: miniLang inputFile"); 
+			System.err.println("Usage: golite inputFile"); 
 			System.exit(1);
 		}
 	}

@@ -5,8 +5,8 @@ import java.util.*;
 /*
  * Import your grammar packages here
  */
-import mini.analysis.*;
-import mini.node.*;
+import golite.analysis.*;
+import golite.node.*;
 
 /**
  * Text display of the AST, with (optionally) color output.

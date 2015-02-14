@@ -4,8 +4,8 @@ import java.util.*;
 import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.tree.*;
-import mini.analysis.*;
-import mini.node.*;
+import golite.analysis.*;
+import golite.node.*;
 
 public class ASTDisplay extends DepthFirstAdapter
 {

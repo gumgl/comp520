@@ -4,12 +4,16 @@ Package golite;
 
 Helpers
 	/* regular expression matching all valid 16-bit characters */
-	any = [0..0xFFFF];
+	/*any = [0..0xFFFF];*/
+	all = [0..127];
  	tab   = 9;
 	cr    = 13;
 	lf    = 10;
 	eol   = cr | lf | cr lf;
-	whitespace = ' ' | tab | eol;
+	not_eol = [all - [cr + lf]];
+	not_star = [all - '*'];
+	not_backslash = [all - '\'];
+	not_star_slash = [not_star - '/'];
 	
 	quote_single = ''';
 	quote_double = '"';
@@ -36,17 +40,15 @@ Helpers
 	
 	letter_lc = ['a'..'z'];
 	letter_uc = ['A'..'Z'];
-	letter  = lowercase | uppercase | '_';
+	letter  = letter_lc | letter_uc | '_';
 	
-	char_id  = letter | '_' | digit_decimal;
-	char_raw = (any - (eol));
-	char_literal = (any - (eol | '\') ); /* disallow backslash, then allow appropriate escape sequences */
+	/*char_literal = [all - [eol + '\']];*/ /* disallow backslash, then allow appropriate escape sequences */
 	char_escape = '\' ( 'a' | 'b' | 'f' | 'n' | 'r' | 't' | 'v' | '\' );
 	char_escape_sq = '\' ''';
 	char_escape_dq = '\"';
 
 Tokens
-	blank = whitespace+;
+	whitespace = (' ' | tab | eol)+;
 	
 	/* Keywords */
 	import = 'import';
@@ -134,28 +136,27 @@ Tokens
 	colon = ':';
 	
 	/* Comments */
-	comment_line = '//' (any - (eol))* eol;
-	comment_block = '/*' any* '*/';
+	comment = ('//' not_eol* eol)
+				| ('/*' not_star* '*'+ (not_star_slash not_star* '*'+)* '/');
 
 	/* Literals */
-	lit_int  = '0' | digit_nonzer digit_decimal*;
+	lit_int  = '0' | digit_nonzero digit_decimal*;
 	lit_octal = '0' digit_octal+;
 	lit_hex = '0x' digit_hex+;
 	lit_float = ('0' | digit_nonzero digit_decimal*)? '.' digit_decimal*;
-	lit_rune = quote_single (char_literal | char_escape | char_escape_sq)  quote_single;
-	lit_raw = quote_single (char_literal | '\')*  quote_single;
-	lit_interpreted = quote_double (char_literal | char_escape | char_escape_dq) quote_double;
+	lit_rune = quote_single (not_backslash | char_escape | char_escape_sq)  quote_single;
+	lit_raw = quote_single [all - ''']*  quote_single;
+	lit_interpreted = quote_double (not_backslash | char_escape | char_escape_dq) quote_double;
 	
 	/* Identifiers*/
 	id = letter (letter | digit_decimal)*;
-	
-	/* Semicolons? */
 
 Ignored Tokens
-	blank, commentl, commentb;
+	whitespace, comment; /*_line, comment_block;*/
 
-/* Productions
-	cst_grammar {->ast_grammar}
+Productions
+	cst_grammar = lit_int;
+/* 	cst_grammar {->ast_grammar}
 					= cst_dec* cst_stm*  {-> New ast_grammar([cst_dec.ast_dec], [cst_stm.ast_stm])};
 	
 	cst_dec {->ast_dec}
