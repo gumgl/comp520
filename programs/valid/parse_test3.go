@@ -39,4 +39,7 @@ for k= 10; k >=0; k-- {
 }
 
 println ("the three results should be equal and we have...","\n\nloop a has",sum1,"\nloop b has",sum2,"\nloop c jas",sum3)
+result:=sum1==sum2 && sum2==sum3 && sum3 ==55
+println(result)
+
 }
