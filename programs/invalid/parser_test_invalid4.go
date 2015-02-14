@@ -1,3 +1,5 @@
+package parser_test_invalid4
+
 //func goto package if else return
 //case defer go map struct
 
