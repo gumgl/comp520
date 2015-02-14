@@ -50,9 +50,10 @@ c:=b-a
 
 if c>0 {
   println(a,"<50.")
-} else if c<0 {
+} /*commentttttttt*/else if c<0 {
   println(a,">50.")
-} else {
+} else /*blockkkkk commentttt
+tttt*/{
   println(a,"=50.")
 }
 
