@@ -7,7 +7,7 @@ mini: clean grammar
 	javac *.java golite/*/*.java 
 
 # to generate the compiler code
-grammar:
+grammar: golite.sablecc3
 	sablecc golite.sablecc3
 
 check:
