@@ -26,12 +26,12 @@ public class ParserTest {
 		);
 
 		assertEquals(
-			"Program(test,VariableDeclaration(TypedVariableSpec(x,IntTypeId())))",
+			"Program(test,VariableDeclaration(TypedVariableSpec(x,IntTypeExp())))",
 			serializeAST("package test; var x int;")
 		);
 
 		assertEquals(
-			"Program(test,VariableDeclaration(TypedVariableSpec(x,VarTypeId(Point))))",
+			"Program(test,VariableDeclaration(TypedVariableSpec(x,AliasTypeExp(Point))))",
 			serializeAST("package test; var x Point;")
 		);
 
@@ -41,25 +41,26 @@ public class ParserTest {
 		);
 
 		assertEquals(
-			"Program(test,VariableDeclaration(TypedVariableSpec(x,y,IntTypeId(),IntLitExp(1),IntLitExp(2))))",
+			"Program(test,VariableDeclaration(TypedVariableSpec(x,y,IntTypeExp(),IntLitExp(1),IntLitExp(2))))",
 			serializeAST("package test; var x, y int = 1, 2;")
 		);
 
 		assertEquals(
-			"Program(test,VariableDeclaration(UntypedVariableSpec(x,y,IntLitExp(1),IntLitExp(2)),TypedVariableSpec(a,Float64TypeId())))",
-			serializeAST("package test; var (x, y = 1, 2; a float64;);")
+			"Program(test,VariableDeclaration(UntypedVariableSpec(x,y,IntLitExp(1),IntLitExp(2)),"+
+				"TypedVariableSpec(a,ArrayTypeExp(5,Float64TypeExp()))))",
+			serializeAST("package test; var (x, y = 1, 2; a [5]float64;);")
 		);
 	}
 
 	@Test
 	public void testTypeDeclaration() throws ParserException, LexerException, IOException {
 		assertEquals(
-			"Program(test,TypeDeclaration(TypeSpec(num,IntTypeId())))",
+			"Program(test,TypeDeclaration(TypeSpec(num,IntTypeExp())))",
 			serializeAST("package test; type num int;")
 		);
 
 		assertEquals(
-			"Program(test,TypeDeclaration(TypeSpec(num,IntTypeId()),TypeSpec(Polar,VarTypeId(Point))))",
+			"Program(test,TypeDeclaration(TypeSpec(num,IntTypeExp()),TypeSpec(Polar,AliasTypeExp(Point))))",
 			serializeAST("package test; type (num int; Polar Point;);")
 		);
 	}

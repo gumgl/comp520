@@ -112,8 +112,8 @@ Productions
 	variable_spec_with_semicolon {-> variable_spec} = variable_spec semicolon {-> variable_spec};
 
 	variable_spec =
-				  {no_expr} id_list type_id {-> New variable_spec.typed([id_list.id], type_id, [])}
-				| {with_expr} id_list type_id equal exp_list {-> New variable_spec.typed([id_list.id], type_id, [exp_list.exp])}
+				  {no_expr} id_list type_exp {-> New variable_spec.typed([id_list.id], type_exp, [])}
+				| {with_expr} id_list type_exp equal exp_list {-> New variable_spec.typed([id_list.id], type_exp, [exp_list.exp])}
 				| {with_expr_no_type} id_list equal exp_list {-> New variable_spec.untyped([id_list.id], [exp_list.exp])}
 	;
 
@@ -133,15 +133,21 @@ Productions
 
 	type_spec_with_semicolon {-> type_spec} = type_spec semicolon {-> type_spec};
 
-	type_spec = id type_id;
+	type_spec = id type_exp;
 
-	type_id =
-		  {var} id {-> New type_id.var(id)}
-		| {int} int {-> New type_id.int()}
-		| {float64} float64 {-> New type_id.float64()}
-		| {bool} bool {-> New type_id.bool()}
-		| {rune} rune {-> New type_id.rune()}
-		| {string} string {-> New type_id.string()}
+	type_exp =
+		  {alias}   id                       {-> New type_exp.alias(id)}
+		| {int}     int                      {-> New type_exp.int()}
+		| {float64} float64                  {-> New type_exp.float64()}
+		| {bool}    bool                     {-> New type_exp.bool()}
+		| {rune}    rune                     {-> New type_exp.rune()}
+		| {string}  string                   {-> New type_exp.string()}
+		| {struct}  struct curlyl type_spec_with_semicolon* curlyr
+                                             {-> New type_exp.struct([type_spec_with_semicolon.type_spec])}
+		| {slice}   squarel squarer type_exp {-> New type_exp.slice(type_exp)}
+		| {array}   squarel int_lit squarer type_exp
+                                             {-> New type_exp.array(int_lit, type_exp)}
+		| {recurse} parenl type_exp parenr   {-> type_exp}
 	;
 
 	exp =
@@ -159,13 +165,23 @@ Abstract Syntax Tree
 	;
 
 	variable_spec =
-		  {typed} id+ type_id exp*
+		  {typed} id+ type_exp exp*
 		| {untyped} id+ exp+
 	;
 
-	type_spec = id type_id;
+	type_spec = id type_exp;
 
-	type_id = {var} id | {int} | {float64} | {bool} | {rune} | {string};
+	type_exp =
+		  {alias} id
+		| {int}
+		| {float64}
+		| {bool}
+		| {rune}
+		| {string}
+		| {struct} type_spec*
+		| {slice} type_exp
+		| {array} int_lit type_exp
+	;
 
 	exp =
 		  {variable} id
