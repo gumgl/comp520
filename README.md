@@ -4,7 +4,7 @@ COMP 520 Compiler Design, Winter 2015, Group 5
 
 # Team members
 - **Guillaume Labranche** 260585371
-- **Will Bain**
+- **Will Bain** 260509251
 - **Si Mei Zhang**
 
 # Instructions
