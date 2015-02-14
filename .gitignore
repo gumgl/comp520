@@ -16,5 +16,5 @@ hs_err_pid*
 
 #gedit temporary files
 *~
-/golite/
+/src/golite/
 /bin/
