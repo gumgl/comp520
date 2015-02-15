@@ -73,6 +73,123 @@ public class ParserTest {
 		);
 	}
 
+	@Test
+	public void testSimpleStm() throws ParserException, LexerException, IOException {
+		assertEquals(
+			"Program(test,FunctionDeclaration(f,EmptyStm()))",
+			serializeAST("package test; func f() {;}")
+		);
+
+		assertEquals(
+			"Program(test,FunctionDeclaration(f,ExpressionStm(LitIntExp(1))))",
+			serializeAST("package test; func f() {1;}")
+		);
+
+		/* LValues should be accepted here, but aren't yet */
+		assertEquals(
+			"Program(test,FunctionDeclaration(f,AssignStm(a,b,c,LitIntExp(1),LitIntExp(2),LitIntExp(3))))",
+			serializeAST("package test; func f() {a, b, c = 1, 2, 3;}")
+		);
+
+		assertEquals(
+			"Program(test,FunctionDeclaration(f,OpAssignStm(IdLvalue(a),MinusAssignOp(),LitIntExp(1))))",
+			serializeAST("package test; func f() {a -= 1;}")
+		);
+
+		assertEquals(
+			"Program(test,FunctionDeclaration(f,VariableDecStm(UntypedVariableSpec(a,LitIntExp(1)))))",
+			serializeAST("package test; func f() {a := 1;}")
+		);
+
+		assertEquals(
+			"Program(test,FunctionDeclaration(f,IncDecStm(IdLvalue(a),DecPostfixOp())))",
+			serializeAST("package test; func f() {a--;}")
+		);
+	}
+
+	@Test
+	public void testNonSimpleStatements() throws ParserException, LexerException, IOException {
+		assertEquals(
+			"Program(test,FunctionDeclaration(f,VariableDecStm(UntypedVariableSpec(a,LitIntExp(1)))))",
+			serializeAST("package test; func f() {var a = 1;}")
+		);
+
+		assertEquals(
+			"Program(test,FunctionDeclaration(f,TypeDecStm(TypeSpec(a,IntTypeExp()))))",
+			serializeAST("package test; func f() {type a int;}")
+		);
+
+		assertEquals(
+			"Program(test,FunctionDeclaration(f,PrintStm(SimplePrintOp(),LitIntExp(1))))",
+			serializeAST("package test; func f() {print(1);}")
+		);
+
+		assertEquals(
+			"Program(test,FunctionDeclaration(f,BreakStm(),ContinueStm(),ReturnStm()))",
+			serializeAST("package test; func f() {break;continue;return;}")
+		);
+
+		assertEquals(
+			"Program(test,FunctionDeclaration(f,SwitchStm("
+			+ "VariableDecStm(UntypedVariableSpec(x,LitIntExp(1))),"
+			+ "VariableExp(x),"
+			+ "ConditionalSwitchClause(LitIntExp(1),LitIntExp(2),EmptyStm()),"
+			+ "DefaultSwitchClause(EmptyStm()))))",
+			serializeAST("package test; func f() {switch x := 1; x {case 1, 2: ; default: ;}}")
+		);
+	}
+
+	@Test
+	public void testIfStatement() throws ParserException, LexerException, IOException {
+		assertEquals(
+			"Program(test,FunctionDeclaration(f,IfStm("
+			+ "VariableDecStm(UntypedVariableSpec(x,LitIntExp(1))),"
+			+ "VariableExp(x),"
+			+ "EmptyStm())))",
+			serializeAST("package test; func f() {if x := 1; x {;}}")
+		);
+
+		assertEquals(
+			"Program(test,FunctionDeclaration(f,IfStm("
+			+ "VariableDecStm(UntypedVariableSpec(x,LitIntExp(1))),"
+			+ "VariableExp(x),"
+			+ "EmptyStm(),"
+			+ "EmptyStm())))",
+			serializeAST("package test; func f() {if x := 1; x {;} else {;}}")
+		);
+
+		assertEquals(
+			"Program(test,FunctionDeclaration(f,IfStm("
+			+ "VariableDecStm(UntypedVariableSpec(x,LitIntExp(1))),"
+			+ "VariableExp(x),"
+			+ "EmptyStm(),"
+			+ "IfStm(VariableExp(y),EmptyStm(),EmptyStm()))))",
+			serializeAST("package test; func f() {if x := 1; x {;} else if y {;} else {;}}")
+		);
+	}
+
+	@Test
+	public void testForStatement() throws ParserException, LexerException, IOException {
+		assertEquals(
+			"Program(test,FunctionDeclaration(f,ForStm("
+			+ "VariableDecStm(UntypedVariableSpec(x,LitIntExp(1))),"
+			+ "VariableExp(x),"
+			+ "IncDecStm(IdLvalue(x),IncPostfixOp()),"
+			+ "EmptyStm())))",
+			serializeAST("package test; func f() {for x := 1; x; x++; {;}}")
+		);
+
+		assertEquals(
+			"Program(test,FunctionDeclaration(f,ForStm(VariableExp(x),EmptyStm())))",
+			serializeAST("package test; func f() {for x {;}}")
+		);
+
+		assertEquals(
+			"Program(test,FunctionDeclaration(f,ForStm(EmptyStm())))",
+			serializeAST("package test; func f() {for {;}}")
+		);
+	}
+
 	private Node getAST(String input) throws ParserException, LexerException, IOException {
 		Lexer lexer = new Lexer(new PushbackReader(new StringReader(input), 1024));
 		Parser parser = new Parser(lexer);
