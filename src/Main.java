@@ -82,22 +82,25 @@ public class Main {
 	 */
 	public static void TokenPrintHtml(Lexer lexer) throws LexerException, IOException {
 		PrintWriter fileHtml = new PrintWriter(new PrintWriter(path+".tokens.html"), true);
-		
-		StringBuilder html = new StringBuilder("<html><body><pre>");
-		int count=0; // To prevent some infinite loops
-        while (lexer.peek() != null && count < 2000) {
-        	count ++;
-        	Token token = lexer.next();
-        	String color = count % 2 == 0 ? "LightSkyBlue" : "LightSalmon";
-        	
-        	html.append("<span style=\"background-color:"+color+"\" title=\"" + token.getClass().getSimpleName() + "\">" + token.getText().replaceAll(" ", "&#32;").replaceAll("(\r\n|\n)", "&#x23CE;$1") + "</span>");
-        }
-        html.append("</pre></body></html>");
+
+		try {
+			StringBuilder html = new StringBuilder("<html><body><pre>");
+			int count=0; // To prevent some infinite loops
+			while (lexer.peek() != null && count < 2000) {
+				count ++;
+				Token token = lexer.next();
+				String color = count % 2 == 0 ? "LightSkyBlue" : "LightSalmon";
+
+				html.append("<span style=\"background-color:"+color+"\" title=\"" + token.getClass().getSimpleName() + "\">" + token.getText().replaceAll(" ", "&#32;").replaceAll("(\r\n|\n)", "&#x23CE;$1") + "</span>");
+			}
+			html.append("</pre></body></html>");
+			fileHtml.write(html.toString());
+		} finally {
+			fileHtml.close();
+		}
 	}
-	
+
 	public static void TokenPrintText(Lexer lexer) throws LexerException, IOException {
-		PrintWriter fileHtml = new PrintWriter(new PrintWriter(path+".tokens.html"), true);
-		
 		int count=0; // To prevent some infinite loops
         while (lexer.peek() != null && count < 2000) {
         	count ++;
