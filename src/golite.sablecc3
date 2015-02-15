@@ -155,8 +155,8 @@ Productions
 			{-> New declaration.variable([variable_specs.variable_spec])}
 		| {type} type type_specs semicolon
 			{-> New declaration.type([type_specs.type_spec])}
-		| {function} func id func_arg_spec brace_l stm* brace_r
-			{-> New declaration.function(id, [func_arg_spec.func_param], [stm])}
+		| {function} func id paren_l func_param_list paren_r type_exp? block
+			{-> New declaration.function(id, [func_param_list.func_param], type_exp, [block.stm])}
 	;
 
 	/* Variable declarations */
@@ -200,10 +200,10 @@ Productions
 	type_spec = id type_exp;
 
 	/* Function declarations */
-	func_arg_spec {-> func_param*} =
-		  {nonempty} paren_l func_param func_param_list_tail* paren_r
+	func_param_list {-> func_param*} =
+		  {nonempty} func_param func_param_list_tail*
 				{-> [func_param, func_param_list_tail.func_param]}
-		| {empty} paren_l paren_r {-> []}
+		| {empty} {-> []}
 	;
 
 	func_param = id_list type_exp {-> New func_param([id_list.id], type_exp)};
@@ -350,7 +350,7 @@ Abstract Syntax Tree
 	declaration =
 		  {variable} variable_spec*
 		| {type} type_spec*
-		| {function} id func_param* stm*
+		| {function} id func_param* [return_type]:type_exp? stm*
 	;
 
 	variable_spec =
