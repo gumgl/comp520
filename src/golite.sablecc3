@@ -121,9 +121,11 @@ Tokens
 	dot = '.';
 	semicolon = ';';
 	colon = ':';
-	
-	/* Comments */
-	comment = ('//' not_eol* eol)
+
+	/* Comments
+	 * Single line comments go up to the EOL, but don't include the EOL token
+	 * because it needs to be separate for semicolon insertion */
+	comment = ('//' not_eol*)
 				| ('/*' not_star* '*'+ (not_star_slash not_star* '*'+)* '/');
 
 	/* Literals */
@@ -139,6 +141,7 @@ Tokens
 	id = letter (letter | digit_decimal)*;
 
 Ignored Tokens
+	/* Changes here probably also require changes in GoLexer.java */
 	whitespace, eol, comment;
 
 Productions
