@@ -71,6 +71,11 @@ public class ParserTest {
 			"Program(test,FunctionDeclaration(f,FuncParam(a,b,IntTypeExp()),FuncParam(c,ArrayTypeExp(3,Float64TypeExp()))))",
 			serializeAST("package test; func f(a, b int, c [3]float64) {}")
 		);
+
+		assertEquals(
+			"Program(test,FunctionDeclaration(f,FuncParam(a,b,IntTypeExp()),ArrayTypeExp(3,Float64TypeExp())))",
+			serializeAST("package test; func f(a, b int) ([3]float64) {}")
+		);
 	}
 
 	@Test
