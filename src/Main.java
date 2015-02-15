@@ -19,7 +19,7 @@ public class Main {
 		if (args.length > 0) { 
 			try { 
 				/* Build AST */ 
-				Lexer lexer = new GoLexer(new PushbackReader(new FileReader(args[0]), 1024)); 
+				Lexer lexer = new ConservingGoLexer(new PushbackReader(new FileReader(args[0]), 1024));
 				/*Parser parser = new Parser(lexer); 
 				Start ast = parser.parse();
 				
