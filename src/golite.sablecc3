@@ -145,35 +145,38 @@ Ignored Tokens
 	whitespace, eol, comment;
 
 Productions
-	program = package_dec declaration* {-> New program(package_dec.id, [declaration])};
+	program = package_dec declaration*
+		{-> New program(package_dec.id, [declaration])};
 
 	package_dec {-> id} = package id semicolon {-> id};
 
 	declaration =
 		  {variable} var variable_specs semicolon
-		  		{-> New declaration.variable([variable_specs.variable_spec])}
+			{-> New declaration.variable([variable_specs.variable_spec])}
 		| {type} type type_specs semicolon
-				{-> New declaration.type([type_specs.type_spec])}
-		| {function} func id func_arg_spec brace_l  stm* brace_r
-				{-> New declaration.function(id, [func_arg_spec.func_param], [stm])}
+			{-> New declaration.type([type_specs.type_spec])}
+		| {function} func id func_arg_spec brace_l stm* brace_r
+			{-> New declaration.function(id, [func_arg_spec.func_param], [stm])}
 	;
 
 	/* Variable declarations */
 	variable_specs {-> variable_spec*} =
-				  {single_spec} variable_spec {-> [variable_spec]}
-				| {multi_spec} paren_l variable_spec_with_semicolon* paren_r
-						{-> [variable_spec_with_semicolon.variable_spec]}
+		  {single_spec} variable_spec
+			{-> [variable_spec]}
+		| {multi_spec} paren_l variable_spec_with_semicolon* paren_r
+			{-> [variable_spec_with_semicolon.variable_spec]}
 	;
 
-	variable_spec_with_semicolon {-> variable_spec} = variable_spec semicolon {-> variable_spec};
+	variable_spec_with_semicolon {-> variable_spec} =
+		variable_spec semicolon {-> variable_spec};
 
 	variable_spec =
-				  {no_expr} id_list type_exp
-						{-> New variable_spec.typed([id_list.id], type_exp, [])}
-				| {with_expr} id_list type_exp eq exp_list
-						{-> New variable_spec.typed([id_list.id], type_exp, [exp_list.exp])}
-				| {with_expr_no_type} id_list eq exp_list
-						{-> New variable_spec.untyped([id_list.id], [exp_list.exp])}
+		  {no_expr} id_list type_exp
+			{-> New variable_spec.typed([id_list.id], type_exp, [])}
+		| {with_expr} id_list type_exp eq exp_list
+			{-> New variable_spec.typed([id_list.id], type_exp, [exp_list.exp])}
+		| {with_expr_no_type} id_list eq exp_list
+			{-> New variable_spec.untyped([id_list.id], [exp_list.exp])}
 	;
 
 	id_list {-> id*} = id id_list_tail* {-> [id, id_list_tail.id]};
@@ -186,8 +189,10 @@ Productions
 
 	/* Type declarations */
 	type_specs {-> type_spec*} =
-		  {single_spec} type_spec {-> [type_spec]}
-		| {multi_spec} paren_l type_spec_with_semicolon* paren_r {-> [type_spec_with_semicolon.type_spec]}
+		  {single_spec} type_spec
+			{-> [type_spec]}
+		| {multi_spec} paren_l type_spec_with_semicolon* paren_r
+			{-> [type_spec_with_semicolon.type_spec]}
 	;
 
 	type_spec_with_semicolon {-> type_spec} = type_spec semicolon {-> type_spec};
@@ -205,28 +210,39 @@ Productions
 
 	func_param_list_tail {-> func_param} = comma func_param {-> func_param};
 
-	variable_spec_list_tail {-> variable_spec} = comma variable_spec {-> variable_spec};
+	variable_spec_list_tail {-> variable_spec} =
+		comma variable_spec {-> variable_spec};
 
 	type_exp =
-		  {alias}   id                       {-> New type_exp.alias(id)}
-		| {int}     int                      {-> New type_exp.int()}
-		| {float64} float64                  {-> New type_exp.float64()}
-		| {bool}    bool                     {-> New type_exp.bool()}
-		| {rune}    rune                     {-> New type_exp.rune()}
-		| {string}  string                   {-> New type_exp.string()}
-		| {struct}  struct brace_l type_spec_with_semicolon* brace_r
-                                             {-> New type_exp.struct([type_spec_with_semicolon.type_spec])}
-		| {slice}   square_l square_r type_exp {-> New type_exp.slice(type_exp)}
-		| {array}   square_l lit_int square_r type_exp
-                                             {-> New type_exp.array(lit_int, type_exp)}
-		| {recurse} paren_l type_exp paren_r   {-> type_exp}
+		  {alias} id
+			{-> New type_exp.alias(id)}
+		| {int} int
+			{-> New type_exp.int()}
+		| {float64} float64
+			{-> New type_exp.float64()}
+		| {bool} bool
+			{-> New type_exp.bool()}
+		| {rune} rune
+			{-> New type_exp.rune()}
+		| {string} string
+			{-> New type_exp.string()}
+		| {struct} struct brace_l type_spec_with_semicolon* brace_r
+			{-> New type_exp.struct([type_spec_with_semicolon.type_spec])}
+		| {slice} square_l square_r type_exp
+			{-> New type_exp.slice(type_exp)}
+		| {array} square_l lit_int square_r type_exp
+			{-> New type_exp.array(lit_int, type_exp)}
+		| {recurse} paren_l type_exp paren_r
+			{-> type_exp}
 	;
 
 	/* Statements */
 	stm =
 		  {simple} simple_stm {-> simple_stm.stm}
-		| {variable_dec} var variable_specs semicolon {-> New stm.variable_dec([variable_specs.variable_spec])}
-		| {type_dec} type type_specs semicolon {-> New stm.type_dec([type_specs.type_spec])}
+		| {variable_dec} var variable_specs semicolon
+			{-> New stm.variable_dec([variable_specs.variable_spec])}
+		| {type_dec} type type_specs semicolon
+			{-> New stm.type_dec([type_specs.type_spec])}
 		| {print} print_op paren_l exp_list_star paren_r semicolon
 			{-> New stm.print(print_op, [exp_list_star.exp])}
 		| {return} return exp? semicolon {-> New stm.return(exp)}
@@ -247,8 +263,10 @@ Productions
 			{-> New stm.assign([id_list.id], [exp_list.exp])}
 		| {op_assign} lvalue assign_op exp semicolon
 			{-> New stm.op_assign(lvalue, assign_op, exp)}
-		| {short_var_dec} short_var_dec semicolon {-> New stm.variable_dec([short_var_dec.variable_spec])}
-		| {inc_dec} lvalue postfix_op semicolon {-> New stm.inc_dec(lvalue, postfix_op)}
+		| {short_var_dec} short_var_dec semicolon
+			{-> New stm.variable_dec([short_var_dec.variable_spec])}
+		| {inc_dec} lvalue postfix_op semicolon
+			{-> New stm.inc_dec(lvalue, postfix_op)}
 	;
 
 	if_stm {->stm} =
@@ -261,8 +279,10 @@ Productions
 	;
 
 	switch_clause =
-		  {expression} case exp_list colon stm* {-> New switch_clause.conditional([exp_list.exp], [stm])}
-		| {default} default colon stm* {-> New switch_clause.default([stm])}
+		  {expression} case exp_list colon stm*
+			{-> New switch_clause.conditional([exp_list.exp], [stm])}
+		| {default} default colon stm*
+			{-> New switch_clause.default([stm])}
 	;
 
 	for_stm {->stm} =
@@ -274,7 +294,10 @@ Productions
 
 	block {-> stm*} = brace_l stm* brace_r {-> [stm]};
 
-	exp_list_star {-> exp*} = {empty} {-> []} | {non_empty} exp_list {-> [exp_list.exp]};
+	exp_list_star {-> exp*} =
+		  {empty} {-> []}
+		| {non_empty} exp_list {-> [exp_list.exp]}
+	;
 
 	short_var_dec {-> variable_spec*} = id_list colon_eq exp_list
 		{-> [New variable_spec.untyped([id_list.id], [exp_list.exp])]};
@@ -316,7 +339,8 @@ Productions
 		| {lit_float} lit_float
 	;
 
-	lvalue_list {->lvalue*} = lvalue lvalue_list_tail* {-> [lvalue, lvalue_list_tail.lvalue]};
+	lvalue_list {->lvalue*} = lvalue lvalue_list_tail*
+		{-> [lvalue, lvalue_list_tail.lvalue]};
 
 	lvalue_list_tail {-> lvalue} = comma lvalue {-> lvalue};
 
