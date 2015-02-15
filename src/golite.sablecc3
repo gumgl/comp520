@@ -34,8 +34,9 @@ Helpers
 	char_escape_dq = '\"';
 
 Tokens
-	whitespace = (' ' | tab | eol)+;
-	
+	whitespace = (' ' | tab)+;
+	eol = eol;
+
 	/* Keywords */
 	import = 'import';
 	package = 'package';
@@ -133,12 +134,12 @@ Tokens
 	lit_rune = quote_single ([all - '\'] | char_escape | char_escape_sq)  quote_single;
 	lit_raw = quote_back [all - quote_back]*  quote_back;
 	lit_interpreted = quote_double ([all - quote_back] | char_escape | char_escape_dq)* quote_double;
-	
+
 	/* Identifiers*/
 	id = letter (letter | digit_decimal)*;
 
 Ignored Tokens
-	whitespace, comment; /*_line, comment_block;*/
+	whitespace, eol, comment;
 
 Productions
 	program = package_dec declaration* {-> New program(package_dec.id, [declaration])};
