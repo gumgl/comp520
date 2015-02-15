@@ -32,7 +32,7 @@ public class Main {
 				// Get file name
 				path = args[0];
 				if (path.endsWith(".go")) {
-					path = path.substring(0, path.length() - 4);
+					path = path.substring(0, path.length() - 3);
 				}
 				
 				TokenPrintHtml(lexer);
