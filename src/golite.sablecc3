@@ -219,13 +219,102 @@ Productions
 	;
 
 	/* Statements */
-	stm = exp;
+	stm =
+		  {simple} simple_stm {-> simple_stm.stm}
+		| {variable_dec} var variable_specs semicolon {-> New stm.variable_dec([variable_specs.variable_spec])}
+		| {type_dec} type type_specs semicolon {-> New stm.type_dec([type_specs.type_spec])}
+		| {print} print_op paren_l exp_list_star paren_r semicolon
+			{-> New stm.print(print_op, [exp_list_star.exp])}
+		| {return} return exp? semicolon {-> New stm.return(exp)}
+		| {if} if_stm {-> if_stm.stm}
+		| {switch} switch simple_stm? exp brace_l switch_clause* brace_r
+			{-> New stm.switch(simple_stm.stm, exp, [switch_clause])}
+		| {for} for_stm {-> for_stm.stm}
+		| {break} break semicolon {-> New stm.break()}
+		| {continue} continue semicolon {-> New stm.continue()}
+	;
 
+	simple_stm {->stm} =
+		  {empty} semicolon {-> New stm.empty()}
+		| {expression} exp semicolon {-> New stm.expression(exp)}
+		/*| {assign} lvalue_list eq exp_list semicolon
+			{-> New stm.assign([lvalue_list.lvalue], [exp_list.exp])}*/
+		| {assign} id_list eq exp_list semicolon
+			{-> New stm.assign([id_list.id], [exp_list.exp])}
+		| {op_assign} lvalue assign_op exp semicolon
+			{-> New stm.op_assign(lvalue, assign_op, exp)}
+		| {short_var_dec} short_var_dec semicolon {-> New stm.variable_dec([short_var_dec.variable_spec])}
+		| {inc_dec} lvalue postfix_op semicolon {-> New stm.inc_dec(lvalue, postfix_op)}
+	;
+
+	if_stm {->stm} =
+		  {if} if simple_stm? exp block
+			{-> New stm.if(simple_stm.stm, exp, [block.stm], [])}
+		| {if_else} if simple_stm? exp [if_block]:block else [else_block]:block
+			{-> New stm.if(simple_stm.stm, exp, [if_block.stm], [else_block.stm])}
+		| {if_else_if} if simple_stm? exp block else if_stm
+			{-> New stm.if(simple_stm.stm, exp, [block.stm], [if_stm.stm])}
+	;
+
+	switch_clause =
+		  {expression} case exp_list colon stm* {-> New switch_clause.conditional([exp_list.exp], [stm])}
+		| {default} default colon stm* {-> New switch_clause.default([stm])}
+	;
+
+	for_stm {->stm} =
+		  {infinite_loop} for block {-> New stm.for(Null, Null, Null, [block.stm])}
+		| {while_loop} for exp block {-> New stm.for(Null, exp, Null, [block.stm])}
+		| {full_loop} for [init]:simple_stm exp semicolon [post]:simple_stm block
+			{-> New stm.for(init.stm, exp, post.stm, [block.stm])}
+	;
+
+	block {-> stm*} = brace_l stm* brace_r {-> [stm]};
+
+	exp_list_star {-> exp*} = {empty} {-> []} | {non_empty} exp_list {-> [exp_list.exp]};
+
+	short_var_dec {-> variable_spec*} = id_list colon_eq exp_list
+		{-> [New variable_spec.untyped([id_list.id], [exp_list.exp])]};
+
+	/* This could be an id, array expression, or field access */
+	lvalue =
+		  {id} id
+		| {field_access} lvalue dot id {-> New lvalue.field_access(lvalue, id)}
+	;
+
+	print_op =
+		  {simple} print {-> New print_op.simple()}
+		| {line} println {-> New print_op.line()}
+	;
+
+	postfix_op =
+		  {inc} plus_plus {-> New postfix_op.inc()}
+		| {dec} minus_minus {-> New postfix_op.dec()}
+	;
+
+	assign_op =
+		  {plus_eq} plus_eq {-> New assign_op.plus()}
+		| {minus_eq} minus_eq {-> New assign_op.minus()}
+		| {star_eq} star_eq {-> New assign_op.star()}
+		| {slash_eq} slash_eq {-> New assign_op.slash()}
+		| {percent_eq} percent_eq {-> New assign_op.percent()}
+		| {amp_eq} amp_eq {-> New assign_op.amp()}
+		| {pipe_eq} pipe_eq {-> New assign_op.pipe()}
+		| {caret_eq} caret_eq {-> New assign_op.caret()}
+		| {lshift_eq} lshift_eq {-> New assign_op.lshift()}
+		| {rshift_eq} rshift_eq {-> New assign_op.rshift()}
+		| {amp_caret_eq} amp_caret_eq {-> New assign_op.amp_caret()}
+	;
+
+	/* Expressions */
 	exp =
 		  {variable} id
 		| {lit_int} lit_int
 		| {lit_float} lit_float
 	;
+
+	lvalue_list {->lvalue*} = lvalue lvalue_list_tail* {-> [lvalue, lvalue_list_tail.lvalue]};
+
+	lvalue_list_tail {-> lvalue} = comma lvalue {-> lvalue};
 
 Abstract Syntax Tree
 	program = [package_name]:id [declarations]:declaration*;
@@ -257,7 +346,45 @@ Abstract Syntax Tree
 		| {array} lit_int type_exp
 	;
 
-	stm = exp;
+	stm =
+		  {empty}
+		| {expression} exp
+		/*| {assign} lvalue+ exp+*/
+		| {assign} id+ exp+
+		| {op_assign} lvalue assign_op exp
+		| {inc_dec} lvalue postfix_op
+		| {variable_dec} variable_spec+
+		| {type_dec} type_spec+
+		| {print} print_op exp*
+		| {return} exp?
+		| {if} stm? exp [if_block]:stm* [else_block]:stm*
+		| {switch} stm? exp switch_clause*
+		| {for} [init]:stm? exp? [post]:stm? stm*
+		| {break}
+		| {continue}
+	;
+
+	switch_clause = {conditional} exp+ stm* | {default} stm*;
+
+	print_op = {simple} | {line};
+
+	postfix_op = {inc} | {dec};
+
+	assign_op =
+		  {plus}
+		| {minus}
+		| {star}
+		| {slash}
+		| {percent}
+		| {amp}
+		| {pipe}
+		| {caret}
+		| {lshift}
+		| {rshift}
+		| {amp_caret}
+	;
+
+	lvalue = {id} id | {field_access} lvalue id;
 
 	exp =
 		  {variable} id
