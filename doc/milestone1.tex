@@ -1,0 +1,19 @@
+\documentclass[oneside]{article}
+\usepackage{mathpazo}
+
+\begin{document}
+\title{Design decisions: Milestone 1}
+\author{Guillaume Labranche \and William Bain \and Si Mei Zhang}
+\maketitle
+
+\section{Language choice}
+
+We initially considered C, Java, and Python as potential implementation languages, based on our shared familiarity with them. We decided not to use C because of the extra development costs incurred by using a language without features like memory safety. We opted for Java over Python because we judged there to be resources for compiler development available.
+
+\section{Tool choice}
+
+We decided to use SableCC 3 because it made it easy to implement a full scanner/parser toolchain with utilities for AST traversal, and because there was in-class support for it. This was very useful, for instance, in the case of semicolon insertion.
+
+That choice determined most of the design for the scanner, parser, and for the weeder, which we implemented with one depth-first AST traverser.
+
+\end{document}
