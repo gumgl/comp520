@@ -1,6 +1,6 @@
 SHELL := /bin/bash -O extglob
 # assumes sablecc script is in your PATH
-.PHONY: check clean
+.PHONY: check checkall clean
 
 # to compile the code
 mini: clean grammar
