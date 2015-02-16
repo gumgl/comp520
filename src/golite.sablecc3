@@ -130,7 +130,7 @@ Tokens
 
 	/* Literals */
 	lit_int  = '0' | digit_nonzero digit_decimal*;
-	lit_octal = '0' digit_octal+;
+	lit_octal = '0' digit_octal+; /* + because a single 0 should be tagged as int */
 	lit_hex = '0x' digit_hex+;
 	lit_float = ('0' | digit_nonzero digit_decimal*)? '.' digit_decimal*;
 	lit_rune        = quote_single ([not_backslash - quote_single] | char_escape | char_escape_sq)  quote_single;
