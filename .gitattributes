@@ -1,2 +1,3 @@
 *.sh      eol=lf
 src/check eol=lf
+run       eol=lf
