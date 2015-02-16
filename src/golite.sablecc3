@@ -247,7 +247,7 @@ Productions
 
 	/* Statements */
 	stm =
-		  {simple} simple_stm {-> simple_stm.stm}
+		  {simple_form} simple_stm {-> simple_stm.stm}
 		| {variable_dec} var variable_specs semicolon
 			{-> New stm.variable_dec([variable_specs.variable_spec])}
 		| {type_dec} type type_specs semicolon
@@ -263,17 +263,19 @@ Productions
 		| {continue} continue semicolon {-> New stm.continue()}
 	;
 
-	simple_stm {->stm} =
-		  {empty} semicolon {-> New stm.empty()}
-		| {expression} exp semicolon {-> New stm.expression(exp)}
-		| {assign} lvalue_list eq exp_list semicolon
+	simple_stm {-> stm} = bare_simple_stm semicolon {-> bare_simple_stm.stm};
+
+	bare_simple_stm {-> stm} =
+		  {empty} {-> New stm.empty()}
+		| {expression} exp {-> New stm.expression(exp)}
+		| {assign} lvalue_list eq exp_list
 			{-> New stm.assign([lvalue_list.exp], [exp_list.exp])}
-		| {op_assign} lvalue assign_op exp semicolon
+		| {op_assign} lvalue assign_op exp
 			{-> New stm.op_assign(lvalue.exp, assign_op, exp)}
 		/* Ensure the lvalue expressions are id's in weeding! */
-		| {short_var_dec} lvalue_list colon_eq exp_list semicolon
+		| {short_var_dec} lvalue_list colon_eq exp_list
 			{-> New stm.short_variable_dec([lvalue_list.exp], [exp_list.exp])}
-		| {inc_dec} lvalue postfix_op semicolon
+		| {inc_dec} lvalue postfix_op
 			{-> New stm.inc_dec(lvalue.exp, postfix_op)}
 	;
 
@@ -296,7 +298,7 @@ Productions
 	for_stm {->stm} =
 		  {infinite_loop} for block {-> New stm.for(Null, Null, Null, [block.stm])}
 		| {while_loop} for exp block {-> New stm.for(Null, exp, Null, [block.stm])}
-		| {full_loop} for [init]:simple_stm exp semicolon [post]:simple_stm block
+		| {full_loop} for [init]:simple_stm exp semicolon [post]:bare_simple_stm block
 			{-> New stm.for(init.stm, exp, post.stm, [block.stm])}
 	;
 
