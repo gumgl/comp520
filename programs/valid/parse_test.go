@@ -13,7 +13,7 @@ package parse_test
 type IntArray [16]int
 
 type (
-    Point struct { x, y float64 } // Some comment here; a semicolon should be inserted anyway
+    Point struct { x, y float64; } // Some comment here; a semicolon should be inserted anyway
     Polar Point
 )
 
@@ -23,7 +23,7 @@ func main() {
     var x int = 255
     var (
         y, z = 0377, 0xff
-        a, b c float64 = 12., .12, 0.12
+        a, b, c float64 = 12., .12, 0.12
     )
     var esc_rune = '\n'
     var interp_string, raw_string = "hello\n\a\b\f\r\t\v\\\'", `hello
