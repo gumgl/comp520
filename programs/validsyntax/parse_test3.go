@@ -7,27 +7,26 @@ func main() {
 a:= 7.1415726
 b:= int64(a) // losing the decimals here
 println("should be 7"+" and we have...",b) //should be 7
- 
+
 //initialize sum to 0
-var i,j,k,sum1,sum2,sum3 int 
+var i,j,k,sum1,sum2,sum3 int
 
 /* For statements, golite 2.8.11 */
 /* Break and continue statements, golite 2.8.12 */
 /* Increment and decrement statements, golite 2.8.6 */
 
 // Infinite loop
-loop_a:
  for {
   sum1 = sum1+i
   i++
   if i <= 10 {
-  continue loop_a
+  continue
   } else {
-  break loop_a
+  break
   }
  }
 
-// "While" loop_b
+// "While" loop
 for j < 11 {
  sum2+=j
  j-=(-1)
