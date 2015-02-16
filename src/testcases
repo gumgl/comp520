@@ -1,4 +1,3 @@
-../programs/invalid/invalid_escape_in_rune_literal.go
 ../programs/invalid/parser_invalid1.go
 ../programs/invalid/parser_invalid2.go
 ../programs/invalid/parser_invalid3.go
