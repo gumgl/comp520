@@ -12,6 +12,9 @@ grammar: golite.sablecc3
 
 check:
 	./check
+	
+checkall:
+	./checkall
 
 # remove SableCC files, pretty.golite files and then anything not .min
 clean:
