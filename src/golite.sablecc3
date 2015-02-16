@@ -418,8 +418,8 @@ Productions
 			{-> New exp.lit_raw(lit_raw)}
 		| {lit_rune} lit_rune
 			{-> New exp.lit_rune(lit_rune)}
-		| {function_call} id paren_l exp_list paren_r
-			{-> New exp.function_call(id, [exp_list.exp])}
+		| {function_call} id paren_l exp_list_star paren_r
+			{-> New exp.function_call(id, [exp_list_star.exp])}
 		| {base_type_cast} base_type paren_l exp paren_r
 			{-> New exp.base_type_cast(base_type.type_exp, exp)}
 		| {append} append paren_l id comma exp paren_r
