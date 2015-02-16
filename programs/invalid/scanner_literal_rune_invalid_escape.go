@@ -1,3 +1,6 @@
-package invalid_escape_in_rune_literal
+package scanner_literal_rune_invalid_escape
+
+// No backslash needed for double quotes
 
 var r rune = '\"'
+
