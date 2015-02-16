@@ -134,7 +134,7 @@ Tokens
 	lit_hex = '0x' digit_hex+;
 	lit_float = ('0' | digit_nonzero digit_decimal*)? '.' digit_decimal*;
 	lit_rune        = quote_single ([not_backslash - quote_single] | char_escape | char_escape_sq)  quote_single;
-	lit_raw         = quote_back    [not_backslash - quote_back]*  quote_back;
+	lit_raw         = quote_back [all - quote_back]*  quote_back;
 	lit_interpreted = quote_double ([not_backslash - quote_double] | char_escape | char_escape_dq)* quote_double;
 
 	/* Identifiers*/
