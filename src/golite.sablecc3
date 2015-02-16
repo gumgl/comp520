@@ -219,8 +219,8 @@ Productions
 			{-> base_type.type_exp}
 		| {alias} id
 			{-> New type_exp.alias(id)}
-		| {struct} struct brace_l type_spec_with_semicolon* brace_r
-			{-> New type_exp.struct([type_spec_with_semicolon.type_spec])}
+		| {struct} struct brace_l field_dec* brace_r
+			{-> New type_exp.struct([field_dec])}
 		| {slice} square_l square_r type_exp
 			{-> New type_exp.slice(type_exp)}
 		| {array} square_l lit_int square_r type_exp
@@ -241,6 +241,9 @@ Productions
 		| {string} string
 			{-> New type_exp.string()}
 	;
+
+	field_dec = id_list type_exp semicolon
+		{-> New field_dec([id_list.id], type_exp)};
 
 	/* Statements */
 	stm =
@@ -458,10 +461,12 @@ Abstract Syntax Tree
 		| {bool}
 		| {rune}
 		| {string}
-		| {struct} type_spec*
+		| {struct} field_dec*
 		| {slice} type_exp
 		| {array} lit_int type_exp
 	;
+
+	field_dec = id+ type_exp;
 
 	stm =
 		  {empty}

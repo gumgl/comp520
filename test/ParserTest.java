@@ -52,6 +52,9 @@ public class ParserTest {
 		);
 	}
 
+	/*
+	 * Test type declaration and type expressions
+	 */
 	@Test
 	public void testTypeDeclaration() throws ParserException, LexerException, IOException {
 		assertEquals(
@@ -62,6 +65,11 @@ public class ParserTest {
 		assertEquals(
 			"Program(test,TypeDeclaration(TypeSpec(num,IntTypeExp()),TypeSpec(Polar,AliasTypeExp(Point))))",
 			serializeAST("package test; type (num int; Polar Point;);")
+		);
+
+		assertEquals(
+			"Program(test,TypeDeclaration(TypeSpec(Point,StructTypeExp(FieldDec(x,y,Float64TypeExp())))))",
+			serializeAST("package test; type Point struct {x, y float64;};")
 		);
 	}
 
