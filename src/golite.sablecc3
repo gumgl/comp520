@@ -13,7 +13,7 @@ Helpers
 	not_eol = [all - [cr + lf]];
 	not_star = [all - '*'];
 	not_backslash = [all - '\'];
-	not_backslash_eol = [all - [cr + lf + '\'];
+	not_backslash_eol = [not_eol - '\'];
 	not_star_slash = [not_star - '/'];
 	
 	quote_single = ''';
