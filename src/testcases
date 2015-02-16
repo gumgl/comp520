@@ -5,6 +5,7 @@
 ../programs/invalid/parser_invalid4.go
 ../programs/invalid/parser_invalid5.go
 ../programs/invalid/parser_invalid6.go
+../programs/invalid/trailing_comma_in_print.go
 ../programs/validsyntax/parse_test.go
 ../programs/validsyntax/parse_test2.go
 ../programs/validsyntax/parse_test3.go
