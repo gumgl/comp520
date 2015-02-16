@@ -341,6 +341,7 @@ Productions
 		| {lt} lt {-> New binary_op.lt()}
 		| {gt_eq} gt_eq {-> New binary_op.gt_eq()}
 		| {lt_eq} lt_eq {-> New binary_op.lt_eq()}
+		| {not_eq} not_eq {-> New binary_op.not_eq()}
 	;
 
 	term_op {-> binary_op} =
@@ -520,6 +521,7 @@ Abstract Syntax Tree
 		| {lt}
 		| {gt_eq}
 		| {lt_eq}
+		| {not_eq}
 		| {plus}
 		| {minus}
 		| {star}
