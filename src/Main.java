@@ -67,7 +67,7 @@ public class Main {
 		} catch (golite.lexer.LexerException e) {
 			System.out.println("INVALID (lexer error) at " + e.getMessage());
 		} catch (golite.parser.ParserException e) {
-			System.out.println("INVALID (scanner error) at " + e.getMessage());
+			System.out.println("INVALID (parser error) at " + e.getMessage());
 		} catch (FileNotFoundException e) {
 			System.out.println("Error: File \"" + args[0] + "\" not found.");
 		} catch (Exception e) {
