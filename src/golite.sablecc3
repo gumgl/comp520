@@ -157,6 +157,8 @@ Productions
 			{-> New declaration.type([type_specs.type_spec])}
 		| {function} func id paren_l func_param_list paren_r type_exp? block
 			{-> New declaration.function(id, [func_param_list.func_param], type_exp, [block.stm])}
+		| {empty} semicolon
+			{-> New declaration.empty()}
 	;
 
 	/* Variable declarations */
@@ -446,6 +448,7 @@ Abstract Syntax Tree
 		  {variable} variable_spec*
 		| {type} type_spec*
 		| {function} id func_param* [return_type]:type_exp? stm*
+		| {empty}
 	;
 
 	variable_spec =
