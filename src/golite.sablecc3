@@ -213,10 +213,24 @@ Productions
 	variable_spec_list_tail {-> variable_spec} =
 		comma variable_spec {-> variable_spec};
 
+	/* Types */
 	type_exp =
-		  {alias} id
+		  {base} base_type
+			{-> base_type.type_exp}
+		| {alias} id
 			{-> New type_exp.alias(id)}
-		| {int} int
+		| {struct} struct brace_l type_spec_with_semicolon* brace_r
+			{-> New type_exp.struct([type_spec_with_semicolon.type_spec])}
+		| {slice} square_l square_r type_exp
+			{-> New type_exp.slice(type_exp)}
+		| {array} square_l lit_int square_r type_exp
+			{-> New type_exp.array(lit_int, type_exp)}
+		| {recurse} paren_l type_exp paren_r
+			{-> type_exp}
+	;
+
+	base_type {-> type_exp} =
+		  {int} int
 			{-> New type_exp.int()}
 		| {float64} float64
 			{-> New type_exp.float64()}
@@ -226,14 +240,6 @@ Productions
 			{-> New type_exp.rune()}
 		| {string} string
 			{-> New type_exp.string()}
-		| {struct} struct brace_l type_spec_with_semicolon* brace_r
-			{-> New type_exp.struct([type_spec_with_semicolon.type_spec])}
-		| {slice} square_l square_r type_exp
-			{-> New type_exp.slice(type_exp)}
-		| {array} square_l lit_int square_r type_exp
-			{-> New type_exp.array(lit_int, type_exp)}
-		| {recurse} paren_l type_exp paren_r
-			{-> type_exp}
 	;
 
 	/* Statements */
@@ -332,11 +338,94 @@ Productions
 		| {amp_caret_eq} amp_caret_eq {-> New assign_op.amp_caret()}
 	;
 
+	cmp_op {-> binary_op} =
+		  {eq} eq_eq {-> New binary_op.eq()}
+		| {gt} gt {-> New binary_op.gt()}
+		| {lt} lt {-> New binary_op.lt()}
+		| {gt_eq} gt_eq {-> New binary_op.gt_eq()}
+		| {lt_eq} lt_eq {-> New binary_op.lt_eq()}
+	;
+
+	term_op {-> binary_op} =
+		  {plus} plus {-> New binary_op.plus()}
+		| {minus} minus {-> New binary_op.minus()}
+		| {pipe} pipe {-> New binary_op.pipe()}
+		| {caret} caret {-> New binary_op.caret()}
+	;
+
+	factor_op {-> binary_op} =
+		  {star} star {-> New binary_op.star()}
+		| {slash} slash {-> New binary_op.slash()}
+		| {percent} percent {-> New binary_op.percent()}
+		| {lshift} lshift {-> New binary_op.lshift()}
+		| {rshift} rshift {-> New binary_op.rshift()}
+		| {amp} amp {-> New binary_op.amp()}
+		| {amp_caret} amp_caret {-> New binary_op.amp_caret()}
+	;
+
+	unary_op =
+		  {plus} plus {-> New unary_op.plus()}
+		| {minus} minus {-> New unary_op.minus()}
+		| {exclamation} exclamation {-> New unary_op.exclamation()}
+		| {caret} caret {-> New unary_op.caret()}
+	;
+
 	/* Expressions */
 	exp =
-		  {variable} id
+		  {logical_or} exp bar_bar and_exp {-> New exp.binary(exp, New binary_op.logical_or(), and_exp.exp)}
+		| {base} and_exp {-> and_exp.exp}
+	;
+
+	and_exp {-> exp} =
+		  {logical_and} and_exp amp_amp comparison_exp {-> New exp.binary(and_exp.exp, New binary_op.logical_and(), comparison_exp.exp)}
+		| {base} comparison_exp {-> comparison_exp.exp}
+	;
+
+	comparison_exp {-> exp} =
+		  {comparison} comparison_exp cmp_op term {-> New exp.binary(comparison_exp.exp, cmp_op.binary_op, term.exp)}
+		| {base} term {-> term.exp}
+	;
+
+	term {-> exp} =
+		  {term} term term_op factor {-> New exp.binary(term.exp, term_op.binary_op, factor.exp)}
+		| {base} factor {-> factor.exp}
+	;
+
+	factor {-> exp} =
+		  {factor} factor factor_op unary_exp {-> New exp.binary(factor.exp, factor_op.binary_op, unary_exp.exp)}
+		| {base} unary_exp {-> unary_exp.exp}
+	;
+
+	unary_exp {-> exp} =
+		  {unary} unary_op unary_exp {-> New exp.unary(unary_op, unary_exp.exp)}
+		| {primary} primary_exp {-> primary_exp.exp}
+	;
+
+	primary_exp {-> exp} =
+		  {recurse} paren_l exp paren_r
+			{-> exp}
+		| {variable} id
+			{-> New exp.variable(id)}
 		| {lit_int} lit_int
+			{-> New exp.lit_int(lit_int)}
 		| {lit_float} lit_float
+			{-> New exp.lit_float(lit_float)}
+		| {lit_hex} lit_hex
+			{-> New exp.lit_hex(lit_hex)}
+		| {lit_octal} lit_octal
+			{-> New exp.lit_octal(lit_octal)}
+		| {lit_interpreted} lit_interpreted
+			{-> New exp.lit_interpreted(lit_interpreted)}
+		| {lit_raw} lit_raw
+			{-> New exp.lit_raw(lit_raw)}
+		| {lit_rune} lit_rune
+			{-> New exp.lit_rune(lit_rune)}
+		| {function_call} id paren_l exp_list paren_r
+			{-> New exp.function_call(id, [exp_list.exp])}
+		| {base_type_cast} base_type paren_l exp paren_r
+			{-> New exp.base_type_cast(base_type.type_exp, exp)}
+		| {append} append paren_l id comma exp paren_r
+			{-> New exp.append(id, exp)}
 	;
 
 	lvalue_list {->lvalue*} = lvalue lvalue_list_tail*
@@ -412,10 +501,43 @@ Abstract Syntax Tree
 		| {amp_caret}
 	;
 
+	binary_op =
+		  {logical_or}
+		| {logical_and}
+		| {eq}
+		| {gt}
+		| {lt}
+		| {gt_eq}
+		| {lt_eq}
+		| {plus}
+		| {minus}
+		| {star}
+		| {slash}
+		| {percent}
+		| {amp}
+		| {pipe}
+		| {caret}
+		| {lshift}
+		| {rshift}
+		| {amp_caret}
+	;
+
+	unary_op = {plus} | {minus} | {exclamation} | {caret} ;
+
 	lvalue = {id} id | {field_access} lvalue id;
 
 	exp =
 		  {variable} id
 		| {lit_int} lit_int
 		| {lit_float} lit_float
+		| {lit_hex} lit_hex
+		| {lit_octal} lit_octal
+		| {lit_interpreted} lit_interpreted
+		| {lit_raw} lit_raw
+		| {lit_rune} lit_rune
+		| {function_call} id exp*
+		| {base_type_cast} type_exp exp
+		| {append} id exp
+		| {binary} [left]:exp binary_op [right]:exp
+		| {unary} unary_op exp
 	;
