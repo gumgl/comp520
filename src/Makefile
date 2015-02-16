@@ -4,7 +4,7 @@ SHELL := /bin/bash -O extglob
 
 # to compile the code
 mini: clean grammar
-	javac *.java golite/*/*.java 
+	javac *.java golite/*/*.java
 
 # to generate the compiler code
 grammar: golite.sablecc3
@@ -15,4 +15,4 @@ check:
 
 # remove SableCC files, pretty.golite files and then anything not .min
 clean:
-	rm -rf *.class golite/* ../programs/*/*.pretty.golite ../programs/*/!(*.go)
+	rm -rf *.class golite/* ../programs/*/*.pretty.go ../programs/*/!(*.go)
