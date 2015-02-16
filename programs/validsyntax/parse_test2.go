@@ -28,10 +28,13 @@ println(z)
 /* Append, golite 2.9.7 */ 
 /* Switch statements, golite 2.8.10 */
 func funky(n int){
-	 
-  s0 := []int{0,1%5}
-  s1 := append(s0, 2) 
-  s2 := append(s1, 3+5) 
+
+  var s0 []int
+  s0 = append(s0, 0)
+  s0 = append(s0, 1%5)
+
+  s1 := append(s0, 2)
+  s2 := append(s1, 3+5)
 
  switch n {
   default: println(s2[1])

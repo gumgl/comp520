@@ -7,7 +7,7 @@ package parse_test5
 func main() {
 // http://www.cs.sfu.ca/CourseCentral/354/zaiane/material/notes/Chapter2/node5.html
 /* an array with 5 rows and 2 columns*/
-var a = [5][2]int;
+var a [5][2]int;
 var b [3][5]int;
 var i, j int
 ;
@@ -33,7 +33,8 @@ println( i, j, a[i][j],"hello\"there")
 }
 
 println("should be \r0\r1\r2\r3 and we have")
-for h := range b {
+for i := 0; i < 3; i++ {
+  h := b[i]
   println(h);}
   println(len(b));
 };

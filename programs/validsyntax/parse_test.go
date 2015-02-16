@@ -26,7 +26,7 @@ func main() {
         a, b, c float64 = 12., .12, 0.12
     )
     var esc_rune = '\n'
-    var interp_string, raw_string = "hello\n\a\b\f\r\t\v\\\'", `hello
+    var interp_string, raw_string = "hello\n\a\b\f\r\t\v\\'", `hello
 `
     // Slice types, 2.7.2; Array types, 2.7.3
     var s [2]string; var _p []Polar
