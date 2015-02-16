@@ -27,3 +27,8 @@ hs_err_pid*
 !/programs/*/*.go
 # But go ignore the generated .pretty.go
 /programs/*/*.pretty.go
+
+# Ignore generated tex files
+/doc/*.aux
+/doc/*.log
+/doc/*.synctex.gz
