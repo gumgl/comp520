@@ -21,7 +21,7 @@ public class GoLexer extends Lexer {
 	protected void filter() {
 		// If required, insert a semicolon before the token
 		if (requiresSemicolon()) {
-			lastSignificantToken = token = new TSemicolon();
+			lastSignificantToken = token = newSemicolonAfter(lastSignificantToken);
 		} else if (!isWhitespaceOrComment(token)) {
 			lastSignificantToken = token;
 		}
@@ -76,5 +76,12 @@ public class GoLexer extends Lexer {
 
 	protected static boolean isWhitespaceOrComment(Token tok) {
 		return tok instanceof TWhitespace || tok instanceof TComment;
+	}
+
+	protected TSemicolon newSemicolonAfter(Token tok) {
+		TSemicolon semi = new TSemicolon();
+		semi.setLine(tok.getLine());
+		semi.setPos(tok.getPos());
+		return semi;
 	}
 }

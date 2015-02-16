@@ -189,7 +189,7 @@ public class ParserTest {
 			+ "VariableExp(x),"
 			+ "IncDecStm(VariableExp(x),IncPostfixOp()),"
 			+ "EmptyStm())))",
-			serializeAST("package test; func f() {for x := 1; x; x++; {;}}")
+			serializeAST("package test; func f() {for x := 1; x; x++ {;}}")
 		);
 
 		assertEquals(

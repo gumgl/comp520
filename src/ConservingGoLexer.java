@@ -28,7 +28,7 @@ public class ConservingGoLexer extends GoLexer {
 		// If required, insert a semicolon before the token
 		if (requiresSemicolon()) {
 
-			lastSignificantToken = new TSemicolon();
+			lastSignificantToken = newSemicolonAfter(lastSignificantToken);
 
 			if (isWhitespaceOrComment(pendingTokens.peekLast())) {
 				LinkedList<Token> pendingIgnored = new LinkedList<Token>();

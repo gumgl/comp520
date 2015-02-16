@@ -31,29 +31,30 @@ for file in `cat testcases`; do
 	# compile the file
 	compile $file
     
-    #compile the 
-    ccode=$(cname $file)
-    
-    
-    # compile the outputted C file
-	if [ -e $ccode ]; then
-		echo "GCC Compiling $ccode..."
-		gcc $ccode -o $(compiled $file)
-	else
-		echo "No C code to compile"
-	fi
+#	ccode=$(cname $file)
+
+#	# compile the outputted C file
+#	if [ -e $ccode ]; then
+#		echo "GCC Compiling $ccode..."
+#		gcc $ccode -o $(compiled $file)
+#	else
+#		echo "No C code to compile"
+#	fi
     
 	pretty=$(prettyname $file)
 	
-	# compile the PrettyPrint version
+	# compare the PrettyPrint version
 	if [ -e $pretty ]; then
 		compile $pretty
 		# then compare them
 		pretty2=$(prettyname $pretty)
 		diff -qs $pretty $pretty2
 	else
-		echo "No pretty version to compile"
+		echo "No pretty version found"
 	fi
+
+	# Print an empty line for readability
+	echo ""
 done
 
 exit 0
