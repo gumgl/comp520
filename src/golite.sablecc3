@@ -266,16 +266,15 @@ Productions
 	simple_stm {->stm} =
 		  {empty} semicolon {-> New stm.empty()}
 		| {expression} exp semicolon {-> New stm.expression(exp)}
-		/*| {assign} lvalue_list eq exp_list semicolon
-			{-> New stm.assign([lvalue_list.lvalue], [exp_list.exp])}*/
-		| {assign} id_list eq exp_list semicolon
-			{-> New stm.assign([id_list.id], [exp_list.exp])}
+		| {assign} lvalue_list eq exp_list semicolon
+			{-> New stm.assign([lvalue_list.exp], [exp_list.exp])}
 		| {op_assign} lvalue assign_op exp semicolon
-			{-> New stm.op_assign(lvalue, assign_op, exp)}
-		| {short_var_dec} short_var_dec semicolon
-			{-> New stm.variable_dec([short_var_dec.variable_spec])}
+			{-> New stm.op_assign(lvalue.exp, assign_op, exp)}
+		/* Ensure the lvalue expressions are id's in weeding! */
+		| {short_var_dec} lvalue_list colon_eq exp_list semicolon
+			{-> New stm.short_variable_dec([lvalue_list.exp], [exp_list.exp])}
 		| {inc_dec} lvalue postfix_op semicolon
-			{-> New stm.inc_dec(lvalue, postfix_op)}
+			{-> New stm.inc_dec(lvalue.exp, postfix_op)}
 	;
 
 	if_stm {->stm} =
@@ -306,15 +305,6 @@ Productions
 	exp_list_star {-> exp*} =
 		  {empty} {-> []}
 		| {non_empty} exp_list {-> [exp_list.exp]}
-	;
-
-	short_var_dec {-> variable_spec*} = id_list colon_eq exp_list
-		{-> [New variable_spec.untyped([id_list.id], [exp_list.exp])]};
-
-	/* This could be an id, array expression, or field access */
-	lvalue =
-		  {id} id
-		| {field_access} lvalue dot id {-> New lvalue.field_access(lvalue, id)}
 	;
 
 	print_op =
@@ -407,8 +397,8 @@ Productions
 	primary_exp {-> exp} =
 		  {recurse} paren_l exp paren_r
 			{-> exp}
-		| {variable} id
-			{-> New exp.variable(id)}
+		| {lvalue} lvalue
+			{-> lvalue.exp}
 		| {lit_int} lit_int
 			{-> New exp.lit_int(lit_int)}
 		| {lit_float} lit_float
@@ -431,10 +421,21 @@ Productions
 			{-> New exp.append(id, exp)}
 	;
 
-	lvalue_list {->lvalue*} = lvalue lvalue_list_tail*
-		{-> [lvalue, lvalue_list_tail.lvalue]};
+	// TODO: Fairly certain the recursive use of lvalue here is okay based on
+	// http://golang.org/ref/spec#Address_operators but I'm not positive
+	lvalue {-> exp} =
+		  {variable} id
+			{-> New exp.variable(id)}
+		| {array_access} lvalue square_l exp square_r
+			{-> New exp.array_access(lvalue.exp, exp)}
+		| {field_access} lvalue dot id
+			{-> New exp.field_access(lvalue.exp, id)}
+	;
 
-	lvalue_list_tail {-> lvalue} = comma lvalue {-> lvalue};
+	lvalue_list {-> exp*} = lvalue lvalue_list_tail*
+		{-> [lvalue.exp, lvalue_list_tail.exp]};
+
+	lvalue_list_tail {-> exp} = comma lvalue {-> lvalue.exp};
 
 Abstract Syntax Tree
 	program = [package_name]:id [declarations]:declaration*;
@@ -471,10 +472,10 @@ Abstract Syntax Tree
 	stm =
 		  {empty}
 		| {expression} exp
-		/*| {assign} lvalue+ exp+*/
-		| {assign} id+ exp+
-		| {op_assign} lvalue assign_op exp
-		| {inc_dec} lvalue postfix_op
+		| {assign} [lvalue]:exp+ exp+
+		| {op_assign} [lvalue]:exp assign_op exp
+		| {inc_dec} exp postfix_op
+		| {short_variable_dec} [ids]:exp+ exp+
 		| {variable_dec} variable_spec+
 		| {type_dec} type_spec+
 		| {print} print_op exp*
@@ -529,10 +530,10 @@ Abstract Syntax Tree
 
 	unary_op = {plus} | {minus} | {exclamation} | {caret} ;
 
-	lvalue = {id} id | {field_access} lvalue id;
-
 	exp =
 		  {variable} id
+		| {array_access} [array]:exp [index]:exp
+		| {field_access} exp id
 		| {lit_int} lit_int
 		| {lit_float} lit_float
 		| {lit_hex} lit_hex

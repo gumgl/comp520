@@ -98,24 +98,24 @@ public class ParserTest {
 			serializeAST("package test; func f() {1;}")
 		);
 
-		/* LValues should be accepted here, but aren't yet */
 		assertEquals(
-			"Program(test,FunctionDeclaration(f,AssignStm(a,b,c,LitIntExp(1),LitIntExp(2),LitIntExp(3))))",
+			"Program(test,FunctionDeclaration(f,AssignStm(VariableExp(a),VariableExp(b),VariableExp(c),"
+			+ "LitIntExp(1),LitIntExp(2),LitIntExp(3))))",
 			serializeAST("package test; func f() {a, b, c = 1, 2, 3;}")
 		);
 
 		assertEquals(
-			"Program(test,FunctionDeclaration(f,OpAssignStm(IdLvalue(a),MinusAssignOp(),LitIntExp(1))))",
+			"Program(test,FunctionDeclaration(f,OpAssignStm(VariableExp(a),MinusAssignOp(),LitIntExp(1))))",
 			serializeAST("package test; func f() {a -= 1;}")
 		);
 
 		assertEquals(
-			"Program(test,FunctionDeclaration(f,VariableDecStm(UntypedVariableSpec(a,LitIntExp(1)))))",
+			"Program(test,FunctionDeclaration(f,ShortVariableDecStm(VariableExp(a),LitIntExp(1))))",
 			serializeAST("package test; func f() {a := 1;}")
 		);
 
 		assertEquals(
-			"Program(test,FunctionDeclaration(f,IncDecStm(IdLvalue(a),DecPostfixOp())))",
+			"Program(test,FunctionDeclaration(f,IncDecStm(VariableExp(a),DecPostfixOp())))",
 			serializeAST("package test; func f() {a--;}")
 		);
 	}
@@ -144,7 +144,7 @@ public class ParserTest {
 
 		assertEquals(
 			"Program(test,FunctionDeclaration(f,SwitchStm("
-			+ "VariableDecStm(UntypedVariableSpec(x,LitIntExp(1))),"
+			+ "ShortVariableDecStm(VariableExp(x),LitIntExp(1)),"
 			+ "VariableExp(x),"
 			+ "ConditionalSwitchClause(LitIntExp(1),LitIntExp(2),EmptyStm()),"
 			+ "DefaultSwitchClause(EmptyStm()))))",
@@ -156,7 +156,7 @@ public class ParserTest {
 	public void testIfStatement() throws ParserException, LexerException, IOException {
 		assertEquals(
 			"Program(test,FunctionDeclaration(f,IfStm("
-			+ "VariableDecStm(UntypedVariableSpec(x,LitIntExp(1))),"
+			+ "ShortVariableDecStm(VariableExp(x),LitIntExp(1)),"
 			+ "VariableExp(x),"
 			+ "EmptyStm())))",
 			serializeAST("package test; func f() {if x := 1; x {;}}")
@@ -164,7 +164,7 @@ public class ParserTest {
 
 		assertEquals(
 			"Program(test,FunctionDeclaration(f,IfStm("
-			+ "VariableDecStm(UntypedVariableSpec(x,LitIntExp(1))),"
+			+ "ShortVariableDecStm(VariableExp(x),LitIntExp(1)),"
 			+ "VariableExp(x),"
 			+ "EmptyStm(),"
 			+ "EmptyStm())))",
@@ -173,7 +173,7 @@ public class ParserTest {
 
 		assertEquals(
 			"Program(test,FunctionDeclaration(f,IfStm("
-			+ "VariableDecStm(UntypedVariableSpec(x,LitIntExp(1))),"
+			+ "ShortVariableDecStm(VariableExp(x),LitIntExp(1)),"
 			+ "VariableExp(x),"
 			+ "EmptyStm(),"
 			+ "IfStm(VariableExp(y),EmptyStm(),EmptyStm()))))",
@@ -185,9 +185,9 @@ public class ParserTest {
 	public void testForStatement() throws ParserException, LexerException, IOException {
 		assertEquals(
 			"Program(test,FunctionDeclaration(f,ForStm("
-			+ "VariableDecStm(UntypedVariableSpec(x,LitIntExp(1))),"
+			+ "ShortVariableDecStm(VariableExp(x),LitIntExp(1)),"
 			+ "VariableExp(x),"
-			+ "IncDecStm(IdLvalue(x),IncPostfixOp()),"
+			+ "IncDecStm(VariableExp(x),IncPostfixOp()),"
 			+ "EmptyStm())))",
 			serializeAST("package test; func f() {for x := 1; x; x++; {;}}")
 		);
