@@ -703,7 +703,6 @@ public class PrettyPrinter2 extends DepthFirstAdapter {
 	public void caseAForStm(AForStm node)
 	{
 		inAForStm(node);
-		p("case ");
 		boolean whileLoop = (node.getInit() == null || node.getInit() instanceof AEmptyStm)
 				&& (node.getPost() == null || node.getPost() instanceof AEmptyStm);
 
