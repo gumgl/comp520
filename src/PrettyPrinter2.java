@@ -486,6 +486,8 @@ public class PrettyPrinter2 extends DepthFirstAdapter {
     public void caseAIfStm(AIfStm node)
     {
         inAIfStm(node);
+        startl();
+        p("if ");
         if(node.getStm() != null)
         {
             node.getStm().apply(this);
@@ -494,6 +496,9 @@ public class PrettyPrinter2 extends DepthFirstAdapter {
         {
             node.getExp().apply(this);
         }
+        p("{");
+        endl();
+        shift();
         {
             List<PStm> copy = new ArrayList<PStm>(node.getIfBlock());
             for(PStm e : copy)
@@ -501,12 +506,21 @@ public class PrettyPrinter2 extends DepthFirstAdapter {
                 e.apply(this);
             }
         }
-        {
+        unshift();
+        startl();
+        p("}");
+        if (node.getElseBlock().isEmpty()) {
+        	endl();
+        } else {
+        	p(" else {");
+        	endl();
+        	shift();
             List<PStm> copy = new ArrayList<PStm>(node.getElseBlock());
             for(PStm e : copy)
             {
                 e.apply(this);
             }
+            unshift();
         }
         outAIfStm(node);
     }
@@ -537,18 +551,30 @@ public class PrettyPrinter2 extends DepthFirstAdapter {
     public void caseAForStm(AForStm node)
     {
         inAForStm(node);
-        if(node.getInit() != null)
+    	boolean threePart = node.getInit() != null || node.getPost() != null;
+
+    	startl();
+    	p("for ");
+
+    	if(node.getInit() != null)
         {
             node.getInit().apply(this);
         }
+    	if (threePart) p("; ");
         if(node.getExp() != null)
         {
             node.getExp().apply(this);
         }
+    	if (threePart) p("; ");
         if(node.getPost() != null)
         {
             node.getPost().apply(this);
         }
+
+        p(" {");
+        endl();
+        shift();
+
         {
             List<PStm> copy = new ArrayList<PStm>(node.getStm());
             for(PStm e : copy)
@@ -556,6 +582,8 @@ public class PrettyPrinter2 extends DepthFirstAdapter {
                 e.apply(this);
             }
         }
+
+        unshift();
         outAForStm(node);
     }
 
