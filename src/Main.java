@@ -3,7 +3,7 @@ import golite.parser.* ;
 import golite.lexer.* ;
 import golite.node.* ;
 
-import java.io.* ; 
+import java.io.* ;
 import java.util.Map;
 
 public class Main {
@@ -117,7 +117,7 @@ public class Main {
         	System.out.println(token.getLine() + ": " + token.getClass().getSimpleName() + "(" + token.getText() + ")" );
         }
 	}
-	
+
 	public static void PrettyPrint(Node ast) throws FileNotFoundException {
 		// Pretty Print
 		PrintWriter filePretty = new PrintWriter(new PrintWriter(path+".pretty.go"), true);
@@ -125,15 +125,15 @@ public class Main {
 		ast.apply(pretty);
 		filePretty.close();
 	}
-	
+
 	public boolean TypeCheck(Node ast) throws FileNotFoundException {
 		PrintWriter fileTypeChecker = new PrintWriter(new PrintWriter(path+".symbol.txt"), true);
-		TypeChecker typechecker = new TypeChecker(fileTypeChecker, stderr) ; 
+		TypeChecker typechecker = new TypeChecker(fileTypeChecker, stderr) ;
 		ast.apply(typechecker);
 		fileTypeChecker.close();
 		return typechecker.success;
 	}
-	
+
 	public static Token getFirstToken(Node node) {
         if(node instanceof Token)
             return (Token) node;
