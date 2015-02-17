@@ -428,7 +428,6 @@ public class PrettyPrinter extends DepthFirstAdapter {
 		PExp[] listExp = (PExp[])node.getExp().toArray(new PExp[0]);
 		for(int i=0; i<listExp.length; i++)
 		{
-			pln("case " + i + ":\n");
 			listExp[i].apply(this);
 			p(",");
 		}
