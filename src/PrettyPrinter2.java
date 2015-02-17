@@ -85,13 +85,28 @@ public class PrettyPrinter2 extends DepthFirstAdapter {
     public void caseATypeDeclaration(ATypeDeclaration node)
     {
         inATypeDeclaration(node);
+    	startl();
+    	p("type ");
         {
             List<PTypeSpec> copy = new ArrayList<PTypeSpec>(node.getTypeSpec());
+            if (copy.size() > 1) {
+            	p("(");
+            	shift();
+            	endl();
+            	startl();
+            }
             for(PTypeSpec e : copy)
             {
                 e.apply(this);
             }
+            if (copy.size() > 1) {
+            	unshift();
+            	endl();
+            	startl();
+            	p(")");
+            }
         }
+        endl();
         outATypeDeclaration(node);
     }
 
@@ -216,8 +231,13 @@ public class PrettyPrinter2 extends DepthFirstAdapter {
         inAFuncParam(node);
         {
             List<TId> copy = new ArrayList<TId>(node.getId());
+            boolean first = true;
             for(TId e : copy)
             {
+            	if (!first)
+            		p(", ");
+            	first = false;
+            	p(e.getText());
                 e.apply(this);
             }
         }
@@ -486,6 +506,7 @@ public class PrettyPrinter2 extends DepthFirstAdapter {
         inAReturnStm(node);
         if(node.getExp() != null)
         {
+        	p("return ");
             node.getExp().apply(this);
         }
         outAReturnStm(node);
