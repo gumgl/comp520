@@ -1,10 +1,10 @@
 /* Package declaration, golite 2.2 */
-package parse_test2
+package main
 
 func main() {
   n := 5
   funky(n)
-  
+
   number(35)
 
 /* Type declaration, golite 2.5 */
@@ -13,7 +13,7 @@ func main() {
 type (
  a int
  point struct {
-	x, y string 
+	x, y string
  }
 )
 
@@ -25,7 +25,7 @@ println(z)
 }
 
 
-/* Append, golite 2.9.7 */ 
+/* Append, golite 2.9.7 */
 /* Switch statements, golite 2.8.10 */
 func funky(n int){
 
@@ -39,10 +39,10 @@ func funky(n int){
  switch n {
   default: println(s2[1])
   case 1,2,3,4: println(s0[1])
-  case 5,6: println(s2[3]) 
+  case 5,6: println(s2[3])
 }
 
- return 
+ return
 }
 
 func number(a int) int {
@@ -58,7 +58,7 @@ if a<0 {
 if a%2 == 0 {
   println(a,"is even.")
 } else {
-  println(a,"is odd.") 
+  println(a,"is odd.")
 }
 
 
