@@ -53,6 +53,25 @@ public class GoLiteWeeder extends DepthFirstAdapter {
 	public void caseASwitchStm(ASwitchStm node) {
 		boolean defaultEncountered = false;
 
+		if (node.getSwitchClause().isEmpty()) {
+			return;
+		}
+
+		Node last = node.getSwitchClause().getLast();
+		PFallthroughStm lastFallthrough = null;
+
+		if (last instanceof ADefaultSwitchClause) {
+			lastFallthrough = ((ADefaultSwitchClause) last).getFallthroughStm();
+		} else if (last instanceof AConditionalSwitchClause) {
+			lastFallthrough = ((AConditionalSwitchClause) last).getFallthroughStm();
+		}
+
+		if (lastFallthrough != null) {
+			throw new GoLiteWeedingException(getLineAndPos(lastFallthrough)
+					+ " cannot end switch statement with fallthrough"
+				);
+		}
+
 		for (Node switchClause : node.getSwitchClause()) {
 			if (switchClause instanceof ADefaultSwitchClause) {
 				if (defaultEncountered) {

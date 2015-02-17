@@ -59,6 +59,7 @@ public class GoLexer extends Lexer {
 			|| lastSignificantToken instanceof TBreak
 			|| lastSignificantToken instanceof TContinue
 			|| lastSignificantToken instanceof TReturn
+			|| lastSignificantToken instanceof TFallthrough
 			// operators
 			|| lastSignificantToken instanceof TPlusPlus
 			|| lastSignificantToken instanceof TMinusMinus
