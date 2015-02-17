@@ -92,7 +92,7 @@ public class PrettyPrinter extends DepthFirstAdapter {
 		if (node.getReturnType()!=null) {
 			node.getReturnType().apply(this);
 		} 
-		p("{\n")
+		p("{\n");
 		
 		PStm[] listStm = (PStm[])node.getStm().toArray(new PStm[0]);
 		for(int j=0; j<listStm.length; j++)
@@ -306,10 +306,11 @@ public class PrettyPrinter extends DepthFirstAdapter {
 
     	public void caseATypeDecStm (ATypeDecStm node)
     	{
+    		//type_spec+
     		Iterator<PTypeSpec> iter = node.getTypeSpec().iterator();
     		while (iter.hasNext()){
-    			
-    		//???
+			PTypeSpec t = (PTypeSpec)iter.next();
+			t.apply(this);
     		} 
     	}
     
@@ -319,7 +320,7 @@ public class PrettyPrinter extends DepthFirstAdapter {
     		node.getPrintOp().apply(this);
     		if(node.getExp()!= null)
         	{
-    	 	//??? print_op exp*, 
+    	 	//exp*
 			PExp[] listExp = (PExp[])node.getExp().toArray(new PExp[0]);
 			for(int i=0; i<listExp.length - 1; i++)
 			{
@@ -436,7 +437,7 @@ public class PrettyPrinter extends DepthFirstAdapter {
 		for(int i=0; i<listStm.length; i++)
 		{
 			listStm[i].apply(this);
-			("\n");
+			p("\n");
 		}
 	}
     
@@ -447,7 +448,7 @@ public class PrettyPrinter extends DepthFirstAdapter {
 		for(int i=0; i<listStm.length; i++)
 		{
 			listStm[i].apply(this);
-			("\n");
+			p("\n");
 		}
 	}
     
