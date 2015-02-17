@@ -164,10 +164,10 @@ public class PrettyPrinter2 extends DepthFirstAdapter {
             boolean first = true;
             for(TId e : copy)
             {
-            	p(e.getText());
             	if (!first)
             		p(", ");
             	first = false;
+            	p(e.getText());
                 e.apply(this);
             }
         }
@@ -179,8 +179,12 @@ public class PrettyPrinter2 extends DepthFirstAdapter {
         if (!node.getExp().isEmpty()) {
         	p("=");
             List<PExp> copy = new ArrayList<PExp>(node.getExp());
+            boolean first = true;
             for(PExp e : copy)
             {
+            	if (!first)
+            		p(", ");
+            	first = false;
                 e.apply(this);
             }
         }
@@ -195,16 +199,25 @@ public class PrettyPrinter2 extends DepthFirstAdapter {
         startl();
         {
             List<TId> copy = new ArrayList<TId>(node.getId());
+            boolean first = true;
             for(TId e : copy)
             {
+            	if (!first)
+            		p(", ");
+            	first = false;
+            	p(e.getText());
                 e.apply(this);
             }
         }
         {
         	p("=");
             List<PExp> copy = new ArrayList<PExp>(node.getExp());
+            boolean first = true;
             for(PExp e : copy)
             {
+            	if (!first)
+            		p(", ");
+            	first = false;
                 e.apply(this);
             }
         }
