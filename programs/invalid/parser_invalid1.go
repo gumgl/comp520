@@ -4,7 +4,7 @@ package parser_invalid1
 func funky2(){
 
 	n := 5
-	s0 := []int
+	var s0 []int
 	s0 = append(s0, 0)
 	s0 = append(s0, 1)
 	s0 = append(s0, 3)
