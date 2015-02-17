@@ -712,41 +712,41 @@ public class PrettyPrinter2 extends DepthFirstAdapter {
 		p("&^");
 	}       
     
-    	//binary_op
-    	public void caseALogicalOrBinaryOp(ALogicalOrBinaryOp node)
-    	{
-    		p("||");
-    	}
-    	
-    	public void caseALogicalAndBinaryOp(ALogicalAndBinaryOp node)
-    	{
-    		p("&&");
-    	}
-    	
-    	public void caseAEqBinaryOp(AEqBinaryOp node)
-    	{
-    		p("==");
+	//binary_op
+	public void caseALogicalOrBinaryOp(ALogicalOrBinaryOp node)
+	{
+		p("||");
+	}
+	
+	public void caseALogicalAndBinaryOp(ALogicalAndBinaryOp node)
+	{
+		p("&&");
+	}
+	
+	public void caseAEqBinaryOp(AEqBinaryOp node)
+	{
+		p("==");
     	}    	
  
      	public void caseAGtBinaryOp(AGtBinaryOp node)
     	{
     		p(">");
-    	}
+	}
 
-    	public void caseALtBinaryOp(ALtBinaryOp node)
-    	{
-    		p("<");
-    	}
+	public void caseALtBinaryOp(ALtBinaryOp node)
+	{
+		p("<");
+	}
 
-    	public void caseAGtEqBinaryOp(AGtEqBinaryOp node)
-    	{
-    		p(">=");
-    	}
-    	
-    	public void caseALtEqBinaryOp(ALtEqBinaryOp node)
-    	{
-    		p("<=");
-    	}
+	public void caseAGtEqBinaryOp(AGtEqBinaryOp node)
+	{
+		p(">=");
+	}
+	
+	public void caseALtEqBinaryOp(ALtEqBinaryOp node)
+	{
+		p("<=");
+	}
 
 	public void caseAPlusBinaryOp(APlusBinaryOp node)
 	{
@@ -1014,18 +1014,22 @@ public class PrettyPrinter2 extends DepthFirstAdapter {
     public void caseABinaryExp(ABinaryExp node)
     {
         inABinaryExp(node);
+        startl();
         if(node.getLeft() != null)
         {
             node.getLeft().apply(this);
         }
         if(node.getBinaryOp() != null)
         {
+        	p(" ");
             node.getBinaryOp().apply(this);
+            p(" ");
         }
         if(node.getRight() != null)
         {
             node.getRight().apply(this);
         }
+        endl();
         outABinaryExp(node);
     }
 
@@ -1033,6 +1037,7 @@ public class PrettyPrinter2 extends DepthFirstAdapter {
     public void caseAUnaryExp(AUnaryExp node)
     {
         inAUnaryExp(node);
+        startl();
         if(node.getUnaryOp() != null)
         {
             node.getUnaryOp().apply(this);
@@ -1041,6 +1046,7 @@ public class PrettyPrinter2 extends DepthFirstAdapter {
         {
             node.getExp().apply(this);
         }
+        endl();
         outAUnaryExp(node);
     }
 
