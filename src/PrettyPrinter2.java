@@ -968,15 +968,22 @@ public class PrettyPrinter2 extends DepthFirstAdapter {
         inAFunctionCallExp(node);
         if(node.getId() != null)
         {
+        	p(node.getId().getText());
             node.getId().apply(this);
         }
+        p("(");
         {
             List<PExp> copy = new ArrayList<PExp>(node.getExp());
+            boolean first = true;
             for(PExp e : copy)
             {
                 e.apply(this);
+            	if (!first)
+            		p(", ");
+            	first = false;
             }
         }
+        p(")");
         outAFunctionCallExp(node);
     }
 
