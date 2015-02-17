@@ -356,11 +356,17 @@ public class PrettyPrinter2 extends DepthFirstAdapter {
         inAFieldDec(node);
         {
             List<TId> copy = new ArrayList<TId>(node.getId());
+            boolean first = true;
             for(TId e : copy)
             {
                 e.apply(this);
+                p(e.getText());
+                if (!first)
+                	p(", ");
+                first = false;
             }
         }
+        p(" ");
         if(node.getTypeExp() != null)
         {
             node.getTypeExp().apply(this);
