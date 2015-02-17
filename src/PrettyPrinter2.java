@@ -398,16 +398,29 @@ public class PrettyPrinter2 extends DepthFirstAdapter {
         inAAssignStm(node);
         {
             List<PExp> copy = new ArrayList<PExp>(node.getLvalue());
+            boolean first = true;
+            
             for(PExp e : copy)
             {
                 e.apply(this);
+            	if (first) {
+            		first = false;
+            	} else {
+            		p(", ");
+            	}
             }
         }
         {
             List<PExp> copy = new ArrayList<PExp>(node.getExp());
+            boolean first = true;
             for(PExp e : copy)
             {
                 e.apply(this);
+            	if (first) {
+            		first = false;
+            	} else {
+            		p(", ");
+            	}
             }
         }
         outAAssignStm(node);
