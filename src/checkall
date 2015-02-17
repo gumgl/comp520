@@ -31,15 +31,6 @@ for file in $FILES; do
     #compile the 
     ccode=$(cname $file)
     
-    
-    # compile the outputted C file
-	if [ -e $ccode ]; then
-		echo "GCC Compiling $ccode..."
-		gcc $ccode -o $(compiled $file)
-	else
-		echo "No C code to compile"
-	fi
-    
 	pretty=$(prettyname $file)
 	
 	# compile the PrettyPrint version
@@ -50,6 +41,13 @@ for file in $FILES; do
 		diff -qs $pretty $pretty2
 	else
 		echo "No pretty version to compile"
+	fi
+    
+    
+    # compile the outputted C file
+	if [ -e $ccode ]; then
+		echo "GCC Compiling $ccode..."
+		gcc $ccode -o $(compiled $file)
 	fi
 done
 
