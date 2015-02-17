@@ -231,6 +231,7 @@ public class PrettyPrinter2 extends DepthFirstAdapter {
     public void caseAIntTypeExp(AIntTypeExp node)
     {
         inAIntTypeExp(node);
+        p("int");
         outAIntTypeExp(node);
     }
 
@@ -238,6 +239,7 @@ public class PrettyPrinter2 extends DepthFirstAdapter {
     public void caseAFloat64TypeExp(AFloat64TypeExp node)
     {
         inAFloat64TypeExp(node);
+        p("float64");
         outAFloat64TypeExp(node);
     }
 
@@ -245,6 +247,7 @@ public class PrettyPrinter2 extends DepthFirstAdapter {
     public void caseABoolTypeExp(ABoolTypeExp node)
     {
         inABoolTypeExp(node);
+        p("bool");
         outABoolTypeExp(node);
     }
 
@@ -252,6 +255,7 @@ public class PrettyPrinter2 extends DepthFirstAdapter {
     public void caseARuneTypeExp(ARuneTypeExp node)
     {
         inARuneTypeExp(node);
+        p("rune");
         outARuneTypeExp(node);
     }
 
@@ -259,6 +263,7 @@ public class PrettyPrinter2 extends DepthFirstAdapter {
     public void caseAStringTypeExp(AStringTypeExp node)
     {
         inAStringTypeExp(node);
+        p("string");
         outAStringTypeExp(node);
     }
 
@@ -865,6 +870,7 @@ public class PrettyPrinter2 extends DepthFirstAdapter {
         if(node.getLitInt() != null)
         {
             node.getLitInt().apply(this);
+            node.getLitInt().apply(this);
         }
         outALitIntExp(node);
     }
@@ -875,6 +881,7 @@ public class PrettyPrinter2 extends DepthFirstAdapter {
         inALitFloatExp(node);
         if(node.getLitFloat() != null)
         {
+        	p(node.getLitFloat().getText());
             node.getLitFloat().apply(this);
         }
         outALitFloatExp(node);
@@ -886,6 +893,7 @@ public class PrettyPrinter2 extends DepthFirstAdapter {
         inALitHexExp(node);
         if(node.getLitHex() != null)
         {
+        	p(node.getLitHex().getText());
             node.getLitHex().apply(this);
         }
         outALitHexExp(node);
@@ -897,6 +905,7 @@ public class PrettyPrinter2 extends DepthFirstAdapter {
         inALitOctalExp(node);
         if(node.getLitOctal() != null)
         {
+        	p(node.getLitOctal().getText());
             node.getLitOctal().apply(this);
         }
         outALitOctalExp(node);
@@ -908,6 +917,7 @@ public class PrettyPrinter2 extends DepthFirstAdapter {
         inALitInterpretedExp(node);
         if(node.getLitInterpreted() != null)
         {
+        	p(node.getLitInterpreted().getText());
             node.getLitInterpreted().apply(this);
         }
         outALitInterpretedExp(node);
@@ -919,6 +929,7 @@ public class PrettyPrinter2 extends DepthFirstAdapter {
         inALitRawExp(node);
         if(node.getLitRaw() != null)
         {
+        	p(node.getLitRaw().getText());
             node.getLitRaw().apply(this);
         }
         outALitRawExp(node);
@@ -930,6 +941,7 @@ public class PrettyPrinter2 extends DepthFirstAdapter {
         inALitRuneExp(node);
         if(node.getLitRune() != null)
         {
+        	p(node.getLitRune().getText());
             node.getLitRune().apply(this);
         }
         outALitRuneExp(node);
