@@ -11,8 +11,6 @@ public class Main {
 	static String path;
 	static PrintWriter stderr;
 	public static void main(String[] args) {
-		Lexer lexer;
-		Parser parser;
 		Node ast;
 
 		if (args.length != 1) {
@@ -31,13 +29,11 @@ public class Main {
 			TokenPrintHtml(new ConservingGoLexer(new PushbackReader(new FileReader(args[0]), 1024)));
 
 			/* Build AST */
-			lexer = new GoLexer(new PushbackReader(new FileReader(args[0]), 1024));
-			parser = new Parser(lexer);
-			ast = parser.parse();
+			ast = getParsedAST(args[0]);
 
-			// Display AST in a JTree
+			/*// Display AST in a JTree
 			ASTDisplay display = new ASTDisplay();
-			ast.apply(display);
+			ast.apply(display);/*
 
 			/*TokenMapper tm = new TokenMapper();
 			ast.apply(tm);
@@ -67,7 +63,9 @@ public class Main {
 		} catch (golite.lexer.LexerException e) {
 			System.out.println("INVALID (lexer error) at " + e.getMessage());
 		} catch (golite.parser.ParserException e) {
-			System.out.println("INVALID (scanner error) at " + e.getMessage());
+			System.out.println("INVALID (parser error) at " + e.getMessage());
+		} catch (GoLiteWeedingException e) {
+			System.out.println("INVALID (parser error) at " + e.getMessage());
 		} catch (FileNotFoundException e) {
 			System.out.println("Error: File \"" + args[0] + "\" not found.");
 		} catch (Exception e) {
@@ -75,6 +73,19 @@ public class Main {
 			System.out.println(e);
 		}
 	}
+
+	public static Node getParsedAST(String filename) throws ParserException, LexerException, IOException {
+		Lexer lexer = new GoLexer(new PushbackReader(new FileReader(filename), 1024));
+		Parser parser = new Parser(lexer);
+		GoLiteWeeder weeder = new GoLiteWeeder();
+		Node ast = parser.parse();
+
+		// Do the weeding
+		ast.apply(weeder);
+
+		return ast;
+	}
+
 	/*
 	 * Generates a .html file to see tokens
 	 */
