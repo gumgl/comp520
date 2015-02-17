@@ -93,15 +93,15 @@ public class PrettyPrinter2 extends DepthFirstAdapter {
             	p("(");
             	shift();
             	endl();
-            	startl();
             }
             for(PTypeSpec e : copy)
             {
+            	startl();
                 e.apply(this);
+                endl();
             }
             if (copy.size() > 1) {
             	unshift();
-            	endl();
             	startl();
             	p(")");
             }
