@@ -216,6 +216,7 @@ public class PrettyPrinter2 extends DepthFirstAdapter {
         inATypeSpec(node);
         if(node.getId() != null)
         {
+        	p(node.getId().getText());
             node.getId().apply(this);
         }
         if(node.getTypeExp() != null)
@@ -304,11 +305,19 @@ public class PrettyPrinter2 extends DepthFirstAdapter {
     {
         inAStructTypeExp(node);
         {
+        	p("struct {");
+        	endl();
+        	shift();
             List<PFieldDec> copy = new ArrayList<PFieldDec>(node.getFieldDec());
             for(PFieldDec e : copy)
             {
+            	startl();
                 e.apply(this);
+                endl();
             }
+            p("}");
+            endl();
+            unshift();
         }
         outAStructTypeExp(node);
     }
