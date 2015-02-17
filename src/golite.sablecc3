@@ -301,9 +301,9 @@ Productions
 	fallthrough_stm = fallthrough semicolon {-> New fallthrough_stm()};
 
 	for_stm {->stm} =
-		  {infinite_loop} for block {-> New stm.for(Null, Null, Null, [block.stm])}
-		| {while_loop} for exp block {-> New stm.for(Null, exp, Null, [block.stm])}
-		| {full_loop} for [init]:simple_stm exp semicolon [post]:bare_simple_stm block
+		  {while_loop} for exp? block
+			{-> New stm.for(Null, exp, Null, [block.stm])}
+		| {full_loop} for [init]:simple_stm exp? semicolon [post]:bare_simple_stm block
 			{-> New stm.for(init.stm, exp, post.stm, [block.stm])}
 	;
 
