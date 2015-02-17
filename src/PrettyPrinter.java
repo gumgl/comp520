@@ -436,6 +436,11 @@ public class PrettyPrinter extends DepthFirstAdapter {
 			listStm[i].apply(this);
 			p("\n");
 		}
+		
+		if (node.getFallthroughStm()!=null)
+		{
+			node.getFallthroughStm().apply(this);
+		}
 	}
     
 	public void caseADefaultSwitchClause(ADefaultSwitchClause node)
@@ -453,7 +458,10 @@ public class PrettyPrinter extends DepthFirstAdapter {
 			node.getFallthroughStm().apply(this);	
 		}
 	}
-    
+	
+    	//fallthrough_stm
+    	public void caseAFallthroughStm(AFallthroughStm node){}
+    	
 	//print_op:
 	public void caseASimplePrintOp(ASimplePrintOp node)
 	{
