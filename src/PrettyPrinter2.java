@@ -99,10 +99,10 @@ public class PrettyPrinter2 extends DepthFirstAdapter {
     public void caseAFunctionDeclaration(AFunctionDeclaration node)
     {
         inAFunctionDeclaration(node);
-        if(node.getId() != null)
-        {
-            node.getId().apply(this);
-        }
+        startl();
+        p("func ");
+        p(node.getId().getText());
+        p(" (");
         {
             List<PFuncParam> copy = new ArrayList<PFuncParam>(node.getFuncParam());
             for(PFuncParam e : copy)
@@ -110,10 +110,14 @@ public class PrettyPrinter2 extends DepthFirstAdapter {
                 e.apply(this);
             }
         }
+        p(") ");
         if(node.getReturnType() != null)
         {
             node.getReturnType().apply(this);
         }
+        p("{");
+        endl();
+        shift();
         {
             List<PStm> copy = new ArrayList<PStm>(node.getStm());
             for(PStm e : copy)
@@ -121,6 +125,8 @@ public class PrettyPrinter2 extends DepthFirstAdapter {
                 e.apply(this);
             }
         }
+        unshift();
+        pln("}");
         outAFunctionDeclaration(node);
     }
 
@@ -135,6 +141,7 @@ public class PrettyPrinter2 extends DepthFirstAdapter {
     public void caseATypedVariableSpec(ATypedVariableSpec node)
     {
         inATypedVariableSpec(node);
+        startl();
         {
             List<TId> copy = new ArrayList<TId>(node.getId());
             boolean first = true;
@@ -152,13 +159,15 @@ public class PrettyPrinter2 extends DepthFirstAdapter {
         {
             node.getTypeExp().apply(this);
         }
-        {
+        if (!node.getExp().isEmpty()) {
+        	p("=");
             List<PExp> copy = new ArrayList<PExp>(node.getExp());
             for(PExp e : copy)
             {
                 e.apply(this);
             }
         }
+        endl();
         outATypedVariableSpec(node);
     }
 
@@ -166,6 +175,7 @@ public class PrettyPrinter2 extends DepthFirstAdapter {
     public void caseAUntypedVariableSpec(AUntypedVariableSpec node)
     {
         inAUntypedVariableSpec(node);
+        startl();
         {
             List<TId> copy = new ArrayList<TId>(node.getId());
             for(TId e : copy)
@@ -174,12 +184,14 @@ public class PrettyPrinter2 extends DepthFirstAdapter {
             }
         }
         {
+        	p("=");
             List<PExp> copy = new ArrayList<PExp>(node.getExp());
             for(PExp e : copy)
             {
                 e.apply(this);
             }
         }
+        endl();
         outAUntypedVariableSpec(node);
     }
 
@@ -402,6 +414,8 @@ public class PrettyPrinter2 extends DepthFirstAdapter {
     public void caseAShortVariableDecStm(AShortVariableDecStm node)
     {
         inAShortVariableDecStm(node);
+        startl();
+        p("var");
         {
             List<PExp> copy = new ArrayList<PExp>(node.getIds());
             for(PExp e : copy)
@@ -416,6 +430,7 @@ public class PrettyPrinter2 extends DepthFirstAdapter {
                 e.apply(this);
             }
         }
+        endl();
         outAShortVariableDecStm(node);
     }
 
