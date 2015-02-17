@@ -30,6 +30,16 @@ public class GoLiteWeeder extends DepthFirstAdapter {
 	}
 
 	@Override
+	public void caseAForStm(AForStm node) {
+		if (node.getPost() instanceof AShortVariableDecStm) {
+			throw new GoLiteWeedingException(
+					getLineAndPos(node.getPost())
+						+ " Loop post statements cannot be variable declarations"
+				);
+		}
+	}
+
+	@Override
 	public void outAForStm(AForStm node) {
 		loopNestingLevel--;
 	}
