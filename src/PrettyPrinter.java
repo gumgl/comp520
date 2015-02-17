@@ -87,14 +87,12 @@ public class PrettyPrinter extends DepthFirstAdapter {
 		{
 			listFunc[i].apply(this);
 		}			
-		pln(" )");
+		p(" )");
 		
 		if (node.getReturnType()!=null) {
-			//???
-			p(")");
 			node.getReturnType().apply(this);
-			p("{\n");
-		} else { p("){\n");}
+		} 
+		p("{\n")
 		
 		PStm[] listStm = (PStm[])node.getStm().toArray(new PStm[0]);
 		for(int j=0; j<listStm.length; j++)
