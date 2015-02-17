@@ -70,6 +70,11 @@ public class PrettyPrinter2 extends DepthFirstAdapter {
         inAVariableDeclaration(node);
         startl();
         p("var ");
+        if (node.getVariableSpec().size() != 1) {
+        	p("(");
+        	endl();
+        	shift();
+        }
         {
             List<PVariableSpec> copy = new ArrayList<PVariableSpec>(node.getVariableSpec());
             for(PVariableSpec e : copy)
@@ -77,7 +82,12 @@ public class PrettyPrinter2 extends DepthFirstAdapter {
                 e.apply(this);
             }
         }
-        endl();
+        if (node.getVariableSpec().size() != 1) {
+        	unshift();
+        	pln(")");
+        } else {
+        	endl();
+        }
         outAVariableDeclaration(node);
     }
 
@@ -494,12 +504,25 @@ public class PrettyPrinter2 extends DepthFirstAdapter {
     public void caseAVariableDecStm(AVariableDecStm node)
     {
         inAVariableDecStm(node);
+        startl();
+        p("var ");
+        if (node.getVariableSpec().size() != 1) {
+        	p("(");
+        	endl();
+        	shift();
+        }
         {
             List<PVariableSpec> copy = new ArrayList<PVariableSpec>(node.getVariableSpec());
             for(PVariableSpec e : copy)
             {
                 e.apply(this);
             }
+        }
+        if (node.getVariableSpec().size() != 1) {
+        	unshift();
+        	pln(")");
+        } else {
+        	endl();
         }
         outAVariableDecStm(node);
     }
