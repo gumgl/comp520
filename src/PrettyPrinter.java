@@ -431,8 +431,6 @@ public class PrettyPrinter extends DepthFirstAdapter {
 			p(",");
 		}
 		
-		
-		
 		PStm[] listStm = (PStm[])node.getStm().toArray(new PStm[0]);
 		for(int i=0; i<listStm.length; i++)
 		{
@@ -449,6 +447,11 @@ public class PrettyPrinter extends DepthFirstAdapter {
 		{
 			listStm[i].apply(this);
 			p("\n");
+		}
+		
+		if (node.getFallthroughStm()!=null)
+		{
+			node.getFallthroughStm().apply(this);	
 		}
 	}
     
