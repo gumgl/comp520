@@ -65,7 +65,7 @@ public class Main {
 		} catch (golite.parser.ParserException e) {
 			System.out.println("INVALID (parser error) at " + e.getMessage());
 		} catch (GoLiteWeedingException e) {
-			System.out.println("INVALID (parser error) at " + e.getMessage());
+			System.out.println("INVALID (weeder error) at " + e.getMessage());
 		} catch (FileNotFoundException e) {
 			System.out.println("Error: File \"" + args[0] + "\" not found.");
 		} catch (Exception e) {
