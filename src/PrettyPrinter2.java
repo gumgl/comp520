@@ -1156,7 +1156,6 @@ public class PrettyPrinter2 extends DepthFirstAdapter {
     public void caseABinaryExp(ABinaryExp node)
     {
         inABinaryExp(node);
-        startl();
         if(node.getLeft() != null)
         {
             node.getLeft().apply(this);
@@ -1171,7 +1170,6 @@ public class PrettyPrinter2 extends DepthFirstAdapter {
         {
             node.getRight().apply(this);
         }
-        endl();
         outABinaryExp(node);
     }
 
