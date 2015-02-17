@@ -451,23 +451,35 @@ public class PrettyPrinter2 extends DepthFirstAdapter {
     public void caseAShortVariableDecStm(AShortVariableDecStm node)
     {
         inAShortVariableDecStm(node);
-        startl();
-        p("var");
+
+        boolean first = true;
+
         {
             List<PExp> copy = new ArrayList<PExp>(node.getIds());
             for(PExp e : copy)
             {
+            	if (first) {
+            		first = false;
+            	} else {
+            		p(", ");
+            	}
                 e.apply(this);
             }
         }
+        p(" := ");
+        first = true;
         {
             List<PExp> copy = new ArrayList<PExp>(node.getExp());
             for(PExp e : copy)
             {
+            	if (first) {
+            		first = false;
+            	} else {
+            		p(", ");
+            	}
                 e.apply(this);
             }
         }
-        endl();
         outAShortVariableDecStm(node);
     }
 
