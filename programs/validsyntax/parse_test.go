@@ -31,9 +31,23 @@ func main() {
     // Slice types, 2.7.2; Array types, 2.7.3
     var s [2]string; var _p []Polar
 
-    s[1] = interp_string
-    s[2] = raw_string
+    s[0] = interp_string
+    s[1] = raw_string
     _p.x = a; _p.y = b
+
+    switch {
+    default:
+        switch {
+        case _p:
+            fallthrough
+
+        default:
+            println(s[1])
+        }
+
+    case _p.y:
+        print("Hello world")
+    }
 }
 
 func f(a, b int, c rune) {
