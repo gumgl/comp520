@@ -15,20 +15,20 @@ Helpers
 	not_backslash = [all - '\'];
 	not_backslash_eol = [not_eol - '\'];
 	not_star_slash = [not_star - '/'];
-	
+
 	quote_single = ''';
 	quote_double = '"';
 	quote_back = '`';
-	
+
 	digit_nonzero = ['1'..'9'];
 	digit_decimal = ['0'..'9'];
 	digit_octal = ['0'..'7'];
 	digit_hex = ['0'..'9'] | ['A'..'F'] | ['a'..'f'];
-	
+
 	letter_lc = ['a'..'z'];
 	letter_uc = ['A'..'Z'];
 	letter  = letter_lc | letter_uc | '_';
-	
+
 	/*char_literal = [all - [eol + '\']];*/ /* disallow backslash, then allow appropriate escape sequences */
 	char_escape = '\' ( 'a' | 'b' | 'f' | 'n' | 'r' | 't' | 'v' | '\' );
 	char_escape_sq = '\' ''';
@@ -72,7 +72,7 @@ Tokens
 	float64 = 'float64';
 	rune = 'rune';
 	string = 'string';
-	
+
 	/* Operators and Delimiters
 	 * in order from the specs (easier to spot a missing one) */
 	plus = '+';
@@ -429,8 +429,8 @@ Productions
 			{-> New exp.append(id, exp)}
 	;
 
-	// TODO: Fairly certain the recursive use of lvalue here is okay based on
-	// http://golang.org/ref/spec#Address_operators but I'm not positive
+	// Fairly certain the recursive use of lvalue here is okay; see
+	// http://golang.org/ref/spec#Address_operators
 	lvalue {-> exp} =
 		  {variable} id
 			{-> New exp.variable(id)}
