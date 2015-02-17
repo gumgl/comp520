@@ -26,10 +26,12 @@ public class Main {
 
 		try {
 			/* Print HTML representation of tokens */
-			TokenPrintHtml(new ConservingGoLexer(new PushbackReader(new FileReader(args[0]), 1024)));
+//			TokenPrintHtml(new ConservingGoLexer(new PushbackReader(new FileReader(args[0]), 1024)));
 
 			/* Build AST */
 			ast = getParsedAST(args[0]);
+
+			PrettyPrint(ast);
 
 			/*// Display AST in a JTree
 			ASTDisplay display = new ASTDisplay();
@@ -38,8 +40,6 @@ public class Main {
 			/*TokenMapper tm = new TokenMapper();
 			ast.apply(tm);
 			tokenMap = tm.getMap();*/
-
-			//PrettyPrint(ast);
 
 			/*if (TypeCheck(ast)) {
 				// Generate C Code
@@ -121,7 +121,7 @@ public class Main {
 	public static void PrettyPrint(Node ast) throws FileNotFoundException {
 		// Pretty Print
 		PrintWriter filePretty = new PrintWriter(new PrintWriter(path+".pretty.go"), true);
-		PrettyPrinter pretty = new PrettyPrinter(filePretty) ;
+		PrettyPrinter2 pretty = new PrettyPrinter2(filePretty) ;
 		ast.apply(pretty);
 		filePretty.close();
 	}
