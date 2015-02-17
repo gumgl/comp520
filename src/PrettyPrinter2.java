@@ -137,7 +137,9 @@ public class PrettyPrinter2 extends DepthFirstAdapter {
             List<PStm> copy = new ArrayList<PStm>(node.getStm());
             for(PStm e : copy)
             {
+            	startl();
                 e.apply(this);
+                endl();
             }
         }
         unshift();
@@ -530,10 +532,12 @@ public class PrettyPrinter2 extends DepthFirstAdapter {
         if(node.getStm() != null)
         {
             node.getStm().apply(this);
+            p("; ");
         }
         if(node.getExp() != null)
         {
             node.getExp().apply(this);
+            p(" ");
         }
         p("{");
         endl();
@@ -542,7 +546,9 @@ public class PrettyPrinter2 extends DepthFirstAdapter {
             List<PStm> copy = new ArrayList<PStm>(node.getIfBlock());
             for(PStm e : copy)
             {
+            	startl();
                 e.apply(this);
+                endl();
             }
         }
         unshift();
@@ -557,7 +563,9 @@ public class PrettyPrinter2 extends DepthFirstAdapter {
             List<PStm> copy = new ArrayList<PStm>(node.getElseBlock());
             for(PStm e : copy)
             {
+            	startl();
                 e.apply(this);
+                endl();
             }
             unshift();
         }
@@ -618,7 +626,9 @@ public class PrettyPrinter2 extends DepthFirstAdapter {
             List<PStm> copy = new ArrayList<PStm>(node.getStm());
             for(PStm e : copy)
             {
+            	startl();
                 e.apply(this);
+                endl();
             }
         }
 
