@@ -220,8 +220,12 @@ public class PrettyPrinter extends DepthFirstAdapter {
 		{
 			p(" = ");
 			List<PExp> copy = new ArrayList<PExp>(node.getExp());
+			boolean first = true;
 			for(PExp e : copy)
 			{
+				if (!first)
+					p(", ");
+				first = false;
 				e.apply(this);
 			}
 		}
