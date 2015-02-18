@@ -89,7 +89,7 @@ public class ParserTest {
 	@Test
 	public void testSimpleStm() throws ParserException, LexerException, IOException {
 		assertEquals(
-			"Program(test,FunctionDeclaration(f,EmptyStm()))",
+			"Program(test,FunctionDeclaration(f))",
 			serializeAST("package test; func f() {;}")
 		);
 
@@ -146,8 +146,8 @@ public class ParserTest {
 			"Program(test,FunctionDeclaration(f,SwitchStm("
 			+ "ShortVariableDecStm(VariableExp(x),LitIntExp(1)),"
 			+ "VariableExp(x),"
-			+ "ConditionalSwitchClause(LitIntExp(1),LitIntExp(2),EmptyStm()),"
-			+ "DefaultSwitchClause(EmptyStm()))))",
+			+ "ConditionalSwitchClause(LitIntExp(1),LitIntExp(2)),"
+			+ "DefaultSwitchClause())))",
 			serializeAST("package test; func f() {switch x := 1; x {case 1, 2: ; default: ;}}")
 		);
 	}
@@ -157,17 +157,14 @@ public class ParserTest {
 		assertEquals(
 			"Program(test,FunctionDeclaration(f,IfStm("
 			+ "ShortVariableDecStm(VariableExp(x),LitIntExp(1)),"
-			+ "VariableExp(x),"
-			+ "EmptyStm())))",
+			+ "VariableExp(x))))",
 			serializeAST("package test; func f() {if x := 1; x {;}}")
 		);
 
 		assertEquals(
 			"Program(test,FunctionDeclaration(f,IfStm("
 			+ "ShortVariableDecStm(VariableExp(x),LitIntExp(1)),"
-			+ "VariableExp(x),"
-			+ "EmptyStm(),"
-			+ "EmptyStm())))",
+			+ "VariableExp(x))))",
 			serializeAST("package test; func f() {if x := 1; x {;} else {;}}")
 		);
 
@@ -175,8 +172,7 @@ public class ParserTest {
 			"Program(test,FunctionDeclaration(f,IfStm("
 			+ "ShortVariableDecStm(VariableExp(x),LitIntExp(1)),"
 			+ "VariableExp(x),"
-			+ "EmptyStm(),"
-			+ "IfStm(VariableExp(y),EmptyStm(),EmptyStm()))))",
+			+ "IfStm(VariableExp(y)))))",
 			serializeAST("package test; func f() {if x := 1; x {;} else if y {;} else {;}}")
 		);
 	}
@@ -187,18 +183,17 @@ public class ParserTest {
 			"Program(test,FunctionDeclaration(f,ForStm("
 			+ "ShortVariableDecStm(VariableExp(x),LitIntExp(1)),"
 			+ "VariableExp(x),"
-			+ "IncDecStm(VariableExp(x),IncPostfixOp()),"
-			+ "EmptyStm())))",
+			+ "IncDecStm(VariableExp(x),IncPostfixOp()))))",
 			serializeAST("package test; func f() {for x := 1; x; x++ {;}}")
 		);
 
 		assertEquals(
-			"Program(test,FunctionDeclaration(f,ForStm(VariableExp(x),EmptyStm())))",
+			"Program(test,FunctionDeclaration(f,ForStm(VariableExp(x))))",
 			serializeAST("package test; func f() {for x {;}}")
 		);
 
 		assertEquals(
-			"Program(test,FunctionDeclaration(f,ForStm(EmptyStm())))",
+			"Program(test,FunctionDeclaration(f,ForStm()))",
 			serializeAST("package test; func f() {for {;}}")
 		);
 	}

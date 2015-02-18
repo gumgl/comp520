@@ -166,13 +166,6 @@ public class PrettyPrinter extends DepthFirstAdapter {
 	}
 
 	@Override
-	public void caseAEmptyDeclaration(AEmptyDeclaration node)
-	{
-		inAEmptyDeclaration(node);
-		outAEmptyDeclaration(node);
-	}
-
-	@Override
 	public void caseATypedVariableSpec(ATypedVariableSpec node)
 	{
 		inATypedVariableSpec(node);
@@ -406,13 +399,6 @@ public class PrettyPrinter extends DepthFirstAdapter {
 	}
 
 	@Override
-	public void caseAEmptyStm(AEmptyStm node)
-	{
-		inAEmptyStm(node);
-		outAEmptyStm(node);
-	}
-
-	@Override
 	public void caseAExpressionStm(AExpressionStm node)
 	{
 		inAExpressionStm(node);
@@ -622,7 +608,7 @@ public class PrettyPrinter extends DepthFirstAdapter {
 	{
 		inAIfStm(node);
 		p("if ");
-		if(node.getStm() != null && !(node.getStm() instanceof AEmptyStm))
+		if(node.getStm() != null)
 		{
 			node.getStm().apply(this);
 			p("; ");
@@ -675,7 +661,7 @@ public class PrettyPrinter extends DepthFirstAdapter {
 	{
 		inASwitchStm(node);
 		p("switch ");
-		if(node.getStm() != null && !(node.getStm() instanceof AEmptyStm))
+		if(node.getStm() != null)
 		{
 			node.getStm().apply(this);
 			p("; ");
@@ -703,8 +689,7 @@ public class PrettyPrinter extends DepthFirstAdapter {
 	public void caseAForStm(AForStm node)
 	{
 		inAForStm(node);
-		boolean whileLoop = (node.getInit() == null || node.getInit() instanceof AEmptyStm)
-				&& (node.getPost() == null || node.getPost() instanceof AEmptyStm);
+		boolean whileLoop = (node.getInit() == null && node.getPost() == null);
 
 		p("for ");
 
@@ -730,11 +715,9 @@ public class PrettyPrinter extends DepthFirstAdapter {
 			List<PStm> copy = new ArrayList<PStm>(node.getStm());
 			for(PStm e : copy)
 			{
-				//if ( !( e instanceof AEmptyStm)) {
-					startl();
-					e.apply(this);
-					endl();
-				//}
+				startl();
+				e.apply(this);
+				endl();
 			}
 		}
 		unshift();
