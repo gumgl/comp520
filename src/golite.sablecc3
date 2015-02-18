@@ -151,7 +151,7 @@ Productions
 
 	package_dec {-> id} = package id semicolon {-> id};
 
-	declaration =
+	declaration {-> declaration?} =
 		  {variable} var variable_specs semicolon
 			{-> New declaration.variable([variable_specs.variable_spec])}
 		| {type} type type_specs semicolon
@@ -159,7 +159,7 @@ Productions
 		| {function} func id paren_l func_param_list paren_r type_exp? block
 			{-> New declaration.function(id, [func_param_list.func_param], type_exp, [block.stm])}
 		| {empty} semicolon
-			{-> New declaration.empty()}
+			{-> Null}
 	;
 
 	/* Variable declarations */
@@ -249,7 +249,7 @@ Productions
 		{-> New field_dec([id_list.id], type_exp)};
 
 	/* Statements */
-	stm =
+	stm {->stm?} =
 		  {simple_form} simple_stm {-> simple_stm.stm}
 		| {variable_dec} var variable_specs semicolon
 			{-> New stm.variable_dec([variable_specs.variable_spec])}
@@ -266,10 +266,10 @@ Productions
 		| {continue} continue semicolon {-> New stm.continue()}
 	;
 
-	simple_stm {-> stm} = bare_simple_stm semicolon {-> bare_simple_stm.stm};
+	simple_stm {-> stm?} = bare_simple_stm semicolon {-> bare_simple_stm.stm};
 
-	bare_simple_stm {-> stm} =
-		  {empty} {-> New stm.empty()}
+	bare_simple_stm {-> stm?} =
+		  {empty} {-> Null}
 		| {expression} exp {-> New stm.expression(exp)}
 		| {assign} lvalue_list eq exp_list
 			{-> New stm.assign([lvalue_list.exp], [exp_list.exp])}
@@ -452,7 +452,6 @@ Abstract Syntax Tree
 		  {variable} variable_spec*
 		| {type} type_spec*
 		| {function} id func_param* [return_type]:type_exp? stm*
-		| {empty}
 	;
 
 	variable_spec =
@@ -479,8 +478,7 @@ Abstract Syntax Tree
 	field_dec = id+ type_exp;
 
 	stm =
-		  {empty}
-		| {expression} exp
+		  {expression} exp
 		| {assign} [lvalue]:exp+ exp+
 		| {op_assign} [lvalue]:exp assign_op exp
 		| {inc_dec} exp postfix_op
