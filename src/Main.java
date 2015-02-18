@@ -121,7 +121,7 @@ public class Main {
 	public static void PrettyPrint(Node ast) throws FileNotFoundException {
 		// Pretty Print
 		PrintWriter filePretty = new PrintWriter(new PrintWriter(path+".pretty.go"), true);
-		PrettyPrinter2 pretty = new PrettyPrinter2(filePretty) ;
+		PrettyPrinter pretty = new PrettyPrinter(filePretty) ;
 		ast.apply(pretty);
 		filePretty.close();
 	}

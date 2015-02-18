@@ -6,12 +6,12 @@ import golite.analysis.DepthFirstAdapter;
 import golite.node.*;
 
 
-public class PrettyPrinter2 extends DepthFirstAdapter {
+public class PrettyPrinter extends DepthFirstAdapter {
 	static String indent = "\t";
 	StringBuilder prepend = new StringBuilder("");
 	PrintWriter output;
 
-	public PrettyPrinter2(PrintWriter writer) {
+	public PrettyPrinter(PrintWriter writer) {
 		output = writer;
 	}
 	private void p(String text) {
