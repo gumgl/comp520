@@ -26,17 +26,14 @@ public class GoLiteWeeder extends DepthFirstAdapter {
 	/* Loop-specific statements */
 	@Override
 	public void inAForStm(AForStm node) {
-		loopNestingLevel++;
-	}
-
-	@Override
-	public void caseAForStm(AForStm node) {
 		if (node.getPost() instanceof AShortVariableDecStm) {
 			throw new GoLiteWeedingException(
 					getLineAndPos(node.getPost())
 						+ " Loop post statements cannot be variable declarations"
 				);
 		}
+
+		loopNestingLevel++;
 	}
 
 	@Override
@@ -45,14 +42,14 @@ public class GoLiteWeeder extends DepthFirstAdapter {
 	}
 
 	@Override
-	public void caseAContinueStm(AContinueStm node) {
+	public void inAContinueStm(AContinueStm node) {
 		if (loopNestingLevel == 0) {
 			throw new GoLiteWeedingException(getLineAndPos(node) + " continue statement occurs outside loop");
 		}
 	}
 
 	@Override
-	public void caseABreakStm(ABreakStm node) {
+	public void inABreakStm(ABreakStm node) {
 		if (loopNestingLevel == 0) {
 			throw new GoLiteWeedingException(getLineAndPos(node) + " break statement occurs outside loop");
 		}
@@ -60,7 +57,7 @@ public class GoLiteWeeder extends DepthFirstAdapter {
 
 	/* Switch statements */
 	@Override
-	public void caseASwitchStm(ASwitchStm node) {
+	public void inASwitchStm(ASwitchStm node) {
 		boolean defaultEncountered = false;
 
 		if (node.getSwitchClause().isEmpty()) {
@@ -97,7 +94,7 @@ public class GoLiteWeeder extends DepthFirstAdapter {
 
 	/* Short variable declarations */
 	@Override
-	public void caseAShortVariableDecStm(AShortVariableDecStm node) {
+	public void inAShortVariableDecStm(AShortVariableDecStm node) {
 		for (Node id : node.getIds()) {
 			if (!(id instanceof AVariableExp)) {
 				throw new GoLiteWeedingException(getLineAndPos(id) + " expected id");
@@ -111,7 +108,7 @@ public class GoLiteWeeder extends DepthFirstAdapter {
 
 	/* Regular variable declarations */
 	@Override
-	public void caseATypedVariableSpec(ATypedVariableSpec node) {
+	public void inATypedVariableSpec(ATypedVariableSpec node) {
 		int expressionCount = node.getExp().size();
 		if (expressionCount > 0 && expressionCount != node.getId().size()) {
 			throw new GoLiteWeedingException(getLineAndPos(node) + " should be as many identifiers as expressions");
@@ -119,7 +116,7 @@ public class GoLiteWeeder extends DepthFirstAdapter {
 	}
 
 	@Override
-	public void caseAUntypedVariableSpec(AUntypedVariableSpec node) {
+	public void inAUntypedVariableSpec(AUntypedVariableSpec node) {
 		if (node.getExp().size() != node.getId().size()) {
 			throw new GoLiteWeedingException(getLineAndPos(node) + " should be as many identifiers as expressions");
 		}
@@ -127,7 +124,7 @@ public class GoLiteWeeder extends DepthFirstAdapter {
 
 	/* Assignment statements */
 	@Override
-	public void caseAAssignStm(AAssignStm node) {
+	public void inAAssignStm(AAssignStm node) {
 		if (node.getExp().size() != node.getLvalue().size()) {
 			throw new GoLiteWeedingException(getLineAndPos(node) + " should be as many values as targets");
 		}
