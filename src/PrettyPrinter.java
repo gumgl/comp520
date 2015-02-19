@@ -54,6 +54,20 @@ public class PrettyPrinter extends DepthFirstAdapter {
 		}
 	}
 
+	private void printSpecs(List<? extends Node> specs) {
+		if (specs.size() == 1) {
+			specs.get(0).apply(this);
+		} else {
+			p("(");
+			endl();
+			shift();
+			printConsecutiveLines(specs);
+			unshift();
+			startl();
+			p(")");
+		}
+	}
+
 	@Override
 	public void caseAProgram(AProgram node)
 	{
@@ -72,20 +86,7 @@ public class PrettyPrinter extends DepthFirstAdapter {
 	{
 		inAVariableDeclaration(node);
 		p("var ");
-		{
-			List<PVariableSpec> specs = node.getVariableSpec();
-			boolean distributive = (specs.size() > 1);
-			if (distributive) {
-				p("(");
-				endl();
-				shift();
-				printConsecutiveLines(specs);
-				unshift();
-				startl();
-				p(")");
-			} else
-				specs.get(0).apply(this);
-		}
+		printSpecs(node.getVariableSpec());
 		outAVariableDeclaration(node);
 	}
 
@@ -94,20 +95,7 @@ public class PrettyPrinter extends DepthFirstAdapter {
 	{
 		inATypeDeclaration(node);
 		p("type ");
-		{
-			List<PTypeSpec> specs = node.getTypeSpec();
-			boolean distributive = (specs.size() > 1);
-			if (distributive) {
-				p("(");
-				endl();
-				shift();
-				printConsecutiveLines(specs);
-				unshift();
-				startl();
-				p(")");
-			} else
-				specs.get(0).apply(this);
-		}
+		printSpecs(node.getTypeSpec());
 		outATypeDeclaration(node);
 	}
 
@@ -370,20 +358,7 @@ public class PrettyPrinter extends DepthFirstAdapter {
 	{
 		inAVariableDecStm(node);
 		p("var ");
-		{
-			List<PVariableSpec> specs = node.getVariableSpec();
-			boolean distributive = (specs.size() > 1);
-			if (distributive) {
-				p("(");
-				endl();
-				shift();
-				printConsecutiveLines(specs);
-				unshift();
-				startl();
-				p(")");
-			} else
-				specs.get(0).apply(this);
-		}
+		printSpecs(node.getVariableSpec());
 		outAVariableDecStm(node);
 	}
 
@@ -392,20 +367,7 @@ public class PrettyPrinter extends DepthFirstAdapter {
 	{
 		inATypeDecStm(node);
 		p("type ");
-		{
-			List<PTypeSpec> specs = node.getTypeSpec();
-			boolean distributive = (specs.size() > 1);
-			if (distributive) {
-				p("(");
-				endl();
-				shift();
-				printConsecutiveLines(specs);
-				unshift();
-				startl();
-				p(")");
-			} else
-				specs.get(0).apply(this);
-		}
+		printSpecs(node.getTypeSpec());
 		outATypeDecStm(node);
 	}
 
