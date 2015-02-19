@@ -34,14 +34,25 @@ public class PrettyPrinter extends DepthFirstAdapter {
 	private void endl() {
 		p("\n");
 	}
-	
-	@Override
-	public void caseStart(Start node)
-	{
-		inStart(node);
-		node.getPProgram().apply(this);
-		node.getEOF().apply(this);
-		outStart(node);
+
+	private void printConsecutiveLines(List<? extends Node> nodes) {
+		for (Node e : nodes) {
+			startl();
+			e.apply(this);
+			endl();
+		}
+	}
+
+	private void printList(List<? extends Node> nodes) {
+		boolean first = true;
+		for (Node e : nodes) {
+			if (first) {
+				first = false;
+			} else {
+				p(", ");
+			}
+			e.apply(this);
+		}
 	}
 
 	@Override
@@ -52,7 +63,6 @@ public class PrettyPrinter extends DepthFirstAdapter {
 		if(node.getPackageName() != null)
 		{
 			pln("package " + node.getPackageName().getText());
-			node.getPackageName().apply(this);
 		}
 		{
 			List<PDeclaration> copy = new ArrayList<PDeclaration>(node.getDeclarations());
@@ -77,12 +87,7 @@ public class PrettyPrinter extends DepthFirstAdapter {
 				p("(");
 				endl();
 				shift();
-				for(PVariableSpec e : copy)
-				{
-					startl();
-					e.apply(this);
-					endl();
-				}
+				printConsecutiveLines(copy);
 				unshift();
 				startl();
 				p(")");
@@ -106,12 +111,7 @@ public class PrettyPrinter extends DepthFirstAdapter {
 				p("(");
 				endl();
 				shift();
-				for(PTypeSpec e : copy)
-				{
-					startl();
-					e.apply(this);
-					endl();
-				}
+				printConsecutiveLines(copy);
 				unshift();
 				startl();
 				p(")");
@@ -132,14 +132,7 @@ public class PrettyPrinter extends DepthFirstAdapter {
 		p(" (");
 		{
 			List<PFuncParam> copy = new ArrayList<PFuncParam>(node.getFuncParam());
-			boolean first = true;
-			for(PFuncParam e : copy)
-			{
-				if (!first)
-					p(", ");
-				first = false;
-				e.apply(this);
-			}
+			printList(copy);
 		}
 		p(")");
 		if(node.getReturnType() != null)
@@ -152,12 +145,7 @@ public class PrettyPrinter extends DepthFirstAdapter {
 		shift();
 		{
 			List<PStm> copy = new ArrayList<PStm>(node.getStm());
-			for(PStm e : copy)
-			{
-				startl();
-				e.apply(this);
-				endl();
-			}
+			printConsecutiveLines(copy);
 		}
 		unshift();
 		pln("}");
@@ -171,15 +159,7 @@ public class PrettyPrinter extends DepthFirstAdapter {
 		inATypedVariableSpec(node);
 		{
 			List<TId> copy = new ArrayList<TId>(node.getId());
-			boolean first = true;
-			for(TId e : copy)
-			{
-				if (!first)
-					p(", ");
-				first = false;
-				p(e.getText());
-				e.apply(this);
-			}
+			printList(copy);
 		}
 		p(" ");
 		if(node.getTypeExp() != null)
@@ -189,14 +169,7 @@ public class PrettyPrinter extends DepthFirstAdapter {
 		if (!node.getExp().isEmpty()) {
 			p(" = ");
 			List<PExp> copy = new ArrayList<PExp>(node.getExp());
-			boolean first = true;
-			for(PExp e : copy)
-			{
-				if (!first)
-					p(", ");
-				first = false;
-				e.apply(this);
-			}
+			printList(copy);
 		}
 		outATypedVariableSpec(node);
 	}
@@ -207,27 +180,12 @@ public class PrettyPrinter extends DepthFirstAdapter {
 		inAUntypedVariableSpec(node);
 		{
 			List<TId> copy = new ArrayList<TId>(node.getId());
-			boolean first = true;
-			for(TId e : copy)
-			{
-				if (!first)
-					p(", ");
-				first = false;
-				p(e.getText());
-				e.apply(this);
-			}
+			printList(copy);
 		}
 		{
 			p(" = ");
 			List<PExp> copy = new ArrayList<PExp>(node.getExp());
-			boolean first = true;
-			for(PExp e : copy)
-			{
-				if (!first)
-					p(", ");
-				first = false;
-				e.apply(this);
-			}
+			printList(copy);
 		}
 		outAUntypedVariableSpec(node);
 	}
@@ -239,7 +197,6 @@ public class PrettyPrinter extends DepthFirstAdapter {
 		if(node.getId() != null)
 		{
 			p(node.getId().getText());
-			node.getId().apply(this);
 		}
 		p(" ");
 		if(node.getTypeExp() != null)
@@ -255,15 +212,7 @@ public class PrettyPrinter extends DepthFirstAdapter {
 		inAFuncParam(node);
 		{
 			List<TId> copy = new ArrayList<TId>(node.getId());
-			boolean first = true;
-			for(TId e : copy)
-			{
-				if (!first)
-					p(", ");
-				first = false;
-				p(e.getText());
-				e.apply(this);
-			}
+			printList(copy);
 		}
 		p(" ");
 		if(node.getTypeExp() != null)
@@ -280,7 +229,6 @@ public class PrettyPrinter extends DepthFirstAdapter {
 		if(node.getId() != null)
 		{
 			p(node.getId().getText());
-			node.getId().apply(this);
 		}
 		outAAliasTypeExp(node);
 	}
@@ -334,12 +282,7 @@ public class PrettyPrinter extends DepthFirstAdapter {
 			endl();
 			shift();
 			List<PFieldDec> copy = new ArrayList<PFieldDec>(node.getFieldDec());
-			for(PFieldDec e : copy)
-			{
-				startl();
-				e.apply(this);
-				endl();
-			}
+			printConsecutiveLines(copy);
 			unshift();
 			startl();
 			p("}");
@@ -368,7 +311,6 @@ public class PrettyPrinter extends DepthFirstAdapter {
 		if(node.getLitInt() != null)
 		{
 			p(node.getLitInt().getText());
-			node.getLitInt().apply(this);
 		}
 		p("]");
 		if(node.getTypeExp() != null)
@@ -384,15 +326,7 @@ public class PrettyPrinter extends DepthFirstAdapter {
 		inAFieldDec(node);
 		{
 			List<TId> copy = new ArrayList<TId>(node.getId());
-			boolean first = true;
-			for(TId e : copy)
-			{
-				if (!first)
-					p(", ");
-				first = false;
-				p(e.getText());
-				e.apply(this);
-			}
+			printList(copy);
 		}
 		p(" ");
 		if(node.getTypeExp() != null)
@@ -419,31 +353,12 @@ public class PrettyPrinter extends DepthFirstAdapter {
 		inAAssignStm(node);
 		{
 			List<PExp> copy = new ArrayList<PExp>(node.getLvalue());
-			boolean first = true;
-			
-			for(PExp e : copy)
-			{
-				if (first) {
-					first = false;
-				} else {
-					p(", ");
-				}
-				e.apply(this);
-			}
+			printList(copy);
 		}
 		p(" = ");
 		{
 			List<PExp> copy = new ArrayList<PExp>(node.getExp());
-			boolean first = true;
-			for(PExp e : copy)
-			{
-				if (first) {
-					first = false;
-				} else {
-					p(", ");
-				}
-				e.apply(this);
-			}
+			printList(copy);
 		}
 		outAAssignStm(node);
 	}
@@ -490,27 +405,13 @@ public class PrettyPrinter extends DepthFirstAdapter {
 		inAShortVariableDecStm(node);
 
 		{
-			boolean first = true;
 			List<PExp> copy = new ArrayList<PExp>(node.getIds());
-			for(PExp e : copy)
-			{
-				if (!first)
-					p(", ");
-				first = false;
-				e.apply(this);
-			}
+			printList(copy);
 		}
 		p(" := ");
 		{
-			boolean first = true;
 			List<PExp> copy = new ArrayList<PExp>(node.getExp());
-			for(PExp e : copy)
-			{
-				if (!first)
-					p(", ");
-				first = false;
-				e.apply(this);
-			}
+			printList(copy);
 		}
 		outAShortVariableDecStm(node);
 	}
@@ -527,12 +428,7 @@ public class PrettyPrinter extends DepthFirstAdapter {
 				p("(");
 				endl();
 				shift();
-				for(PVariableSpec e : copy)
-				{
-					startl();
-					e.apply(this);
-					endl();
-				}
+				printConsecutiveLines(copy);
 				unshift();
 				startl();
 				p(")");
@@ -554,12 +450,7 @@ public class PrettyPrinter extends DepthFirstAdapter {
 				p("(");
 				endl();
 				shift();
-				for(PTypeSpec e : copy)
-				{
-					startl();
-					e.apply(this);
-					endl();
-				}
+				printConsecutiveLines(copy);
 				unshift();
 				startl();
 				p(")");
@@ -580,15 +471,8 @@ public class PrettyPrinter extends DepthFirstAdapter {
 		}
 		p("(");
 		{
-			boolean first = true;
 			List<PExp> copy = new ArrayList<PExp>(node.getExp());
-			for(PExp e : copy)
-			{
-				if (!first)
-					p(", ");
-				first = false;
-				e.apply(this);
-			}
+			printList(copy);
 		}
 		p(")");
 		outAPrintStm(node);
@@ -627,12 +511,7 @@ public class PrettyPrinter extends DepthFirstAdapter {
 		shift();
 		{
 			List<PStm> copy = new ArrayList<PStm>(node.getIfBlock());
-			for(PStm e : copy)
-			{
-				startl();
-				e.apply(this);
-				endl();
-			}
+			printConsecutiveLines(copy);
 		}
 		unshift();
 		startl();
@@ -646,12 +525,7 @@ public class PrettyPrinter extends DepthFirstAdapter {
 				p("{");
 				endl();
 				shift();
-				for(PStm e : copy)
-				{
-					startl();
-					e.apply(this);
-					endl();
-				}
+				printConsecutiveLines(copy);
 				unshift();
 				startl();
 				p("}");
@@ -717,12 +591,7 @@ public class PrettyPrinter extends DepthFirstAdapter {
 		shift();
 		{
 			List<PStm> copy = new ArrayList<PStm>(node.getStm());
-			for(PStm e : copy)
-			{
-				startl();
-				e.apply(this);
-				endl();
-			}
+			printConsecutiveLines(copy);
 		}
 		unshift();
 		startl();
@@ -753,27 +622,15 @@ public class PrettyPrinter extends DepthFirstAdapter {
 		startl();
 		p("case ");
 		{
-			boolean first = true;
 			List<PExp> copy = new ArrayList<PExp>(node.getExp());
-			for(PExp e : copy)
-			{
-				if (!first)
-					p(", ");
-				first = false;
-				e.apply(this);
-			}
+			printList(copy);
 		}
 		p(":");
 		endl();
 		shift();
 		{
 			List<PStm> copy = new ArrayList<PStm>(node.getStm());
-			for(PStm e : copy)
-			{
-				startl();
-				e.apply(this);
-				endl();
-			}
+			printConsecutiveLines(copy);
 		}
 		if(node.getFallthroughStm() != null)
 		{
@@ -795,12 +652,7 @@ public class PrettyPrinter extends DepthFirstAdapter {
 		shift();
 		{
 			List<PStm> copy = new ArrayList<PStm>(node.getStm());
-			for(PStm e : copy)
-			{
-				startl();
-				e.apply(this);
-				endl();
-			}
+			printConsecutiveLines(copy);
 		}
 		if(node.getFallthroughStm() != null)
 		{
@@ -1066,7 +918,6 @@ public class PrettyPrinter extends DepthFirstAdapter {
 		if(node.getId() != null)
 		{
 			p(node.getId().getText());
-			node.getId().apply(this);
 		}
 		outAFieldAccessExp(node);
 	}
@@ -1078,7 +929,6 @@ public class PrettyPrinter extends DepthFirstAdapter {
 		if(node.getLitInt() != null)
 		{
 			p(node.getLitInt().getText());
-			node.getLitInt().apply(this);
 		}
 		outALitIntExp(node);
 	}
@@ -1090,7 +940,6 @@ public class PrettyPrinter extends DepthFirstAdapter {
 		if(node.getLitFloat() != null)
 		{
 			p(node.getLitFloat().getText());
-			node.getLitFloat().apply(this);
 		}
 		outALitFloatExp(node);
 	}
@@ -1102,7 +951,6 @@ public class PrettyPrinter extends DepthFirstAdapter {
 		if(node.getLitHex() != null)
 		{
 			p(node.getLitHex().getText());
-			node.getLitHex().apply(this);
 		}
 		outALitHexExp(node);
 	}
@@ -1114,7 +962,6 @@ public class PrettyPrinter extends DepthFirstAdapter {
 		if(node.getLitOctal() != null)
 		{
 			p(node.getLitOctal().getText());
-			node.getLitOctal().apply(this);
 		}
 		outALitOctalExp(node);
 	}
@@ -1126,7 +973,6 @@ public class PrettyPrinter extends DepthFirstAdapter {
 		if(node.getLitInterpreted() != null)
 		{
 			p(node.getLitInterpreted().getText());
-			node.getLitInterpreted().apply(this);
 		}
 		outALitInterpretedExp(node);
 	}
@@ -1138,7 +984,6 @@ public class PrettyPrinter extends DepthFirstAdapter {
 		if(node.getLitRaw() != null)
 		{
 			p(node.getLitRaw().getText());
-			node.getLitRaw().apply(this);
 		}
 		outALitRawExp(node);
 	}
@@ -1150,7 +995,6 @@ public class PrettyPrinter extends DepthFirstAdapter {
 		if(node.getLitRune() != null)
 		{
 			p(node.getLitRune().getText());
-			node.getLitRune().apply(this);
 		}
 		outALitRuneExp(node);
 	}
@@ -1162,19 +1006,11 @@ public class PrettyPrinter extends DepthFirstAdapter {
 		if(node.getId() != null)
 		{
 			p(node.getId().getText());
-			node.getId().apply(this);
 		}
 		p("(");
 		{
 			List<PExp> copy = new ArrayList<PExp>(node.getExp());
-			boolean first = true;
-			for(PExp e : copy)
-			{
-				if (!first)
-					p(", ");
-				first = false;
-				e.apply(this);
-			}
+			printList(copy);
 		}
 		p(")");
 		outAFunctionCallExp(node);
@@ -1201,7 +1037,7 @@ public class PrettyPrinter extends DepthFirstAdapter {
 		inAAppendExp(node);
 		if(node.getId() != null)
 		{
-			node.getId().apply(this);
+			p(node.getId().getText());
 		}
 		if(node.getExp() != null)
 		{
@@ -1246,4 +1082,8 @@ public class PrettyPrinter extends DepthFirstAdapter {
 		outAUnaryExp(node);
 	}
 
+	@Override
+	public void caseTId(TId node) {
+		p(node.getText());
+	}
 }
