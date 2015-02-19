@@ -66,10 +66,7 @@ public class PrettyPrinter extends DepthFirstAdapter {
 		}
 		{
 			List<PDeclaration> copy = new ArrayList<PDeclaration>(node.getDeclarations());
-			for(PDeclaration e : copy)
-			{
-				e.apply(this);
-			}
+			printConsecutiveLines(copy);
 		}
 		outAProgram(node);
 	}
@@ -78,7 +75,6 @@ public class PrettyPrinter extends DepthFirstAdapter {
 	public void caseAVariableDeclaration(AVariableDeclaration node)
 	{
 		inAVariableDeclaration(node);
-		startl();
 		p("var ");
 		{
 			List<PVariableSpec> copy = new ArrayList<PVariableSpec>(node.getVariableSpec());
@@ -94,7 +90,6 @@ public class PrettyPrinter extends DepthFirstAdapter {
 			} else
 				copy.get(0).apply(this);
 		}
-		endl();
 		outAVariableDeclaration(node);
 	}
 
@@ -102,7 +97,6 @@ public class PrettyPrinter extends DepthFirstAdapter {
 	public void caseATypeDeclaration(ATypeDeclaration node)
 	{
 		inATypeDeclaration(node);
-		startl();
 		p("type ");
 		{
 			List<PTypeSpec> copy = new ArrayList<PTypeSpec>(node.getTypeSpec());
@@ -118,7 +112,6 @@ public class PrettyPrinter extends DepthFirstAdapter {
 			} else
 				copy.get(0).apply(this);
 		}
-		endl();
 		outATypeDeclaration(node);
 	}
 
@@ -126,7 +119,6 @@ public class PrettyPrinter extends DepthFirstAdapter {
 	public void caseAFunctionDeclaration(AFunctionDeclaration node)
 	{
 		inAFunctionDeclaration(node);
-		startl();
 		p("func ");
 		p(node.getId().getText());
 		p(" (");
@@ -148,8 +140,8 @@ public class PrettyPrinter extends DepthFirstAdapter {
 			printConsecutiveLines(copy);
 		}
 		unshift();
-		pln("}");
-		endl();
+		startl();
+		p("}");
 		outAFunctionDeclaration(node);
 	}
 
@@ -286,7 +278,6 @@ public class PrettyPrinter extends DepthFirstAdapter {
 			unshift();
 			startl();
 			p("}");
-			endl();
 		}
 		outAStructTypeExp(node);
 	}
