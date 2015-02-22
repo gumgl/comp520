@@ -941,7 +941,13 @@ public class PrettyPrinter extends DepthFirstAdapter {
 		inABinaryExp(node);
 		if(node.getLeft() != null)
 		{
-			node.getLeft().apply(this);
+			if (node.getLeft() instanceof ABinaryExp) {
+				p("(");
+				node.getLeft().apply(this);
+				p(")");
+			} else {
+				node.getLeft().apply(this);
+			}
 		}
 		if(node.getBinaryOp() != null)
 		{
@@ -951,7 +957,13 @@ public class PrettyPrinter extends DepthFirstAdapter {
 		}
 		if(node.getRight() != null)
 		{
-			node.getRight().apply(this);
+			if (node.getRight() instanceof ABinaryExp) {
+				p("(");
+				node.getRight().apply(this);
+				p(")");
+			} else {
+				node.getRight().apply(this);
+			}
 		}
 		outABinaryExp(node);
 	}
