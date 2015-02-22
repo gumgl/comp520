@@ -3,11 +3,12 @@ SHELL := /bin/bash -O extglob
 .PHONY: check checkall clean
 
 # to compile the code
-mini: clean grammar
+*.class: *.java golite/*/*.java
 	javac *.java golite/*/*.java
 
 # to generate the compiler code
-grammar: golite.sablecc3
+golite/*/*.java: golite.sablecc3
+	make clean
 	sablecc golite.sablecc3
 
 check:
