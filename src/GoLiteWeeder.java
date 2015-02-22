@@ -132,12 +132,13 @@ public class GoLiteWeeder extends DepthFirstAdapter {
 
 	public String getLineAndPos(Node node) {
 		Token tok;
+		TokenMapper tm;
 
 		if (node instanceof Token) {
 			tok = (Token) node;
 		} else {
-			TokenMapper tm = new TokenMapper();
 			if (tokenMap == null) {
+				tm = new TokenMapper();
 				root.apply(tm);
 				tokenMap = tm.getMap();
 			}
