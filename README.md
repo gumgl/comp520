@@ -1,5 +1,5 @@
 GoLite Compiler
-==================
+===============
 COMP 520 Compiler Design, Winter 2015, Group 5
 
 # Team members
@@ -7,8 +7,7 @@ COMP 520 Compiler Design, Winter 2015, Group 5
 - **Will Bain** 
 - **Si Mei Zhang** 
 
-# Instructions
-## Milestone 1
+# Building
 
 Make commands (from src/ directory):
 
@@ -16,6 +15,20 @@ Make commands (from src/ directory):
 $ make
 $ make clean
 $ make check
+$ make checkall
 ~~~
 
-You can run the program using the `run` script in the root directory.
+# Instructions
+
+These are instructions to invoke the behavior specified for the
+given milestone with the code in this revision, after having built
+the code as specified above.
+
+## Milestone 1
+
+From the root directory, run `golite -pprint inputFile`.
+
+## Milestone 2
+
+From the root directory, run
+`./golite [-dumpsymtab] [-dumpsymtaball] [-pptype] inputFile`.
