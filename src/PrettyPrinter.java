@@ -583,84 +583,84 @@ public class PrettyPrinter extends DepthFirstAdapter {
 	{
 		p("++");
 	}
-	
+
 	public void caseADecPostfixOp(ADecPostfixOp node)
 	{
 		p("--");
 	}
-	
+
 	//assign_op:
 	public void caseAPlusAssignOp(APlusAssignOp node)
 	{
 		p("+=");
 	}
-	
+
 	public void caseAMinusAssignOp(AMinusAssignOp node)
 	{
 		p("-=");
 	}
-	
+
 	public void caseAStarAssignOp(AStarAssignOp node)
 	{
 		p("*=");
 	}
-	
+
 	public void caseASlashAssignOp(ASlashAssignOp node)
 	{
 		p("/=");
 	}
-	
+
 	public void caseAPercentAssignOp(APercentAssignOp node)
 	{
 		p("%=");
-	}   
-	
+	}
+
 	public void caseAAmpAssignOp(AAmpAssignOp node)
 	{
 		p("&=");
 	}
-	
+
 	public void caseAPipeAssignOp(APipeAssignOp node)
 	{
 		p("|=");
 	}
-	
+
 	public void caseACaretAssignOp(ACaretAssignOp node)
 	{
 		p("^=");
-	}	
-	
+	}
+
 	public void caseALshiftAssignOp(ALshiftAssignOp node)
 	{
 		p("<<=");
-	}	
-	
+	}
+
 	public void caseARshiftAssignOp(ARshiftAssignOp node)
 	{
 		p(">>=");
-	}	 
-	
+	}
+
 	public void caseAAmpCaretAssignOp(AAmpCaretAssignOp node)
 	{
 		p("&^=");
-	}	   
-	
+	}
+
 	//binary_op
 	public void caseALogicalOrBinaryOp(ALogicalOrBinaryOp node)
 	{
 		p("||");
 	}
-	
+
 	public void caseALogicalAndBinaryOp(ALogicalAndBinaryOp node)
 	{
 		p("&&");
 	}
-	
+
 	public void caseAEqBinaryOp(AEqBinaryOp node)
 	{
 		p("==");
-	}		
-	 
+	}
+
 	public void caseAGtBinaryOp(AGtBinaryOp node)
 	{
 		p(">");
@@ -675,7 +675,7 @@ public class PrettyPrinter extends DepthFirstAdapter {
 	{
 		p(">=");
 	}
-	
+
 	public void caseALtEqBinaryOp(ALtEqBinaryOp node)
 	{
 		p("<=");
@@ -685,78 +685,78 @@ public class PrettyPrinter extends DepthFirstAdapter {
 	{
 		p("+");
 	}
-		
+
 	public void caseAMinusAssignOp(AMinusBinaryOp node)
 	{
 		p("-=");
 	}
-		
+
 	public void caseAStarBinaryOp(AStarBinaryOp node)
 	{
 		p("*");
 	}
-		
+
 	public void caseASlashBinaryOp(ASlashBinaryOp node)
 	{
 		p("/");
 	}
-		
+
 	public void caseAPercentBinaryOp(APercentBinaryOp node)
 	{
 		p("%");
-	}   
-		
+	}
+
 	public void caseAAmpBinaryOp(AAmpBinaryOp node)
 	{
 		p("&");
 	}
-	
+
 	public void caseAPipeBinaryOp (APipeBinaryOp node)
 	{
 		p("|");
 	}
-	
+
 	public void caseACaretBinaryOp(ACaretBinaryOp node)
 	{
 		p("^");
-	}	
-		
+	}
+
 	public void caseALshiftBinaryOp(ALshiftBinaryOp node)
 	{
 		p("<<");
-	}	
-		
+	}
+
 	public void caseARshiftBinaryOp(ARshiftBinaryOp node)
 	{
 		p(">>");
-	}	 
-		
+	}
+
 	public void caseAAmpCaretBinaryOp(AAmpCaretBinaryOp node)
 	{
 		p("&^");
-	} 
-	
+	}
+
 	//unary_op
 	public void caseAPlusUnaryOp(APlusUnaryOp node)
 	{
 		p("+");
 	}
-	
+
 	public void caseAMinusUnaryOp(AMinusUnaryOp node)
 	{
-		p("-");	
+		p("-");
 	}
-	   
+
 	public void caseAExclamationUnaryOp(AExclamationUnaryOp node)
 	{
-		p("!");	
+		p("!");
 	}
-		
+
 	public void caseACaretUnaryOp(ACaretUnaryOp node)
 	{
-		p("^");	
+		p("^");
 	}
-	
+
 	//exp:
 	public void caseAVariableExp(AVariableExp node)
 	{
