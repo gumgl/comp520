@@ -1,3 +1,4 @@
+package golite;
 
 public class GoLiteWeedingException extends RuntimeException {
 	private static final long serialVersionUID = 868259916037491128L;

@@ -1,3 +1,4 @@
+package golite;
 /* Automatic semicolon insertion, based on Vincent Foley-Bourgon's
  * example code */
 

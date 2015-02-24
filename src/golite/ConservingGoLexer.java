@@ -1,3 +1,4 @@
+package golite;
 /* Insert semicolons without removing syntactically insignificant tokens
  * from the stream, yielding a syntactically valid program that could be
  * parsed without the customized lexer.

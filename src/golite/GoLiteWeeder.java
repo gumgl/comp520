@@ -1,3 +1,4 @@
+package golite;
 import java.util.Map;
 
 import golite.analysis.DepthFirstAdapter;

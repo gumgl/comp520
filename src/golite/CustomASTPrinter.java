@@ -1,3 +1,4 @@
+package golite;
 
 import golite.node.* ; 
 import golite.analysis.* ; 
