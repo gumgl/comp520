@@ -1,5 +1,3 @@
-*.class
-
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
 
@@ -17,11 +15,17 @@ hs_err_pid*
 # gedit temporary files
 *~
 
-# Generated files
-/bin/
-/src/golite/
+# SableCC generated files
+/src/golite/analysis
+/src/golite/lexer
+/src/golite/node
+/src/golite/parser
 
-# Ignore generated tex files
+# Java generated files
+*.class
+/bin/
+
+# TeX generated files
 /doc/*.aux
 /doc/*.log
 /doc/*.synctex.gz
