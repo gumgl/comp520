@@ -21,13 +21,6 @@ hs_err_pid*
 /bin/
 /src/golite/
 
-# Ignore all files in programs/*
-/programs/*/*
-# Except our test .go programs
-!/programs/*/*.go
-# But go ignore the generated .pretty.go
-/programs/*/*.pretty.go
-
 # Ignore generated tex files
 /doc/*.aux
 /doc/*.log
