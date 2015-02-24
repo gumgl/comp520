@@ -1,3 +1,4 @@
+package golite;
 
 import golite.parser.* ;
 import golite.lexer.* ;
