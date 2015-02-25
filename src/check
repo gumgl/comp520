@@ -5,7 +5,7 @@
 #fi
 compile() {
 	echo "Compiling $1..."
-    java Main $1
+    java golite.Main $1
 }
 
 prettyname () {

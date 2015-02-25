@@ -2,7 +2,7 @@
 
 compile () {
 	echo "------------------$1"
-    java -cp ../bin/ Main $1
+    java -cp ../bin/ golite.Main $1
 }
 
 prettyname () {

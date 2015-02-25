@@ -17,6 +17,6 @@ check:
 checkall:
 	./checkall
 
-# remove SableCC files, pretty.golite files and then anything not .min
+# remove SableCC files, pretty.golite files and then anything not .go
 clean:
-	rm -rf *.class golite/* ../programs/*/*.pretty.go ../programs/*/!(*.go)
+	rm -rf *.class golite/analysis golite/lexer golite/node golite/parser
