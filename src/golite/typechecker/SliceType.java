@@ -5,6 +5,10 @@ public class SliceType extends Type {
 	Type type;
 	int size;
 	
+	public SliceType() {
+		super();
+	}
+	
 	public SliceType(String identifier, Type pType, int pSize) {
 		super(identifier);
 		type = pType;

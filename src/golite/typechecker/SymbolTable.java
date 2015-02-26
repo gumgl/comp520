@@ -7,7 +7,7 @@ import java.util.Collection;
 public class SymbolTable {
 
 	SymbolTable parent = null;
-	ArrayList<Symbol> table = new ArrayList<Symbol>();
+	Collection<Symbol> table = new ArrayList<Symbol>();
 	
 	
 	public SymbolTable(SymbolTable pParent) {
@@ -18,8 +18,12 @@ public class SymbolTable {
 		table.add(symbol);
 	}
 	
-	public void addSymbols(Collection<? extends Symbol> symbols) {
+	public void addSymbols(Collection<Symbol> symbols) {
 		table.addAll(symbols);
+	}
+	
+	public Collection<Symbol> getSymbols() {
+		return table;
 	}
 	
 	public SymbolTable newScope() {
@@ -30,6 +34,7 @@ public class SymbolTable {
 		return this.parent;
 	}
 	
+	// Used when an identifier is referenced
 	public Symbol get(String id) {
 		SymbolTable scope = this; // Start in current scope
 		while (scope != null) { // Search up through all scopes
@@ -41,13 +46,14 @@ public class SymbolTable {
 		return null; // Not found
 	}
 	
+	// Used when a new identifier is declared
 	public Symbol getInScope(String id) {
 		return getInScope(this, id);
 	}
 	
 	public Symbol getInScope(SymbolTable scope, String id) {
 		for (Symbol symbol : scope.table) // Search in current scope
-			if (symbol.id == id)
+			if (symbol.id.equals(id))
 				return symbol;
 		
 		return null; // Not found

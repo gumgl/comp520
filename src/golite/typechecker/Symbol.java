@@ -1,9 +1,13 @@
 package golite.typechecker;
 
-public abstract class Symbol extends Object {
+public abstract class Symbol {
 	
 	String id;
-
+	
+	public Symbol() {
+		super();
+	}
+	
 	public Symbol(String identifier) {
 		id = identifier;
 	}

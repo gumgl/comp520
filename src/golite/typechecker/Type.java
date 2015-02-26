@@ -2,6 +2,9 @@ package golite.typechecker;
 
 public abstract class Type extends Symbol {
 	
+	public Type() {
+		super();
+	}
 	public Type(String identifier) {
 		super(identifier);
 	}
