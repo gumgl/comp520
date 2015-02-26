@@ -3,11 +3,12 @@ package golite.typechecker;
 import java.util.AbstractCollection;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 public class SymbolTable {
 
 	SymbolTable parent = null;
-	Collection<Symbol> table = new ArrayList<Symbol>();
+	List<Symbol> table = new ArrayList<Symbol>();
 	
 	
 	public SymbolTable(SymbolTable pParent) {
@@ -18,11 +19,11 @@ public class SymbolTable {
 		table.add(symbol);
 	}
 	
-	public void addSymbols(Collection<Symbol> symbols) {
+	public void addSymbols(List<Symbol> symbols) {
 		table.addAll(symbols);
 	}
 	
-	public Collection<Symbol> getSymbols() {
+	public List<Symbol> getSymbols() {
 		return table;
 	}
 	
