@@ -11,6 +11,10 @@ public class ArrayType extends Type {
 		size = pSize;
 	}
 
+	public ArrayType() {
+		
+	}
+
 	public Type getType() {
 		return type;
 	}
