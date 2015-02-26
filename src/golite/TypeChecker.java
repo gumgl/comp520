@@ -193,8 +193,8 @@ public class TypeChecker extends DepthFirstAdapter {
 	}
 	public void inATypeSpec(ATypeSpec node)
 	{
+		defaultIn(node);
 		symbolTable = symbolTable.newScope();
-		defaultOut(node);
 	}
 	public void outATypeSpec(ATypeSpec node)
 	{
@@ -220,10 +220,10 @@ public class TypeChecker extends DepthFirstAdapter {
 	}
 	public void outAAliasTypeExp(AAliasTypeExp node)
 	{
-		String id = node.getId().getText();
-		Symbol symbol = symbolTable.get(id);
+		TId id = node.getId();
+		Symbol symbol = symbolTable.get(id.getText());
 		if (symbol == null)
-			errorSymbolNotFound(node, id);
+			errorSymbolNotFound(id, id.getText());
 		else if ( !(symbol instanceof Type))
 			errorSymbolClass(node, symbol, Type.class);
 		else
@@ -259,6 +259,7 @@ public class TypeChecker extends DepthFirstAdapter {
 	@Override
 	public void inAStructTypeExp(AStructTypeExp node)
 	{
+		defaultIn(node);
 		// Create a new scope in which we declare fields as Variables
 		symbolTable = symbolTable.newScope();
 	}
@@ -537,14 +538,28 @@ public class TypeChecker extends DepthFirstAdapter {
 	}
 	public void outAVariableExp(AVariableExp node)
 	{
+		TId id = node.getId();
+		Symbol symbol = symbolTable.get(id.getText());
+		
+		if (symbol == null)
+			errorSymbolNotFound(id, id.getText());
 		defaultOut(node);
 	}
 	public void outAArrayAccessExp(AArrayAccessExp node)
 	{
 		defaultOut(node);
 	}
+	public void inAFieldAccessExp(AFieldAccessExp node)
+	{
+		defaultIn(node);
+		TId id = node.getId();
+		Symbol symbol = symbolTable.get(id.getText());
+		if (symbol == null)
+			errorSymbolNotFound(id, id.getText());
+	}
 	public void outAFieldAccessExp(AFieldAccessExp node)
 	{
+		
 		defaultOut(node);
 	}
 	public void outALitIntExp(ALitIntExp node)
