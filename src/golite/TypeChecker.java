@@ -310,6 +310,17 @@ public class TypeChecker extends DepthFirstAdapter {
 	}
 	public void outAAssignStm(AAssignStm node)
 	{
+		if (node.getLvalue().size() != node.getExp().size())
+			error(node, "Number of variables and values do not match");
+		
+		for (int i=0; i<node.getLvalue().size(); i++) {
+			Type lType = getType(node.getLvalue().get(i));
+			PExp value = node.getExp().get(i);
+			Type vType = getType(value);
+			
+			if ( ! Type.Similar(lType, vType)) // Value's type is not the same as the declared type
+				errorSymbolType(value, vType, lType);
+		}
 		defaultOut(node);
 	}
 	public void outAOpAssignStm(AOpAssignStm node)
