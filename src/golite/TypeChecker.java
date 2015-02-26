@@ -3,6 +3,7 @@ package golite;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Dictionary;
 import java.util.HashMap;
@@ -23,21 +24,30 @@ public class TypeChecker extends DepthFirstAdapter {
 	PrintWriter stdout;
 	PrintWriter stderr;
 	
+	public static void main(String[] args) {
+		ArrayList<String> list = new ArrayList<String>();
+		list.add("one");
+		list.add("two");
+		list.add("three");
+		list.add("four");
+		System.out.println(collectionToString(list, ",", "or"));
+	}
+	
 	public TypeChecker(PrintWriter out, PrintWriter err) {
 		stdout = out;
 		stderr = err;
 	}
-	private String collectionToString(Collection collection, String separator, String finalWord) {
+	static private String collectionToString(Collection collection, String separator, String finalWord) {
 		StringBuilder sb = new StringBuilder();
 		
 		int i = 1;
 		int size = collection.size();
 		for (Object obj : collection) {
-			if (i != 1)
-				sb.append(separator + " ");
-			if (i < size)
-				sb.append(finalWord + " ");
 			sb.append(obj.toString());
+			if (i < size)
+				sb.append(separator);
+			else if (size > 1)
+				sb.append(finalWord);
 			i++;
 		}
 		return sb.toString();
@@ -48,8 +58,8 @@ public class TypeChecker extends DepthFirstAdapter {
 		success = false;
 	}
 	// When a symbol is already declared
-	private void errorSymbolDeclared(Node node, String id) {
-		error(node, "Symbol \"" + id + "\" already declared in current scope");
+	private void errorSymbolDeclared(Node node, Symbol found) {
+		error(node, "\"" + found + "\" already declared in current scope");
 	}
 	// When a symbol is not found in the symbol table
 	private void errorSymbolNotFound(Node node, String id) {
@@ -82,8 +92,6 @@ public class TypeChecker extends DepthFirstAdapter {
 		BuiltInType float64Type = new BuiltInType("float64");
 		BuiltInType runeType = new BuiltInType("rune");
 		BuiltInType stringType = new BuiltInType("string");
-		
-		float64Type.addCompatible(intType);
 	
 		Variable trueVar = new Variable("true", boolType);
 		Variable falseVar = new Variable("false", boolType);
@@ -124,11 +132,14 @@ public class TypeChecker extends DepthFirstAdapter {
 	
 	public void outAProgram(AProgram node)
 	{
+		if (node.getPackageName().getText() != "main")
+			error(node.getPackageName(), "The only package allowed is main");
 		defaultOut(node);
 	}
 	
 	public void outAVariableDeclaration(AVariableDeclaration node)
 	{
+		// Nothing to do here, checks are done in individual VariableSpec
 		defaultOut(node);
 	}
 	
@@ -144,11 +155,43 @@ public class TypeChecker extends DepthFirstAdapter {
 	
 	public void outATypedVariableSpec(ATypedVariableSpec node)
 	{
+		if (node.getId().size() != node.getExp().size())
+			error(node, "Number of variables and values do not match");
+		
+		Type type = getType(node.getTypeExp());
+		
+		for (int i=0; i<node.getId().size(); i++) {
+			TId id = node.getId().get(i);
+			PExp value = node.getExp().get(i);
+			Symbol symbol = symbols.getSymbol(id.getText());
+			
+			if (symbol != null) // Symbol already declared
+				errorSymbolDeclared(id, symbol);
+			else if (getType(value) != type) // Value's type is not the same as the declared type
+				errorSymbolType(value, getType(value), type);
+			else
+				symbols.addSymbol(new Variable(id.getText(), type));
+		}
 		defaultOut(node);
 	}
 	
+	// Basically the same as TypedVariableSpec but with type inference instead of typecheck
 	public void outAUntypedVariableSpec(AUntypedVariableSpec node)
 	{
+		if (node.getId().size() != node.getExp().size())
+			error(node, "Number of variables and values do not match");
+		
+		for (int i=0; i<node.getId().size(); i++) {
+			TId id = node.getId().get(i);
+			PExp value = node.getExp().get(i);
+			Symbol symbol = symbols.getSymbol(id.getText());
+			Type type = getType(value);
+			
+			if (symbol != null) // Symbol already declared
+				errorSymbolDeclared(id, symbol);
+			else
+				symbols.addSymbol(new Variable(id.getText(), type));
+		}
 		defaultOut(node);
 	}
 	
@@ -554,7 +597,7 @@ public class TypeChecker extends DepthFirstAdapter {
 	
 	public void outABaseTypeCastExp(ABaseTypeCastExp node)
 	{
-		Collection<Class<? extends Symbol>> allowed = new HashSet<Class<? extends Symbol>>();
+		Collection<Class<? extends Symbol>> allowed = new ArrayList<Class<? extends Symbol>>();
 		allowed.add(BuiltInType.class);
 		allowed.add(StructType.class);
 		
@@ -565,9 +608,9 @@ public class TypeChecker extends DepthFirstAdapter {
 		Type underlyingTo = to.getUnderlying();
 
 		if (underlyingFrom == null)
-			errorSymbolClasses(node, from, allowed);
+			errorSymbolClasses(node.getExp(), from, allowed);
 		else if (underlyingTo == null)
-			errorSymbolClasses(node, from, allowed);
+			errorSymbolClasses(node.getTypeExp(), from, allowed);
 		else if (underlyingFrom != underlyingTo)
 			errorTypeCast(node, underlyingFrom, underlyingTo);
 		else
