@@ -543,6 +543,10 @@ public class TypeChecker extends DepthFirstAdapter {
 		
 		if (symbol == null)
 			errorSymbolNotFound(id, id.getText());
+		else if ( ! (symbol instanceof Variable))
+			errorSymbolClass(id, symbol, Variable.class);
+		else
+			setType(node, ((Variable)symbol).getType());
 		defaultOut(node);
 	}
 	public void outAArrayAccessExp(AArrayAccessExp node)
