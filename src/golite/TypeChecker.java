@@ -607,11 +607,13 @@ public class TypeChecker extends DepthFirstAdapter {
 		Type underlyingFrom = from.getUnderlying();
 		Type underlyingTo = to.getUnderlying();
 
-		if (underlyingFrom == null)
+		if (underlyingFrom == null) // If it cannot be reduced to a built-in type
 			errorSymbolClasses(node.getExp(), from, allowed);
 		else if (underlyingTo == null)
 			errorSymbolClasses(node.getTypeExp(), from, allowed);
-		else if (underlyingFrom != underlyingTo)
+		else if ( !BuiltInType.typeCastTypes.contains(underlyingFrom) // Check if it's a type we can typecast 
+				|| !BuiltInType.typeCastTypes.contains(underlyingTo)
+				|| underlyingFrom != underlyingTo) // Check if they are the same type
 			errorTypeCast(node, underlyingFrom, underlyingTo);
 		else
 			setType(node, to);
