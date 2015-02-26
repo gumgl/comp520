@@ -12,7 +12,7 @@ import java.util.Hashtable;
 import java.util.List;
 
 public class CGenerator extends DepthFirstAdapter {
-	static String indent = "\t";
+	/*static String indent = "\t";
 	StringBuilder prepend = new StringBuilder("");
 	PrintWriter output;
 	public HashMap<Node,TypeChecker.Type> types;
@@ -44,7 +44,7 @@ public class CGenerator extends DepthFirstAdapter {
 		p("\n");
 	}
 
-	/*
+	
     @Override
 	public void inAAstGrammar(AAstGrammar node)
     {
