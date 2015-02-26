@@ -30,14 +30,26 @@ public class SymbolTable {
 		return this.parent;
 	}
 	
-	public Symbol getSymbol(String id) {
-		SymbolTable scope = this;
+	public Symbol get(String id) {
+		SymbolTable scope = this; // Start in current scope
 		while (scope != null) { // Search up through all scopes
-			for (Symbol symbol : scope.table) // Search in current scope
-				if (symbol.id == id)
-					return symbol;
+			Symbol found = getInScope(scope, id);
+			if (found != null)
+				return found;
 			scope = scope.popScope(); // Go up one level
 		}
+		return null; // Not found
+	}
+	
+	public Symbol getInScope(String id) {
+		return getInScope(this, id);
+	}
+	
+	public Symbol getInScope(SymbolTable scope, String id) {
+		for (Symbol symbol : scope.table) // Search in current scope
+			if (symbol.id == id)
+				return symbol;
+		
 		return null; // Not found
 	}
 }
