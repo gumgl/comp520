@@ -10,17 +10,17 @@ public class StructType extends Type {
 	public StructType(String identifier) {
 		super(identifier);
 	}
-	
-	@Override
-	public boolean TypeCastCheck(Type that) {
-		if (fields.size() == 1) { // If struct is really just an alias
-			return fields.get(0).getType().TypeCastCheck(that); // Check if that type can typecast
-		} else
-			return false;
-	}
 
 	public void addField(Variable field) {
 		fields.add(field);
+	}
+
+	@Override
+	public BuiltInType getUnderlying() {
+		if (fields.size() == 1) // If struct is really just an alias
+			return fields.get(0).getType().getUnderlying();
+		else
+			return null;
 	}
 
 }

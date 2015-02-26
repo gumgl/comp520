@@ -6,13 +6,19 @@ public abstract class Type extends Symbol {
 		super(identifier);
 	}
 	
-	public boolean equals(Type that) {
-		return (this == that); 
+	public static boolean Similar(Type t1, Type t2) {
+		if (t1 == null && t2 == null)
+			return true;
+		else if (t1 == null || t2 == null)
+			return false;
+		else
+			return (t1 == t2);
 	}
 	
-	/* var (a A; b B)
-	 * A.TypeCastCheck(B) IFF B can be typecast to A [i.e. if a = A(b) is legal]
+	/*
+	 * Returns the underlying type (in the case of aliases or built-ins
+	 * Return null in any other case
 	 */
-	public abstract boolean TypeCastCheck(Type that);
+	public abstract BuiltInType getUnderlying();
 
 }

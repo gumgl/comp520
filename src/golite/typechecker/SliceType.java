@@ -11,12 +11,6 @@ public class SliceType extends Type {
 		size = pSize;
 	}
 
-	@Override
-	public boolean TypeCastCheck(Type that) {
-		// Cannot typecast a slice
-		return false;
-	}
-
 	public Type getType() {
 		return type;
 	}
@@ -31,6 +25,11 @@ public class SliceType extends Type {
 
 	public void setSize(int size) {
 		this.size = size;
+	}
+
+	@Override
+	public BuiltInType getUnderlying() {
+		return null;
 	}
 	
 }

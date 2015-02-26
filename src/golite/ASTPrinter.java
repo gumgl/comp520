@@ -8,6 +8,7 @@ import java.util.*;
  */
 import golite.analysis.*;
 import golite.node.*;
+import golite.typechecker.*;
 
 /**
  * Text display of the AST, with (optionally) color output.
@@ -59,9 +60,9 @@ public class ASTPrinter extends ReversedDepthFirstAdapter
     private Stack indentchar = new Stack();
 	private boolean color = false;
 
-	public HashMap<Node,TypeChecker.Type> types;
+	public HashMap<Node,Type> types;
 
-	public ASTPrinter(HashMap<Node,TypeChecker.Type> intypes) {
+	public ASTPrinter(HashMap<Node,Type> intypes) {
 		types = intypes;
 	}
 	/*
