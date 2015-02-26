@@ -163,7 +163,7 @@ public class TypeChecker extends DepthFirstAdapter {
 		for (int i=0; i<node.getId().size(); i++) {
 			TId id = node.getId().get(i);
 			PExp value = node.getExp().get(i);
-			Symbol symbol = symbols.getSymbol(id.getText());
+			Symbol symbol = symbols.getInScope(id.getText());
 			
 			if (symbol != null) // Symbol already declared
 				errorSymbolDeclared(id, symbol);
@@ -184,7 +184,7 @@ public class TypeChecker extends DepthFirstAdapter {
 		for (int i=0; i<node.getId().size(); i++) {
 			TId id = node.getId().get(i);
 			PExp value = node.getExp().get(i);
-			Symbol symbol = symbols.getSymbol(id.getText());
+			Symbol symbol = symbols.getInScope(id.getText());
 			Type type = getType(value);
 			
 			if (symbol != null) // Symbol already declared
@@ -208,7 +208,7 @@ public class TypeChecker extends DepthFirstAdapter {
 	public void outAAliasTypeExp(AAliasTypeExp node)
 	{
 		String id = node.getId().getText();
-		Symbol symbol = symbols.getSymbol(id);
+		Symbol symbol = symbols.get(id);
 		if (symbol == null)
 			errorSymbolNotFound(node, id);
 		else if ( !(symbol instanceof Type))
@@ -221,7 +221,7 @@ public class TypeChecker extends DepthFirstAdapter {
 	
 	public void outAIntTypeExp(AIntTypeExp node)
 	{
-		
+		setType(node, (Type)symbols.get("int"));
 		defaultOut(node);
 	}
 	
