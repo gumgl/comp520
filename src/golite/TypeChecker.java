@@ -39,6 +39,8 @@ public class TypeChecker extends DepthFirstAdapter {
 	public TypeChecker(PrintWriter out, PrintWriter err) {
 		stdout = out;
 		stderr = err;
+
+		preDeclare();
 	}
 	static private String collectionToString(Collection collection, String separator, String finalWord) {
 		StringBuilder sb = new StringBuilder();
