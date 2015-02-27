@@ -280,6 +280,9 @@ public class TypeChecker extends DepthFirstAdapter {
 
 		symbolTable = symbolTable.popScope();
 		symbolTable.addSymbol(structType);
+
+		setType(node, structType);
+
 		defaultOut(node);
 	}
 	public void outASliceTypeExp(ASliceTypeExp node)
