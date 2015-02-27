@@ -18,8 +18,8 @@ public class SymbolTable {
 	public void addSymbol(Symbol symbol) {
 		table.add(symbol);
 	}
-	
-	public void addSymbols(List<Symbol> symbols) {
+
+	public void addSymbols(Collection<? extends Symbol> symbols) {
 		table.addAll(symbols);
 	}
 	
