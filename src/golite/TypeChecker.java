@@ -18,14 +18,12 @@ import golite.typechecker.*;
 
 
 public class TypeChecker extends DepthFirstAdapter {
-	
+
 	public HashMap<Node,Type> types = new HashMap<Node,Type>(); // Mapping a Type for every Node
 	// Mapping a Symbol for some Node, so that it can return it to the parents
 	public HashMap<Node, Symbol> symbols = new HashMap<Node, Symbol>();
 	public SymbolTable symbolTable = new SymbolTable(null);
-	public boolean success = true;
 	PrintWriter stdout;
-	PrintWriter stderr;
 	PositionHelper positionHelper;
 
 	public static void main(String[] args) {
@@ -37,10 +35,8 @@ public class TypeChecker extends DepthFirstAdapter {
 		System.out.println(collectionToString(list, ", ", " and "));
 	}
 
-	public TypeChecker(PrintWriter out, PrintWriter err, PositionHelper positionHelper) {
+	public TypeChecker(PrintWriter out, PositionHelper positionHelper) {
 		stdout = out;
-		stderr = err;
-
 		this.positionHelper = positionHelper;
 
 		preDeclare();
@@ -58,15 +54,15 @@ public class TypeChecker extends DepthFirstAdapter {
 				else
 					sb.append(separator);
 			sb.append(obj.toString());
-			
+
 			i++;
 		}
 		return sb.toString();
 	}
 	private void error(Node node, String message) {
-		stderr.println("Type Error at "+positionHelper.lineAndPos(node)+": " + message + ".");
-		success = false;
+		throw new GoLiteTypeException(positionHelper.lineAndPos(node)+": " + message);
 	}
+
 	// When a symbol is already declared
 	private void errorSymbolDeclared(Node node, Symbol found) {
 		error(node, "\"" + found + "\" already declared in current scope");

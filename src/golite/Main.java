@@ -44,8 +44,6 @@ public class Main {
 				ast.apply(display);
 			}
 
-			// TODO: type checking
-
 			if (options.dumpSymbolTable) {
 				throw new RuntimeException("Not implemented: -dumpsymtab");
 			}
@@ -53,6 +51,8 @@ public class Main {
 			if (options.dumpSymbolTableAll) {
 				throw new RuntimeException("Not implemented: -dumpsymtaball");
 			}
+
+			typeCheck(ast, options.basePath, positionHelper);
 
 			if (options.prettyPrintType) {
 				throw new RuntimeException("Not implemented: -pptype");
@@ -66,6 +66,8 @@ public class Main {
 			System.err.println("INVALID (parser error) at " + e.getMessage());
 		} catch (GoLiteWeedingException e) {
 			System.err.println("INVALID (weeder error) at " + e.getMessage());
+		} catch (GoLiteTypeException e) {
+			System.err.println("INVALID (type error) at " + e.getMessage());
 		} catch (FileNotFoundException e) {
 			System.err.println("Error: File \"" + options.fullPath + "\" not found.");
 		} catch (Exception e) {
@@ -197,12 +199,14 @@ public class Main {
 		filePretty.close();
 	}
 
-	public static boolean typeCheck(Node ast, String path, PositionHelper positionHelper) throws FileNotFoundException {
+	public static void typeCheck(Node ast, String path, PositionHelper positionHelper) throws FileNotFoundException {
 		PrintWriter fileTypeChecker = new PrintWriter(new PrintWriter(path+".symbol.txt"), true);
-		TypeChecker typechecker = new TypeChecker(fileTypeChecker, new PrintWriter(System.err), positionHelper);
-		ast.apply(typechecker);
-		fileTypeChecker.close();
-		return typechecker.success;
+		TypeChecker typechecker = new TypeChecker(fileTypeChecker, positionHelper);
+		try {
+			ast.apply(typechecker);
+		} finally {
+			fileTypeChecker.close();
+		}
 	}
 }
 
