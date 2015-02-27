@@ -3,9 +3,9 @@ package golite.typechecker;
 import java.util.ArrayList;
 
 public class StructType extends Type {
-	
+
 	// Here we have an array of Variable because when typechecking, we need to lookup the name of a specific field
-	ArrayList<Variable> fields;
+	ArrayList<Variable> fields = new ArrayList<Variable>();
 
 	public StructType() {
 		super();
