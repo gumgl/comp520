@@ -24,6 +24,13 @@ public class TypeChecker extends DepthFirstAdapter {
 	PrintWriter stdout;
 	PositionHelper positionHelper;
 
+	// Builtin types
+	final BuiltInType boolType = new BuiltInType("bool");
+	final BuiltInType intType = new BuiltInType("int");
+	final BuiltInType floatType = new BuiltInType("float64");
+	final BuiltInType runeType = new BuiltInType("rune");
+	final BuiltInType stringType = new BuiltInType("string");
+
 	public static void main(String[] args) {
 		ArrayList<String> list = new ArrayList<String>();
 		list.add("one");
@@ -37,7 +44,7 @@ public class TypeChecker extends DepthFirstAdapter {
 		stdout = out;
 		this.positionHelper = positionHelper;
 
-		preDeclare();
+		preDeclareBooleans();
 	}
 
 	static private String collectionToString(Collection collection, String separator, String finalWord) {
@@ -107,34 +114,19 @@ public class TypeChecker extends DepthFirstAdapter {
 	private void setType(Node node, Type type) {
 		types.put(node, type);
 	}
-	private void preDeclare() {
-		BuiltInType boolType = new BuiltInType("bool");
-		BuiltInType intType = new BuiltInType("int");
-		BuiltInType floatType = new BuiltInType("float64");
-		BuiltInType runeType = new BuiltInType("rune");
-		BuiltInType stringType = new BuiltInType("string");
-	
-		Variable trueVar = new Variable("true", boolType);
-		Variable falseVar = new Variable("false", boolType);
-	
-		BuiltInType.builtIns.add(boolType);
-		BuiltInType.builtIns.add(intType);
-		BuiltInType.builtIns.add(floatType);
-		BuiltInType.builtIns.add(runeType);
-		BuiltInType.builtIns.add(stringType);
-		
-		BuiltInType.typeCastTypes.add(boolType);
-		BuiltInType.typeCastTypes.add(intType);
-		BuiltInType.typeCastTypes.add(floatType);
-		BuiltInType.typeCastTypes.add(runeType);
-		
-		symbolTable.addSymbols(BuiltInType.builtIns);
-		symbolTable.addSymbol(trueVar);
-		symbolTable.addSymbol(falseVar);
-		
-		symbolTable.newScope(); // Shadow them
+
+	private void preDeclareBooleans() {
+		symbolTable.addSymbol(new Variable("true", boolType));
+		symbolTable.addSymbol(new Variable("false", boolType));
+
+		// Shadow them
+		symbolTable = symbolTable.newScope();
 	}
-	
+
+	private boolean canBeCast(Type type) {
+		return type instanceof BuiltInType && type != stringType;
+	}
+
 	public void defaultIn(@SuppressWarnings("unused") Node node)
 	{
 		// Do nothing
@@ -235,18 +227,10 @@ public class TypeChecker extends DepthFirstAdapter {
 
 	public void outATypeSpec(ATypeSpec node)
 	{
-		Type type = getType(node.getTypeExp());
-
-		// Verify if ID is available
 		TId id = node.getId();
-
 		ensureUndeclared(id);
-
-		type.setId(id.getText());
-
-		// Add to scope
+		Type type = new AliasType(id.getText(), getType(node.getTypeExp()));
 		symbolTable.addSymbol(type);
-
 		defaultOut(node);
 	}
 
@@ -276,27 +260,27 @@ public class TypeChecker extends DepthFirstAdapter {
 	}
 	public void outAIntTypeExp(AIntTypeExp node)
 	{
-		setType(node, (Type)symbolTable.get("int"));
+		setType(node, intType);
 		defaultOut(node);
 	}
 	public void outAFloat64TypeExp(AFloat64TypeExp node)
 	{
-		setType(node, (Type)symbolTable.get("float64"));
+		setType(node, floatType);
 		defaultOut(node);
 	}
 	public void outABoolTypeExp(ABoolTypeExp node)
 	{
-		setType(node, (Type)symbolTable.get("bool"));
+		setType(node, boolType);
 		defaultOut(node);
 	}
 	public void outARuneTypeExp(ARuneTypeExp node)
 	{
-		setType(node, (Type)symbolTable.get("rune"));
+		setType(node, runeType);
 		defaultOut(node);
 	}
 	public void outAStringTypeExp(AStringTypeExp node)
 	{
-		setType(node, (Type)symbolTable.get("string"));
+		setType(node, stringType);
 		defaultOut(node);
 	}
 	@Override
@@ -645,37 +629,37 @@ public class TypeChecker extends DepthFirstAdapter {
 	}
 	public void outALitIntExp(ALitIntExp node)
 	{
-		setType(node, (Type)symbolTable.get("int"));
+		setType(node, intType);
 		defaultOut(node);
 	}
 	public void outALitFloatExp(ALitFloatExp node)
 	{
-		setType(node, (Type)symbolTable.get("float64"));
+		setType(node, floatType);
 		defaultOut(node);
 	}
 	public void outALitHexExp(ALitHexExp node)
 	{
-		setType(node, (Type)symbolTable.get("int"));
+		setType(node, intType);
 		defaultOut(node);
 	}
 	public void outALitOctalExp(ALitOctalExp node)
 	{
-		setType(node, (Type)symbolTable.get("int"));
+		setType(node, intType);
 		defaultOut(node);
 	}
 	public void outALitInterpretedExp(ALitInterpretedExp node)
 	{
-		setType(node, (Type)symbolTable.get("string"));
+		setType(node, stringType);
 		defaultOut(node);
 	}
 	public void outALitRawExp(ALitRawExp node)
 	{
-		setType(node, (Type)symbolTable.get("string"));
+		setType(node, stringType);
 		defaultOut(node);
 	}
 	public void outALitRuneExp(ALitRuneExp node)
 	{
-		setType(node, (Type)symbolTable.get("rune"));
+		setType(node, runeType);
 		defaultOut(node);
 	}
 	public void outAFunctionCallExp(AFunctionCallExp node)
@@ -684,25 +668,19 @@ public class TypeChecker extends DepthFirstAdapter {
 	}
 	public void outABaseTypeCastExp(ABaseTypeCastExp node)
 	{
-		Collection<Class<? extends Symbol>> allowed = new ArrayList<Class<? extends Symbol>>();
-		allowed.add(BuiltInType.class);
-		allowed.add(AliasType.class);
-		
-		Type from = getType(node.getExp());
-		Type to = getType(node.getTypeExp());
-		
-		Type underlyingFrom = from.getUnderlying();
-		Type underlyingTo = to.getUnderlying();
-
-		if (BuiltInType.typeCastTypes.contains(underlyingFrom) // Check if it's a type we can typecast 
-			&& BuiltInType.typeCastTypes.contains(underlyingTo)
-			&& Type.Similar(underlyingFrom, underlyingTo)) // Check if they are the same type
-			setType(node, to);
-		else
-			errorTypeCast(node, underlyingFrom, underlyingTo);
-		
+		processTypeCast(node, getType(node.getTypeExp()), node.getExp());
 		defaultOut(node);
 	}
+
+	private void processTypeCast(Node node, Type to, PExp exp) {
+		Type from = getType(exp);
+
+		if (canBeCast(from.getUnderlying()) && canBeCast(to.getUnderlying()))
+			setType(node, to);
+		else
+			errorTypeCast(node, from, to);
+	}
+
 	public void outAAppendExp(AAppendExp node)
 	{
 		defaultOut(node);
