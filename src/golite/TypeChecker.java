@@ -20,8 +20,6 @@ import golite.typechecker.*;
 public class TypeChecker extends DepthFirstAdapter {
 
 	public HashMap<Node,Type> types = new HashMap<Node,Type>(); // Mapping a Type for every Node
-	// Mapping a Symbol for some Node, so that it can return it to the parents
-	public HashMap<Node, Symbol> symbols = new HashMap<Node, Symbol>();
 	public SymbolTable symbolTable = new SymbolTable(null);
 	PrintWriter stdout;
 	PositionHelper positionHelper;
@@ -273,11 +271,13 @@ public class TypeChecker extends DepthFirstAdapter {
 	public void outAStructTypeExp(AStructTypeExp node)
 	{
 		StructType structType = new StructType();
-		
-		for(PFieldDec field : node.getFieldDec()) {
-		    Variable var = (Variable) symbols.get(field);
-		    structType.addField(var);
+
+		for (Symbol symbol : symbolTable.getSymbols()) {
+			if (!(symbol instanceof Variable))
+				errorSymbolClass(node, symbol, Variable.class);
+			structType.addField((Variable)symbol);
 		}
+
 		symbolTable = symbolTable.popScope();
 		symbolTable.addSymbol(structType);
 		defaultOut(node);
