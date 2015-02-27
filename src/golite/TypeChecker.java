@@ -335,8 +335,43 @@ public class TypeChecker extends DepthFirstAdapter {
 	{
 		defaultOut(node);
 	}
+
+	// Override case so it won't recurse on the IDs
+	// FIXME: does this get the scoping right?
+	@Override
+	public void caseAShortVariableDecStm(AShortVariableDecStm node) {
+		inAShortVariableDecStm(node);
+		for (PExp exp : node.getExp()) {
+			exp.apply(this);
+		}
+		outAShortVariableDecStm(node);
+	}
+
 	public void outAShortVariableDecStm(AShortVariableDecStm node)
 	{
+		assert node.getIds().size() == node.getExp().size();
+		boolean hasNewVariable = false;
+
+		// Ids are expressions here, but guaranteed by the weeder to be
+		// variables
+		for (int i=0; i < node.getIds().size(); i++) {
+			String id = ((AVariableExp)node.getIds().get(i)).getId().getText();
+			PExp exp = node.getExp().get(i);
+			Symbol symbol = symbolTable.getInScope(id);
+
+			if (symbol == null) {
+				hasNewVariable = true;
+				symbolTable.addSymbol(new Variable(id, getType(exp)));
+			} else if (!(symbol instanceof Variable)) {
+				errorSymbolClass(node.getIds().get(i), symbol, Variable.class);
+			} else if (!Type.Similar(((Variable)symbol).getType(), getType(exp))) {
+				errorSymbolType(exp, symbol, new Variable(id, getType(exp)));
+			}
+		}
+
+		if (!hasNewVariable)
+			error(node, "No new variable on left side of :=");
+
 		defaultOut(node);
 	}
 	public void outAVariableDecStm(AVariableDecStm node)
