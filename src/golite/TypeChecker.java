@@ -84,6 +84,17 @@ public class TypeChecker extends DepthFirstAdapter {
 	private void errorTypeCast(Node node, Type from, Type to) {
 		error(node, "Cannot typecast " + from + " to "+  to);
 	}
+
+	private void ensureUndeclared(Node node, String id) {
+		Symbol symbol = symbolTable.getInScope(id);
+		if (symbol != null)
+			errorSymbolDeclared(node, symbol);
+	}
+
+	private void ensureUndeclared(TId id) {
+		ensureUndeclared(id, id.getText());
+	}
+
 	private Type getType(Node node) {
 		Type t = types.get(node);
 
@@ -158,10 +169,8 @@ public class TypeChecker extends DepthFirstAdapter {
 
 		for (int i=0; i<node.getId().size(); i++) {
 			TId id = node.getId().get(i);
-			Symbol symbol = symbolTable.getInScope(id.getText());
 
-			if (symbol != null)
-				errorSymbolDeclared(id, symbol);
+			ensureUndeclared(id);
 
 			if (hasAssignments) {
 				PExp value = node.getExp().get(i);
@@ -185,13 +194,10 @@ public class TypeChecker extends DepthFirstAdapter {
 		for (int i=0; i<node.getId().size(); i++) {
 			TId id = node.getId().get(i);
 			PExp value = node.getExp().get(i);
-			Symbol symbol = symbolTable.getInScope(id.getText());
 			Type type = getType(value);
 
-			if (symbol != null) // Symbol already declared
-				errorSymbolDeclared(id, symbol);
-			else
-				symbolTable.addSymbol(new Variable(id.getText(), type));
+			ensureUndeclared(id);
+			symbolTable.addSymbol(new Variable(id.getText(), type));
 		}
 		defaultOut(node);
 	}
@@ -208,14 +214,14 @@ public class TypeChecker extends DepthFirstAdapter {
 		
 		// Verify if ID is available
 		TId id = node.getId();
-		type.setId(id.getText());
-		Symbol symbol = symbolTable.getInScope(id.getText());
 
-		if (symbol != null) // Symbol already declared
-			errorSymbolDeclared(id, symbol);
-		else // Add to scope
-			symbolTable.addSymbol(type);
-		
+		ensureUndeclared(id);
+
+		type.setId(id.getText());
+
+		// Add to scope
+		symbolTable.addSymbol(type);
+
 		defaultOut(node);
 	}
 	public void outAFuncParam(AFuncParam node)
@@ -299,15 +305,10 @@ public class TypeChecker extends DepthFirstAdapter {
 	public void outAFieldDec(AFieldDec node)
 	{
 		Type type = getType(node.getTypeExp());
-		
-		for (int i=0; i<node.getId().size(); i++) {
-			TId id = node.getId().get(i);
-			Symbol symbol = symbolTable.getInScope(id.getText());
-			
-			if (symbol != null) // Symbol already declared
-				errorSymbolDeclared(id, symbol);
-			else
-				symbolTable.addSymbol(new Variable(id.getText(), type));
+
+		for (TId id : node.getId()) {
+			ensureUndeclared(id);
+			symbolTable.addSymbol(new Variable(id.getText(), type));
 		}
 		defaultOut(node);
 	}
