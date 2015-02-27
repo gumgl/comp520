@@ -149,6 +149,9 @@ public class TypeChecker extends DepthFirstAdapter {
 		// the number of variables matches the number of expressions
 		boolean hasAssignments = (node.getExp().size() != 0);
 
+		if (hasAssignments)
+			assert node.getExp().size() == node.getId().size();
+
 		for (int i=0; i<node.getId().size(); i++) {
 			TId id = node.getId().get(i);
 			Symbol symbol = symbolTable.getInScope(id.getText());
@@ -173,15 +176,14 @@ public class TypeChecker extends DepthFirstAdapter {
 	// Basically the same as TypedVariableSpec but with type inference instead of typecheck
 	public void outAUntypedVariableSpec(AUntypedVariableSpec node)
 	{
-		if (node.getId().size() != node.getExp().size())
-			error(node, "Number of variables and values do not match");
-		
+		assert node.getId().size() == node.getExp().size();
+
 		for (int i=0; i<node.getId().size(); i++) {
 			TId id = node.getId().get(i);
 			PExp value = node.getExp().get(i);
 			Symbol symbol = symbolTable.getInScope(id.getText());
 			Type type = getType(value);
-			
+
 			if (symbol != null) // Symbol already declared
 				errorSymbolDeclared(id, symbol);
 			else
@@ -309,14 +311,13 @@ public class TypeChecker extends DepthFirstAdapter {
 	}
 	public void outAAssignStm(AAssignStm node)
 	{
-		if (node.getLvalue().size() != node.getExp().size())
-			error(node, "Number of variables and values do not match");
-		
+		assert node.getLvalue().size() == node.getExp().size();
+
 		for (int i=0; i<node.getLvalue().size(); i++) {
 			Type lType = getType(node.getLvalue().get(i));
 			PExp value = node.getExp().get(i);
 			Type vType = getType(value);
-			
+
 			if ( ! Type.Similar(lType, vType)) // Value's type is not the same as the declared type
 				errorSymbolType(value, vType, lType);
 		}
