@@ -10,6 +10,7 @@ public class Main {
 	public static void main(String[] args) {
 		CLIOptions options = null;
 		Node ast;
+		PositionHelper positionHelper;
 
 		try {
 			options = getCLIOptions(args);
@@ -27,6 +28,10 @@ public class Main {
 
 			/* Build AST */
 			ast = getParsedAST(options.fullPath);
+			positionHelper = new PositionHelper(ast);
+
+			// Do the weeding
+			GoLiteWeeder.weed(ast, positionHelper);
 
 			// Pretty print AST
 			if (options.prettyPrint) {
@@ -146,11 +151,7 @@ public class Main {
 	public static Node getParsedAST(String filename) throws ParserException, LexerException, IOException {
 		Lexer lexer = new GoLexer(new PushbackReader(new FileReader(filename), 1024));
 		Parser parser = new Parser(lexer);
-		GoLiteWeeder weeder = new GoLiteWeeder();
 		Node ast = parser.parse();
-
-		// Do the weeding
-		ast.apply(weeder);
 
 		return ast;
 	}
@@ -196,9 +197,9 @@ public class Main {
 		filePretty.close();
 	}
 
-	public static boolean typeCheck(Node ast, String path) throws FileNotFoundException {
+	public static boolean typeCheck(Node ast, String path, PositionHelper positionHelper) throws FileNotFoundException {
 		PrintWriter fileTypeChecker = new PrintWriter(new PrintWriter(path+".symbol.txt"), true);
-		TypeChecker typechecker = new TypeChecker(fileTypeChecker, new PrintWriter(System.err)) ;
+		TypeChecker typechecker = new TypeChecker(fileTypeChecker, new PrintWriter(System.err), positionHelper);
 		ast.apply(typechecker);
 		fileTypeChecker.close();
 		return typechecker.success;
