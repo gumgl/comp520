@@ -1,3 +1,6 @@
-*.sh      eol=lf
-src/check eol=lf
-run       eol=lf
+*.sh         eol=lf
+*.bat        eol=crlf
+
+src/check    eol=lf
+src/checkall eol=lf
+golite       eol=lf

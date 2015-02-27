@@ -21,6 +21,10 @@ hs_err_pid*
 /src/golite/node
 /src/golite/parser
 
+# Generated user scripts
+/golite
+/golite.bat
+
 # Java generated files
 *.class
 /bin/

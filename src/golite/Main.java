@@ -5,74 +5,142 @@ import golite.lexer.* ;
 import golite.node.* ;
 
 import java.io.* ;
-import java.util.Map;
 
 public class Main {
-	static Map<Node, Token> tokenMap;
-	static String path;
-	static PrintWriter stderr;
 	public static void main(String[] args) {
+		CLIOptions options = null;
 		Node ast;
 
-		if (args.length != 1) {
-			System.err.println("Usage: golite inputFile");
+		try {
+			options = getCLIOptions(args);
+		} catch (IllegalArgumentException e) {
+			System.err.print("Error: "+e.getMessage()+"\n\n");
+			printUsage();
 			System.exit(1);
-		}
-
-		// Get file name
-		path = args[0];
-		if (path.endsWith(".go")) {
-			path = path.substring(0, path.length() - 3);
 		}
 
 		try {
 			/* Print HTML representation of tokens */
-//			TokenPrintHtml(new ConservingGoLexer(new PushbackReader(new FileReader(args[0]), 1024)));
+			if (options.dumpToks) {
+				tokenPrintHtml(options.fullPath, options.basePath);
+			}
 
 			/* Build AST */
-			ast = getParsedAST(args[0]);
+			ast = getParsedAST(options.fullPath);
 
-			PrettyPrint(ast);
+			// Pretty print AST
+			if (options.prettyPrint) {
+				prettyPrint(ast, options.basePath);
+			}
 
-			/*// Display AST in a JTree
-			ASTDisplay display = new ASTDisplay();
-			ast.apply(display);/*
+			// Display AST in a JTree
+			if (options.displayAST) {
+				ASTDisplay display = new ASTDisplay();
+				ast.apply(display);
+			}
 
-			/*TokenMapper tm = new TokenMapper();
-			ast.apply(tm);
-			tokenMap = tm.getMap();*/
+			// TODO: type checking
 
-			/*if (TypeCheck(ast)) {
-				// Generate C Code
-				PrintWriter fileCCode = new PrintWriter(path+".c");
-				CodeGenerator cgen = new CodeGenerator(fileCCode, typechecker.types, typechecker.symbols) ;
-				ast.apply(cgen);
-				fileCCode.close();
+			if (options.dumpSymbolTable) {
+				throw new RuntimeException("Not implemented: -dumpsymtab");
+			}
 
-				System.out.println("VALID, C code generated to " + path + ".c");
-			} */
+			if (options.dumpSymbolTableAll) {
+				throw new RuntimeException("Not implemented: -dumpsymtaball");
+			}
 
-			/*
-			// Display Typed AST in console
-			ASTPrinter typed = new ASTPrinter(typechecker.types);
-			ast.apply(typed);
+			if (options.prettyPrintType) {
+				throw new RuntimeException("Not implemented: -pptype");
+			}
 
-			// Print Symbol Table
-			for (String id : typechecker.symbols.keySet())
-				System.out.println("<" + id + "> is " + String.valueOf(typechecker.symbols.get(id)));
-			*/
+			// TODO: code generation
+
 		} catch (golite.lexer.LexerException e) {
-			System.out.println("INVALID (lexer error) at " + e.getMessage());
+			System.err.println("INVALID (lexer error) at " + e.getMessage());
 		} catch (golite.parser.ParserException e) {
-			System.out.println("INVALID (parser error) at " + e.getMessage());
+			System.err.println("INVALID (parser error) at " + e.getMessage());
 		} catch (GoLiteWeedingException e) {
-			System.out.println("INVALID (weeder error) at " + e.getMessage());
+			System.err.println("INVALID (weeder error) at " + e.getMessage());
 		} catch (FileNotFoundException e) {
-			System.out.println("Error: File \"" + args[0] + "\" not found.");
+			System.err.println("Error: File \"" + options.fullPath + "\" not found.");
 		} catch (Exception e) {
 			e.printStackTrace();
-			System.out.println(e);
+			System.err.println(e);
 		}
+	}
+
+	/* Command-line interface */
+
+	/**
+	 * Parse the command-line arguments
+	 *
+	 * Corner case: this code assumes that the filename doesn't start
+	 * with a `-` */
+	public static CLIOptions getCLIOptions(String[] args) {
+		CLIOptions options = new CLIOptions();
+		int i;
+
+		// Read options
+		for (i=0; i < args.length && args[i].startsWith("-"); i++) {
+			switch (args[i]) {
+			case "-dumpsymtab":
+				options.dumpSymbolTable = true;
+				break;
+			case "-dumpsymtaball":
+				options.dumpSymbolTableAll = true;
+				break;
+			case "-pprint":
+				options.prettyPrint = true;
+				break;
+			case "-pptype":
+				options.prettyPrintType = true;
+				break;
+			case "-dumptoks":
+				options.dumpToks = true;
+				break;
+			case "-displayast":
+				options.displayAST = true;
+				break;
+			default:
+				throw new IllegalArgumentException("Unexpected option "+args[i]);
+			}
+		}
+
+		if (i == args.length) {
+			throw new IllegalArgumentException("No input file specified");
+		}
+
+		if (i != args.length - 1) {
+			throw new IllegalArgumentException("Exactly one input file should be specified");
+		}
+
+		// Read filename
+		options.fullPath = args[i];
+		if (options.fullPath.endsWith(".go")) {
+			options.basePath = options.fullPath.substring(0, options.fullPath.length() - 3);
+		} else {
+			options.basePath = options.fullPath;
+		}
+
+		return options;
+	}
+
+	public static void printUsage() {
+		System.err.println(
+				"Usage:\n"
+				+ "    golite [options] inputFile\n\n"
+				+ "Options:\n"
+				+ "    Where [filename] is the base component of inputFile...\n"
+				+ "    -dumpsymtab: Dump the topmost frame of each scope to [filename].symtab\n"
+				+ "    -dumpsymtaball: Dump all frames to [filename].symtab\n"
+				+ "    -pprint: Write a pretty printed file to [filename].pretty.go\n"
+				+ "    -pptype: Write a pretty printed file with type information to\n"
+				+ "        [filename].pptype.go\n"
+				+ "    -dumptoks: Write a tokenized representation of the input to\n"
+				+ "        [filename].tokens.html\n"
+				+ "    -displayast: Display the abstract syntax tree in a graphical\n"
+				+ "        interface (blocking)"
+		);
 	}
 
 	public static Node getParsedAST(String filename) throws ParserException, LexerException, IOException {
@@ -90,8 +158,9 @@ public class Main {
 	/*
 	 * Generates a .html file to see tokens
 	 */
-	public static void TokenPrintHtml(Lexer lexer) throws LexerException, IOException {
-		PrintWriter fileHtml = new PrintWriter(new PrintWriter(path+".tokens.html"), true);
+	public static void tokenPrintHtml(String inputPath, String outputPathBase) throws LexerException, IOException {
+		Lexer lexer = new ConservingGoLexer(new PushbackReader(new FileReader(inputPath), 1024));
+		PrintWriter fileHtml = new PrintWriter(new PrintWriter(outputPathBase+".tokens.html"), true);
 
 		try {
 			StringBuilder html = new StringBuilder("<html><body><pre>");
@@ -110,7 +179,7 @@ public class Main {
 		}
 	}
 
-	public static void TokenPrintText(Lexer lexer) throws LexerException, IOException {
+	public static void tokenPrintText(Lexer lexer) throws LexerException, IOException {
 		int count=0; // To prevent some infinite loops
         while (lexer.peek() != null && count < 2000) {
         	count ++;
@@ -119,7 +188,7 @@ public class Main {
         }
 	}
 
-	public static void PrettyPrint(Node ast) throws FileNotFoundException {
+	public static void prettyPrint(Node ast, String path) throws FileNotFoundException {
 		// Pretty Print
 		PrintWriter filePretty = new PrintWriter(new PrintWriter(path+".pretty.go"), true);
 		PrettyPrinter pretty = new PrettyPrinter(filePretty) ;
@@ -127,18 +196,23 @@ public class Main {
 		filePretty.close();
 	}
 
-	public boolean TypeCheck(Node ast) throws FileNotFoundException {
+	public static boolean typeCheck(Node ast, String path) throws FileNotFoundException {
 		PrintWriter fileTypeChecker = new PrintWriter(new PrintWriter(path+".symbol.txt"), true);
-		TypeChecker typechecker = new TypeChecker(fileTypeChecker, stderr) ;
+		TypeChecker typechecker = new TypeChecker(fileTypeChecker, new PrintWriter(System.err)) ;
 		ast.apply(typechecker);
 		fileTypeChecker.close();
 		return typechecker.success;
 	}
+}
 
-	public static Token getFirstToken(Node node) {
-        if(node instanceof Token)
-            return (Token) node;
-        else
-            return (Token) tokenMap.get(node);
-    }
+/** Container class for command-line interface options */
+class CLIOptions {
+	public boolean dumpSymbolTable;
+	public boolean dumpSymbolTableAll;
+	public boolean prettyPrint;
+	public boolean prettyPrintType;
+	public boolean dumpToks;
+	public boolean displayAST;
+	public String fullPath;
+	public String basePath;
 }
