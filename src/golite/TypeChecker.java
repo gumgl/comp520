@@ -143,23 +143,31 @@ public class TypeChecker extends DepthFirstAdapter {
 	}
 	public void outATypedVariableSpec(ATypedVariableSpec node)
 	{
-		if (node.getId().size() != node.getExp().size())
-			error(node, "Number of variables and values do not match");
-		
 		Type type = getType(node.getTypeExp());
-		
+
+		// The weeder ensures that either there are no assignments or
+		// the number of variables matches the number of expressions
+		boolean hasAssignments = (node.getExp().size() != 0);
+
 		for (int i=0; i<node.getId().size(); i++) {
 			TId id = node.getId().get(i);
-			PExp value = node.getExp().get(i);
 			Symbol symbol = symbolTable.getInScope(id.getText());
-			
-			if (symbol != null) // Symbol already declared
+
+			if (symbol != null)
 				errorSymbolDeclared(id, symbol);
-			else if ( ! Type.Similar(getType(value), type)) // Value's type is not the same as the declared type
-				errorSymbolType(value, getType(value), type);
-			else
-				symbolTable.addSymbol(new Variable(id.getText(), type));
+
+			if (hasAssignments) {
+				PExp value = node.getExp().get(i);
+
+				// Value's type is not the same as the declared type
+				if (!Type.Similar(getType(value), type))
+					errorSymbolType(value, getType(value), type);
+			}
+
+			symbolTable.addSymbol(new Variable(id.getText(), type));
 		}
+
+
 		defaultOut(node);
 	}
 	// Basically the same as TypedVariableSpec but with type inference instead of typecheck
