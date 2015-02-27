@@ -8,7 +8,7 @@ java_source = golite/*.java golite/**/*.java
 java_class = golite/*.class golite/**/*.class
 jar_resource = golite/**/*.dat
 
-../golite.jar: $(java_class) $(jar_resource)
+../golite.jar: $(java_class) $(sablecc_generated)
 	jar cvfe ../golite.jar golite.Main $(java_class) $(jar_resource)
 
 $(java_class): $(java_source) $(sablecc_generated)
