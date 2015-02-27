@@ -152,10 +152,41 @@ public class TypeChecker extends DepthFirstAdapter {
 	{
 		defaultOut(node);
 	}
-	public void outAFunctionDeclaration(AFunctionDeclaration node)
-	{
-		defaultOut(node);
+
+	@Override
+	public void caseAFunctionDeclaration(AFunctionDeclaration node) {
+		inAFunctionDeclaration(node);
+
+		TId id = node.getId();
+
+		ensureUndeclared(id);
+
+		Function funcSignature = new Function(id.getText());
+		PTypeExp returnType = node.getReturnType();
+
+		if (returnType != null) {
+			returnType.apply(this);
+			funcSignature.setReturnType(getType(returnType));
+		}
+
+		// Add the symbol before checking the function body to support recursion
+		symbolTable.addSymbol(funcSignature);
+
+		symbolTable = symbolTable.newScope();
+		for (PFuncParam param : node.getFuncParam()) {
+			param.apply(this);
+			funcSignature.addArguments(((AFuncParam)param).getId().size(), getType(param));
+		}
+
+		for (Node stm : node.getStm())
+			stm.apply(this);
+
+		symbolTable = symbolTable.popScope();
+
+		outAFunctionDeclaration(node);
 	}
+
+
 	public void outATypedVariableSpec(ATypedVariableSpec node)
 	{
 		Type type = getType(node.getTypeExp());
@@ -218,8 +249,16 @@ public class TypeChecker extends DepthFirstAdapter {
 
 		defaultOut(node);
 	}
+
 	public void outAFuncParam(AFuncParam node)
 	{
+		Type type = getType(node.getTypeExp());
+
+		for (TId id : node.getId()) {
+			ensureUndeclared(id);
+			symbolTable.addSymbol(new Variable(id.getText(), type));
+		}
+
 		defaultOut(node);
 	}
 	public void outAAliasTypeExp(AAliasTypeExp node)

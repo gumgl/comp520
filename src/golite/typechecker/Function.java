@@ -14,7 +14,13 @@ public class Function extends Symbol {
 	public void addArgument(Type argument) {
 		argumentTypes.add(argument);
 	}
-	
+
+	public void addArguments(int count, Type argument) {
+		for (int i=0; i<count; i++) {
+			argumentTypes.add(argument);
+		}
+	}
+
 	public Type getReturnType() {
 		return returnType;
 	}
