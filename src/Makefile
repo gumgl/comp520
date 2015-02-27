@@ -7,6 +7,10 @@ mini: clean grammar
 	javac *.java golite/*/*.java
 	jar cvfe ../golite.jar Main *.class golite/*/!(*.java)
 
+# create user utility scripts
+../golite:
+	../tools/make_user_scripts.sh ..
+
 # to generate the compiler code
 grammar: golite.sablecc3
 	sablecc golite.sablecc3
