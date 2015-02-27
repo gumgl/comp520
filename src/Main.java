@@ -96,6 +96,7 @@ public class Main {
 				break;
 			case "-dumptoks":
 				options.dumpToks = true;
+				break;
 			case "-displayast":
 				options.displayAST = true;
 				break;
