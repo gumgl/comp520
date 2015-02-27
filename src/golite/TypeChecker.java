@@ -26,7 +26,8 @@ public class TypeChecker extends DepthFirstAdapter {
 	public boolean success = true;
 	PrintWriter stdout;
 	PrintWriter stderr;
-	
+	PositionHelper positionHelper;
+
 	public static void main(String[] args) {
 		ArrayList<String> list = new ArrayList<String>();
 		list.add("one");
@@ -35,16 +36,19 @@ public class TypeChecker extends DepthFirstAdapter {
 		/*list.add("four");*/
 		System.out.println(collectionToString(list, ", ", " and "));
 	}
-	
-	public TypeChecker(PrintWriter out, PrintWriter err) {
+
+	public TypeChecker(PrintWriter out, PrintWriter err, PositionHelper positionHelper) {
 		stdout = out;
 		stderr = err;
 
+		this.positionHelper = positionHelper;
+
 		preDeclare();
 	}
+
 	static private String collectionToString(Collection collection, String separator, String finalWord) {
 		StringBuilder sb = new StringBuilder();
-		
+
 		int i = 1;
 		int size = collection.size();
 		for (Object obj : collection) {
@@ -60,8 +64,7 @@ public class TypeChecker extends DepthFirstAdapter {
 		return sb.toString();
 	}
 	private void error(Node node, String message) {
-		Token token = Main.getFirstToken(node);
-		stderr.println("Type Error at ["+token.getLine()+","+token.getPos()+"]: " + message + ".");
+		stderr.println("Type Error at "+positionHelper.lineAndPos(node)+": " + message + ".");
 		success = false;
 	}
 	// When a symbol is already declared
