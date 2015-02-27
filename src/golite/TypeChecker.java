@@ -87,7 +87,13 @@ public class TypeChecker extends DepthFirstAdapter {
 		error(node, "Cannot typecast " + from + " to "+  to);
 	}
 	private Type getType(Node node) {
-		return types.get(node);
+		Type t = types.get(node);
+
+		if (t == null) {
+			throw new IllegalArgumentException(node.getClass().getSimpleName()+" with no type at "+positionHelper.lineAndPos(node));
+		}
+
+		return t;
 	}
 	private void setType(Node node, Type type) {
 		types.put(node, type);
