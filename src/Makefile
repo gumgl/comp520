@@ -17,6 +17,8 @@ check:
 checkall:
 	./checkall
 
-# remove SableCC files, pretty.golite files and then anything not .go
+# remove .class files, SableCC files, and generated files in the programs
+# directory
 clean:
 	rm -rf *.class golite/analysis golite/lexer golite/node golite/parser
+	git clean -f ../programs

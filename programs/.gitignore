@@ -1,0 +1,8 @@
+# Ignore everything but git files and .go files that are not
+# .pretty.go files
+*.*
+
+!.git*
+
+!*.go
+*.pretty.go
