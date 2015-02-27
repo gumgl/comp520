@@ -5,8 +5,7 @@ import golite.node.*;
 
 public class GoLiteWeeder extends DepthFirstAdapter {
 	protected int loopNestingLevel = 0;
-
-	PositionHelper positionHelper;
+	protected PositionHelper positionHelper;
 
 	public static void weed(Node node, PositionHelper positionHelper) {
 		GoLiteWeeder weeder = new GoLiteWeeder();
@@ -14,14 +13,19 @@ public class GoLiteWeeder extends DepthFirstAdapter {
 		node.apply(weeder);
 	}
 
+	private void throwError(Node node, String message) {
+		throw new GoLiteWeedingException(positionHelper.lineAndPos(node)+" "+message);
+	}
+
+	private void throwVariableLengthError(Node node) {
+		throwError(node, "There should be as many variables as expressions");
+	}
+
 	/* Loop-specific statements */
 	@Override
 	public void inAForStm(AForStm node) {
 		if (node.getPost() instanceof AShortVariableDecStm) {
-			throw new GoLiteWeedingException(
-					positionHelper.lineAndPos(node.getPost())
-						+ " Loop post statements cannot be variable declarations"
-				);
+			throwError(node.getPost(), "Cannot declare variables in for-increment statements");
 		}
 
 		loopNestingLevel++;
@@ -35,14 +39,14 @@ public class GoLiteWeeder extends DepthFirstAdapter {
 	@Override
 	public void inAContinueStm(AContinueStm node) {
 		if (loopNestingLevel == 0) {
-			throw new GoLiteWeedingException(positionHelper.lineAndPos(node) + " continue statement occurs outside loop");
+			throwError(node, "Continue statement occurs outside loop");
 		}
 	}
 
 	@Override
 	public void inABreakStm(ABreakStm node) {
 		if (loopNestingLevel == 0) {
-			throw new GoLiteWeedingException(positionHelper.lineAndPos(node) + " break statement occurs outside loop");
+			throwError(node, "Break statement occurs outside loop");
 		}
 	}
 
@@ -65,18 +69,13 @@ public class GoLiteWeeder extends DepthFirstAdapter {
 		}
 
 		if (lastFallthrough != null) {
-			throw new GoLiteWeedingException(positionHelper.lineAndPos(lastFallthrough)
-					+ " cannot end switch statement with fallthrough"
-				);
+			throwError(lastFallthrough, "Cannot end switch statement with fallthrough");
 		}
 
 		for (Node switchClause : node.getSwitchClause()) {
 			if (switchClause instanceof ADefaultSwitchClause) {
 				if (defaultEncountered) {
-					throw new GoLiteWeedingException(
-							positionHelper.lineAndPos(switchClause) +
-							" second default clause in switch statement"
-						);
+					throwError(switchClause, "Second default clause in switch statement");
 				}
 				defaultEncountered = true;
 			}
@@ -88,12 +87,12 @@ public class GoLiteWeeder extends DepthFirstAdapter {
 	public void inAShortVariableDecStm(AShortVariableDecStm node) {
 		for (Node id : node.getIds()) {
 			if (!(id instanceof AVariableExp)) {
-				throw new GoLiteWeedingException(positionHelper.lineAndPos(id) + " expected id");
+				throwError(id, "Expected id");
 			}
 		}
 
 		if (node.getIds().size() != node.getExp().size()) {
-			throw new GoLiteWeedingException(positionHelper.lineAndPos(node) + " should be as many identifiers as expressions");
+			throwVariableLengthError(node);
 		}
 	}
 
@@ -102,14 +101,14 @@ public class GoLiteWeeder extends DepthFirstAdapter {
 	public void inATypedVariableSpec(ATypedVariableSpec node) {
 		int expressionCount = node.getExp().size();
 		if (expressionCount > 0 && expressionCount != node.getId().size()) {
-			throw new GoLiteWeedingException(positionHelper.lineAndPos(node) + " should be as many identifiers as expressions");
+			throwVariableLengthError(node);
 		}
 	}
 
 	@Override
 	public void inAUntypedVariableSpec(AUntypedVariableSpec node) {
 		if (node.getExp().size() != node.getId().size()) {
-			throw new GoLiteWeedingException(positionHelper.lineAndPos(node) + " should be as many identifiers as expressions");
+			throwVariableLengthError(node);
 		}
 	}
 
@@ -117,7 +116,7 @@ public class GoLiteWeeder extends DepthFirstAdapter {
 	@Override
 	public void inAAssignStm(AAssignStm node) {
 		if (node.getExp().size() != node.getLvalue().size()) {
-			throw new GoLiteWeedingException(positionHelper.lineAndPos(node) + " should be as many values as targets");
+			throwError(node, "There should be as many values as targets");
 		}
 	}
 }
