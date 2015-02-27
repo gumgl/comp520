@@ -133,21 +133,10 @@ public class TypeChecker extends DepthFirstAdapter {
 		// Do nothing
 	}
 	/* ********* Top-level declarations **************** */
-	public void outStart(Start node)
-	{
-		defaultOut(node);
-	}
-	public void outAProgram(AProgram node)
-	{
-		if (node.getPackageName().getText() != "main")
-			error(node.getPackageName(), "The only package allowed is main");
-		defaultOut(node);
-	}
-	public void outAVariableDeclaration(AVariableDeclaration node)
-	{
-		// Nothing to do here, checks are done in individual VariableSpec
-		defaultOut(node);
-	}
+
+	// We don't need to do anything for variable declarations, checks are
+	// done in each individual VariableSpec
+
 	public void outATypeDeclaration(ATypeDeclaration node)
 	{
 		defaultOut(node);
