@@ -18,6 +18,10 @@ $ make check
 $ make checkall
 ~~~
 
+Running `make` creates the file `golite.jar` in the toplevel directory
+as well as Bash and Windows batch file utility scripts named `golite` and
+`golite.bat`.
+
 # Instructions
 
 These are instructions to invoke the behavior specified for the
@@ -31,4 +35,4 @@ From the root directory, run `golite -pprint inputFile`.
 ## Milestone 2
 
 From the root directory, run
-`./golite [-dumpsymtab] [-dumpsymtaball] [-pptype] inputFile`.
+`golite [-dumpsymtab] [-dumpsymtaball] [-pptype] inputFile`.

@@ -20,6 +20,8 @@ hs_err_pid*
 # Generated files
 /bin/
 /src/golite/
+/golite
+/golite.bat
 
 # Ignore all files in programs/*
 /programs/*/*
