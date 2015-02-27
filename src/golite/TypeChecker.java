@@ -201,17 +201,11 @@ public class TypeChecker extends DepthFirstAdapter {
 		}
 		defaultOut(node);
 	}
-	public void inATypeSpec(ATypeSpec node)
-	{
-		defaultIn(node);
-		symbolTable = symbolTable.newScope();
-	}
+
 	public void outATypeSpec(ATypeSpec node)
 	{
-		// Get the first (and only) symbol added: the new type in our TypeExp
-		Type type = (Type) symbolTable.getSymbols().iterator().next();
-		symbolTable = symbolTable.popScope();
-		
+		Type type = getType(node.getTypeExp());
+
 		// Verify if ID is available
 		TId id = node.getId();
 
