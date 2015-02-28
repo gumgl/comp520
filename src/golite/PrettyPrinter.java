@@ -927,14 +927,17 @@ public class PrettyPrinter extends DepthFirstAdapter {
 	public void caseAAppendExp(AAppendExp node)
 	{
 		inAAppendExp(node);
+		p("append(");
 		if(node.getId() != null)
 		{
 			p(node.getId().getText());
 		}
+		p(", ");
 		if(node.getExp() != null)
 		{
 			node.getExp().apply(this);
 		}
+		p(")");
 		outAAppendExp(node);
 	}
 
