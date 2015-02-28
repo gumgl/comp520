@@ -291,8 +291,6 @@ public class TypeChecker extends DepthFirstAdapter {
 		}
 
 		symbolTable = symbolTable.popScope();
-		symbolTable.addSymbol(structType);
-
 		setType(node, structType);
 
 		defaultOut(node);
