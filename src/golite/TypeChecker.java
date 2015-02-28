@@ -617,17 +617,19 @@ public class TypeChecker extends DepthFirstAdapter {
 	{
 		defaultOut(node);
 	}
-	public void inAFieldAccessExp(AFieldAccessExp node)
-	{
-		defaultIn(node);
-		TId id = node.getId();
-		Symbol symbol = symbolTable.get(id.getText());
-		if (symbol == null)
-			errorSymbolNotFound(id, id.getText());
-	}
 	public void outAFieldAccessExp(AFieldAccessExp node)
 	{
-		
+		Type t = getType(node.getExp());
+
+		if (!(t instanceof StructType))
+			errorSymbolType(node.getExp(), t, new StructType());
+
+		Variable field = ((StructType)t).getField(node.getId().getText());
+
+		if (field == null)
+			error(node.getId(), "Field "+node.getId().getText()+" is not defined for type "+t);
+
+		setType(node, field.getType());
 		defaultOut(node);
 	}
 	public void outALitIntExp(ALitIntExp node)
