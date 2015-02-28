@@ -1,10 +1,12 @@
 package golite;
 
 import golite.parser.* ;
+import golite.typechecker.Type;
 import golite.lexer.* ;
 import golite.node.* ;
 
 import java.io.* ;
+import java.util.HashMap;
 
 public class Main {
 	public static void main(String[] args) {
@@ -52,10 +54,10 @@ public class Main {
 				throw new RuntimeException("Not implemented: -dumpsymtaball");
 			}
 
-			typeCheck(ast, options.basePath, positionHelper);
+			HashMap<Node, Type> types = typeCheck(ast, options.basePath, positionHelper);
 
 			if (options.prettyPrintType) {
-				throw new RuntimeException("Not implemented: -pptype");
+				prettyPrintTyped(ast, options.basePath, types);
 			}
 
 			// TODO: code generation
@@ -199,7 +201,15 @@ public class Main {
 		filePretty.close();
 	}
 
-	public static void typeCheck(Node ast, String path, PositionHelper positionHelper) throws FileNotFoundException {
+	public static void prettyPrintTyped(Node ast, String path, HashMap<Node, Type> types) throws FileNotFoundException {
+		// Pretty Print
+		PrintWriter filePretty = new PrintWriter(new PrintWriter(path+".pptype.go"), true);
+		PrettyPrinter pretty = new TypedPrettyPrinter(filePretty, types);
+		ast.apply(pretty);
+		filePretty.close();
+	}
+
+	public static HashMap<Node, Type> typeCheck(Node ast, String path, PositionHelper positionHelper) throws FileNotFoundException {
 		PrintWriter fileTypeChecker = new PrintWriter(new PrintWriter(path+".symbol.txt"), true);
 		TypeChecker typechecker = new TypeChecker(fileTypeChecker, positionHelper);
 		try {
@@ -207,6 +217,7 @@ public class Main {
 		} finally {
 			fileTypeChecker.close();
 		}
+		return typechecker.types;
 	}
 }
 
