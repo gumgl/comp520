@@ -257,6 +257,8 @@ public class TypeChecker extends DepthFirstAdapter {
 		setType(node, type);
 		defaultOut(node);
 	}
+
+	/* ****************** Type expressions ****************** */
 	public void outAAliasTypeExp(AAliasTypeExp node)
 	{
 		TId id = node.getId();
@@ -342,6 +344,8 @@ public class TypeChecker extends DepthFirstAdapter {
 		}
 		defaultOut(node);
 	}
+
+	/* ******************** Statements ******************** */
 	public void outAExpressionStm(AExpressionStm node)
 	{
 		defaultOut(node);
@@ -463,6 +467,8 @@ public class TypeChecker extends DepthFirstAdapter {
 	{
 		defaultOut(node);
 	}
+
+	/* ******************** Expressions ******************** */
 	public void outAVariableExp(AVariableExp node)
 	{
 		TId id = node.getId();
