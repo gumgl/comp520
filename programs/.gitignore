@@ -6,3 +6,4 @@
 
 !*.go
 *.pretty.go
+*.pptype.go
