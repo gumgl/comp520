@@ -1,15 +1,9 @@
 package golite;
 
-import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Dictionary;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.List;
 
 import golite.node.* ;
@@ -31,14 +25,6 @@ public class TypeChecker extends DepthFirstAdapter {
 	final BuiltInType runeType = new BuiltInType("rune");
 	final BuiltInType stringType = new BuiltInType("string");
 
-	public static void main(String[] args) {
-		ArrayList<String> list = new ArrayList<String>();
-		list.add("one");
-		list.add("two");
-		list.add("three");
-		/*list.add("four");*/
-		System.out.println(collectionToString(list, ", ", " and "));
-	}
 
 	public TypeChecker(PrintWriter out, PositionHelper positionHelper) {
 		stdout = out;
@@ -47,7 +33,7 @@ public class TypeChecker extends DepthFirstAdapter {
 		preDeclareBooleans();
 	}
 
-	static private String collectionToString(Collection collection, String separator, String finalWord) {
+	static private String collectionToString(Collection<?> collection, String separator, String finalWord) {
 		StringBuilder sb = new StringBuilder();
 
 		int i = 1;
@@ -127,11 +113,11 @@ public class TypeChecker extends DepthFirstAdapter {
 		return type instanceof BuiltInType && type != stringType;
 	}
 
-	public void defaultIn(@SuppressWarnings("unused") Node node)
+	public void defaultIn(Node node)
 	{
 		// Do nothing
 	}
-	public void defaultOut(@SuppressWarnings("unused") Node node)
+	public void defaultOut(Node node)
 	{
 		// Do nothing
 	}
@@ -258,7 +244,7 @@ public class TypeChecker extends DepthFirstAdapter {
 			errorSymbolClass(node, symbol, Type.class);
 		else
 			setType(node, (Type) symbol);
-		
+
 		defaultOut(node);
 	}
 	public void outAIntTypeExp(AIntTypeExp node)
@@ -604,7 +590,7 @@ public class TypeChecker extends DepthFirstAdapter {
 	{
 		TId id = node.getId();
 		Symbol symbol = symbolTable.get(id.getText());
-		
+
 		if (symbol == null)
 			errorSymbolNotFound(id, id.getText());
 		else if ( ! (symbol instanceof Variable))
