@@ -914,10 +914,12 @@ public class PrettyPrinter extends DepthFirstAdapter {
 		{
 			node.getTypeExp().apply(this);
 		}
+		p("(");
 		if(node.getExp() != null)
 		{
 			node.getExp().apply(this);
 		}
+		p(")");
 		outABaseTypeCastExp(node);
 	}
 
