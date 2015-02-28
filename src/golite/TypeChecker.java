@@ -301,7 +301,7 @@ public class TypeChecker extends DepthFirstAdapter {
 	{
 		SliceType sliceType = new SliceType();
 		sliceType.setType(getType(node.getTypeExp()));
-		symbolTable.addSymbol(sliceType);
+		setType(node, sliceType);
 		defaultOut(node);
 	}
 	public void outAArrayTypeExp(AArrayTypeExp node)
@@ -601,6 +601,16 @@ public class TypeChecker extends DepthFirstAdapter {
 	}
 	public void outAArrayAccessExp(AArrayAccessExp node)
 	{
+		Type t = getType(node.getArray());
+
+		if (!Type.Similar(getType(node.getIndex()), intType)) {
+			errorSymbolType(node.getIndex(), getType(node.getIndex()), intType);
+		}
+
+		if (!(t instanceof ArrayType || t instanceof SliceType))
+			errorSymbolType(node.getArray(), t, new ArrayType());
+
+		setType(node, t);
 		defaultOut(node);
 	}
 	public void outAFieldAccessExp(AFieldAccessExp node)
@@ -712,6 +722,21 @@ public class TypeChecker extends DepthFirstAdapter {
 
 	public void outAAppendExp(AAppendExp node)
 	{
+		Symbol slice = symbolTable.get(node.getId().getText());
+
+		if (slice == null)
+			errorSymbolNotFound(node.getId(), node.getId().getText());
+
+		if (!(slice instanceof Variable))
+			errorSymbolClass(node.getId(), slice, Variable.class);
+
+		Type sliceType = ((Variable)slice).getType();
+		Type expType = getType(node.getExp());
+
+		if (!(sliceType instanceof SliceType && Type.Similar(((SliceType)sliceType).getType(), expType)))
+			errorSymbolType(node.getId(), sliceType, new SliceType(null, expType));
+
+		setType(node, sliceType);
 		defaultOut(node);
 	}
 	public void outABinaryExp(ABinaryExp node)
