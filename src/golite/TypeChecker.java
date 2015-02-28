@@ -113,6 +113,29 @@ public class TypeChecker extends DepthFirstAdapter {
 		return type instanceof BuiltInType && type != stringType;
 	}
 
+	private boolean isNumericType(Type type) {
+		Type underlying = type.getUnderlying();
+		return underlying == intType || underlying == floatType || underlying == runeType;
+	}
+
+	private boolean isIntegerType(Type type) {
+		Type underlying = type.getUnderlying();
+		return underlying == intType || underlying == runeType;
+	}
+
+	private boolean isOrderedType(Type type) {
+		BuiltInType underlying = type.getUnderlying();
+		return underlying instanceof BuiltInType && underlying != boolType;
+	}
+
+	private boolean isComparableType(Type type) {
+		return type.getUnderlying() instanceof BuiltInType;
+	}
+
+	private boolean isBooleanType(Type type) {
+		return type.getUnderlying() == boolType;
+	}
+
 	public void defaultIn(Node node)
 	{
 		// Do nothing
@@ -440,150 +463,6 @@ public class TypeChecker extends DepthFirstAdapter {
 	{
 		defaultOut(node);
 	}
-	public void outAIncPostfixOp(AIncPostfixOp node)
-	{
-		defaultOut(node);
-	}
-	public void outADecPostfixOp(ADecPostfixOp node)
-	{
-		defaultOut(node);
-	}
-	public void outAPlusAssignOp(APlusAssignOp node)
-	{
-		defaultOut(node);
-	}
-	public void outAMinusAssignOp(AMinusAssignOp node)
-	{
-		defaultOut(node);
-	}
-	public void outAStarAssignOp(AStarAssignOp node)
-	{
-		defaultOut(node);
-	}
-	public void outASlashAssignOp(ASlashAssignOp node)
-	{
-		defaultOut(node);
-	}
-	public void outAPercentAssignOp(APercentAssignOp node)
-	{
-		defaultOut(node);
-	}
-	public void outAAmpAssignOp(AAmpAssignOp node)
-	{
-		defaultOut(node);
-	}
-	public void outAPipeAssignOp(APipeAssignOp node)
-	{
-		defaultOut(node);
-	}
-	public void outACaretAssignOp(ACaretAssignOp node)
-	{
-		defaultOut(node);
-	}
-	public void outALshiftAssignOp(ALshiftAssignOp node)
-	{
-		defaultOut(node);
-	}
-	public void outARshiftAssignOp(ARshiftAssignOp node)
-	{
-		defaultOut(node);
-	}
-	public void outAAmpCaretAssignOp(AAmpCaretAssignOp node)
-	{
-		defaultOut(node);
-	}
-	public void outALogicalOrBinaryOp(ALogicalOrBinaryOp node)
-	{
-		defaultOut(node);
-	}
-	public void outALogicalAndBinaryOp(ALogicalAndBinaryOp node)
-	{
-		defaultOut(node);
-	}
-	public void outAEqBinaryOp(AEqBinaryOp node)
-	{
-		defaultOut(node);
-	}
-	public void outAGtBinaryOp(AGtBinaryOp node)
-	{
-		defaultOut(node);
-	}
-	public void outALtBinaryOp(ALtBinaryOp node)
-	{
-		defaultOut(node);
-	}
-	public void outAGtEqBinaryOp(AGtEqBinaryOp node)
-	{
-		defaultOut(node);
-	}
-	public void outALtEqBinaryOp(ALtEqBinaryOp node)
-	{
-		defaultOut(node);
-	}
-	public void outANotEqBinaryOp(ANotEqBinaryOp node)
-	{
-		defaultOut(node);
-	}
-	public void outAPlusBinaryOp(APlusBinaryOp node)
-	{
-		defaultOut(node);
-	}
-	public void outAMinusBinaryOp(AMinusBinaryOp node)
-	{
-		defaultOut(node);
-	}
-	public void outAStarBinaryOp(AStarBinaryOp node)
-	{
-		defaultOut(node);
-	}
-	public void outASlashBinaryOp(ASlashBinaryOp node)
-	{
-		defaultOut(node);
-	}
-	public void outAPercentBinaryOp(APercentBinaryOp node)
-	{
-		defaultOut(node);
-	}
-	public void outAAmpBinaryOp(AAmpBinaryOp node)
-	{
-		defaultOut(node);
-	}
-	public void outAPipeBinaryOp(APipeBinaryOp node)
-	{
-		defaultOut(node);
-	}
-	public void outACaretBinaryOp(ACaretBinaryOp node)
-	{
-		defaultOut(node);
-	}
-	public void outALshiftBinaryOp(ALshiftBinaryOp node)
-	{
-		defaultOut(node);
-	}
-	public void outARshiftBinaryOp(ARshiftBinaryOp node)
-	{
-		defaultOut(node);
-	}
-	public void outAAmpCaretBinaryOp(AAmpCaretBinaryOp node)
-	{
-		defaultOut(node);
-	}
-	public void outAPlusUnaryOp(APlusUnaryOp node)
-	{
-		defaultOut(node);
-	}
-	public void outAMinusUnaryOp(AMinusUnaryOp node)
-	{
-		defaultOut(node);
-	}
-	public void outAExclamationUnaryOp(AExclamationUnaryOp node)
-	{
-		defaultOut(node);
-	}
-	public void outACaretUnaryOp(ACaretUnaryOp node)
-	{
-		defaultOut(node);
-	}
 	public void outAVariableExp(AVariableExp node)
 	{
 		TId id = node.getId();
@@ -739,10 +618,91 @@ public class TypeChecker extends DepthFirstAdapter {
 	}
 	public void outABinaryExp(ABinaryExp node)
 	{
+		boolean operatorFound = false;
+
+		Node left = node.getLeft();
+		Node right = node.getRight();
+		Type leftType = getType(left);
+		Type rightType = getType(right);
+		PBinaryOp op = node.getBinaryOp();
+
+		if (op instanceof ALogicalOrBinaryOp || op instanceof ALogicalAndBinaryOp) {
+			if (!isBooleanType(leftType))
+				error(left, "Expected boolean type but got "+leftType);
+			if (!isBooleanType(rightType))
+				error(left, "Expected boolean type but got "+leftType);
+
+			setType(node, boolType);
+
+			operatorFound = true;
+		} else {
+			if (!Type.Similar(leftType, rightType))
+				error(node, "Mismatched types "+leftType+" and "+rightType);
+
+			if (op instanceof AEqBinaryOp || op instanceof ANotEqBinaryOp) {
+				if (!isComparableType(leftType))
+					error(left, "Expected comparable type but got "+leftType);
+
+				setType(node, boolType);
+				operatorFound = true;
+			} else if (op instanceof ALtEqBinaryOp || op instanceof ALtBinaryOp
+					|| op instanceof AGtEqBinaryOp || op instanceof AGtBinaryOp) {
+
+				if (!isOrderedType(leftType))
+					error(left, "Expected ordered type but got "+leftType);
+
+				setType(node, boolType);
+				operatorFound = true;
+			} else if (op instanceof APlusBinaryOp) {
+				if (!(isNumericType(leftType) || leftType.getUnderlying() == stringType))
+					error(left, "Expected numeric or string type but got "+leftType);
+				setType(node, leftType);
+				operatorFound = true;
+			} else if (op instanceof AMinusBinaryOp || op instanceof AStarBinaryOp
+					|| op instanceof ASlashBinaryOp || op instanceof APercentBinaryOp) {
+
+				if (!isNumericType(leftType))
+					error(left, "Expected numeric type but got "+leftType);
+				setType(node, leftType);
+				operatorFound = true;
+			} else if (op instanceof APipeBinaryOp || op instanceof AAmpBinaryOp
+					|| op instanceof ALshiftBinaryOp || op instanceof ARshiftBinaryOp
+					|| op instanceof AAmpCaretBinaryOp || op instanceof ACaretBinaryOp) {
+
+				if (!isIntegerType(leftType))
+					error(left, "Expected integer type but got "+leftType);
+
+				setType(node, leftType);
+				operatorFound = true;
+			}
+		}
+
+		if (!operatorFound)
+			throw new IllegalArgumentException("Bad binary operator: "+op);
+
 		defaultOut(node);
 	}
+
 	public void outAUnaryExp(AUnaryExp node)
 	{
+		Node exp = node.getExp();
+		Type expType = getType(exp);
+		PUnaryOp op = node.getUnaryOp();
+
+		if (op instanceof APlusUnaryOp || op instanceof AMinusUnaryOp) {
+			if (!isNumericType(expType))
+				error(exp, "Expected numeric type but got "+expType);
+		} else if (op instanceof AExclamationUnaryOp) {
+			if (!isBooleanType(expType))
+				error(exp, "Expected boolean type but got "+expType);
+		} else if (op instanceof ACaretUnaryOp) {
+			if (!isIntegerType(expType))
+				error(exp, "Expected integer type but got "+expType);
+		} else {
+			throw new IllegalArgumentException("Bad unary operator: "+op);
+		}
+
+		setType(node, expType);
 		defaultOut(node);
 	}
 }
