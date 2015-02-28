@@ -3,16 +3,14 @@ package golite.typechecker;
 public class SliceType extends Type {
 
 	Type type;
-	int size;
 	
 	public SliceType() {
 		super();
 	}
 	
-	public SliceType(String identifier, Type pType, int pSize) {
+	public SliceType(String identifier, Type pType) {
 		super(identifier);
 		type = pType;
-		size = pSize;
 	}
 
 	public Type getType() {
@@ -21,14 +19,6 @@ public class SliceType extends Type {
 
 	public void setType(Type type) {
 		this.type = type;
-	}
-
-	public int getSize() {
-		return size;
-	}
-
-	public void setSize(int size) {
-		this.size = size;
 	}
 
 	@Override
