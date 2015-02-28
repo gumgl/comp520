@@ -4,8 +4,8 @@ import java.util.ArrayList;
 
 public class Function extends Symbol {
 
-	Type returnType;
-	ArrayList<Type> argumentTypes;
+	protected Type returnType;
+	protected ArrayList<Type> argumentTypes = new ArrayList<Type>();
 	
 	public Function(String identifier) {
 		super(identifier);
@@ -21,7 +21,12 @@ public class Function extends Symbol {
 		}
 	}
 
+	public ArrayList<Type> getArguments() {
+		return argumentTypes;
+	}
+
 	public Type getReturnType() {
+		assert returnType != null;
 		return returnType;
 	}
 

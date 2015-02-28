@@ -156,7 +156,9 @@ public class TypeChecker extends DepthFirstAdapter {
 		Function funcSignature = new Function(id.getText());
 		PTypeExp returnType = node.getReturnType();
 
-		if (returnType != null) {
+		if (returnType == null)  {
+			funcSignature.setReturnType(new VoidType());
+		} else {
 			returnType.apply(this);
 			funcSignature.setReturnType(getType(returnType));
 		}
@@ -243,6 +245,7 @@ public class TypeChecker extends DepthFirstAdapter {
 			symbolTable.addSymbol(new Variable(id.getText(), type));
 		}
 
+		setType(node, type);
 		defaultOut(node);
 	}
 	public void outAAliasTypeExp(AAliasTypeExp node)
@@ -664,6 +667,44 @@ public class TypeChecker extends DepthFirstAdapter {
 	}
 	public void outAFunctionCallExp(AFunctionCallExp node)
 	{
+		String identifier = node.getId().getText();
+		Symbol functorSymbol = symbolTable.get(identifier);
+
+		if (functorSymbol == null)
+			errorSymbolNotFound(node.getId(), identifier);
+
+		List<PExp> exps = node.getExp();
+
+		if (functorSymbol instanceof Type) {
+			if (exps.size() != 1)
+				error(node, "Expected an expression to typecast but saw a list of expressions");
+
+			processTypeCast(node, (Type)functorSymbol, exps.get(0));
+			setType(node, (Type)functorSymbol);
+		} else if (functorSymbol instanceof Function) {
+			Function func = (Function)functorSymbol;
+
+			if (exps.size() != func.getArguments().size())
+				error(node, "Wrong number of arguments");
+
+			for (int i=0; i<exps.size(); i++) {
+				PExp exp = exps.get(i);
+				Type expType = getType(exp);
+				Type argType = func.getArguments().get(i);
+				if (!Type.Similar(expType, argType))
+					errorSymbolType(exp, expType, argType);
+			}
+
+			setType(node, func.getReturnType());
+		} else {
+			if (exps.size() != 1)
+				errorSymbolClass(node, functorSymbol, Function.class);
+
+			Collection<Class<? extends Symbol>> expected = new ArrayList<Class<? extends Symbol>>();
+			expected.add(Function.class);
+			expected.add(Type.class);
+			errorSymbolClasses(node, functorSymbol, expected);
+		}
 		defaultOut(node);
 	}
 	public void outABaseTypeCastExp(ABaseTypeCastExp node)
