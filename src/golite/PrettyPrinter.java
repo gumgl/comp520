@@ -14,24 +14,24 @@ public class PrettyPrinter extends DepthFirstAdapter {
 	public PrettyPrinter(PrintWriter writer) {
 		output = writer;
 	}
-	private void p(String text) {
+	protected void p(String text) {
 		output.print(text);
 	}
-	private void pln(String text) {
+	protected void pln(String text) {
 		startl();
 		p(text);
 		endl();
 	}
-	private void shift() {
+	protected void shift() {
 		prepend.append(indent);
 	}
-	private void unshift() {
+	protected void unshift() {
 		prepend.delete(0, indent.length());
 	}
-	private void startl() {
+	protected void startl() {
 		p(prepend.toString());
 	}
-	private void endl() {
+	protected void endl() {
 		p("\n");
 	}
 
@@ -761,7 +761,9 @@ public class PrettyPrinter extends DepthFirstAdapter {
 	//exp:
 	public void caseAVariableExp(AVariableExp node)
 	{
+		inAVariableExp(node);
 		p(node.getId().getText());
+		outAVariableExp(node);
 	}
 
 
