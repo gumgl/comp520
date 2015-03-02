@@ -474,7 +474,7 @@ public class TypeChecker extends DepthFirstAdapter {
 		
 		PExp valueExp = node.getExp();
 		Type expType = getType(valueExp);
-		if (!Type.Similar(boolType, expType)){ //exp is not bool type
+		if (!isBooleanType(expType)){ //exp is not bool type
 			errorSymbolType(valueExp, expType, boolType);
 		}
 		if (node.getIfBlock().size()!=0){
@@ -519,7 +519,7 @@ public class TypeChecker extends DepthFirstAdapter {
 		if (node.getExp()!=null){
 			PExp valueExp = node.getExp();
 			Type expType = getType(valueExp);
-			if (!Type.Similar(boolType, expType)){//expected bool but found expType
+			if (!isBooleanType(expType)){//expected bool but found expType
 				errorSymbolType(valueExp,expType,boolType);
 			}
 		}
