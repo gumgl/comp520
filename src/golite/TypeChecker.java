@@ -14,7 +14,7 @@ import golite.typechecker.*;
 public class TypeChecker extends DepthFirstAdapter {
 
 	public HashMap<Node,Type> types = new HashMap<Node,Type>(); // Mapping a Type for every Node
-	public SymbolTable symbolTable = new SymbolTable(null);
+	public SymbolTable symbolTable = new SymbolTable();
 	PrintWriter stdout;
 	PositionHelper positionHelper;
 
@@ -110,7 +110,7 @@ public class TypeChecker extends DepthFirstAdapter {
 		symbolTable.addSymbol(new Variable("false", boolType));
 
 		// Shadow them
-		symbolTable = symbolTable.newScope();
+		symbolTable.addScope();
 	}
 
 	private boolean canBeCast(Type type) {
@@ -180,7 +180,7 @@ public class TypeChecker extends DepthFirstAdapter {
 		// Add the symbol before checking the function body to support recursion
 		symbolTable.addSymbol(funcSignature);
 
-		symbolTable = symbolTable.newScope();
+		symbolTable.addScope();
 		for (PFuncParam param : node.getFuncParam()) {
 			param.apply(this);
 			funcSignature.addArguments(((AFuncParam)param).getId().size(), getType(param));
@@ -189,7 +189,7 @@ public class TypeChecker extends DepthFirstAdapter {
 		for (Node stm : node.getStm())
 			stm.apply(this);
 
-		symbolTable = symbolTable.popScope();
+		symbolTable.dropScope();
 
 		outAFunctionDeclaration(node);
 	}
@@ -307,7 +307,7 @@ public class TypeChecker extends DepthFirstAdapter {
 	{
 		defaultIn(node);
 		// Create a new scope in which we declare fields as Variables
-		symbolTable = symbolTable.newScope();
+		symbolTable.addScope();
 	}
 
 	public void outAStructTypeExp(AStructTypeExp node)
@@ -320,7 +320,7 @@ public class TypeChecker extends DepthFirstAdapter {
 			structType.addField((Variable)symbol);
 		}
 
-		symbolTable = symbolTable.popScope();
+		symbolTable.dropScope();
 		setType(node, structType);
 
 		defaultOut(node);
