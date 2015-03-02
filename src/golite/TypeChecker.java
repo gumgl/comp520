@@ -436,22 +436,13 @@ public class TypeChecker extends DepthFirstAdapter {
 
 		defaultOut(node);
 	}
-	public void outAVariableDecStm(AVariableDecStm node)
-	{
-		assert node.getVariableSpec().size()>0;
-		for (int i=0; i < node.getVariableSpec().size(); i++) {
-			PVariableSpec value = node.getVariableSpec().get(i);
-			Type vType = getType(value);
-		}
+	/* We don't need to do anything for variable and type declaration statements
+	 * except for short variable declarations: in the other cases, all the work
+	 * is done in the type or variable spec */
+	public void outAVariableDecStm(AVariableDecStm node) {
 		defaultOut(node);
 	}
-	public void outATypeDecStm(ATypeDecStm node)
-	{
-		assert node.getTypeSpec().size()>0;
-		for (int i=0; i < node.getTypeSpec().size(); i++) {
-			PTypeSpec value = node.getTypeSpec().get(i);
-			Type vType = getType(value);
-		}
+	public void outATypeDecStm(ATypeDecStm node) {
 		defaultOut(node);
 	}
 	public void outAPrintStm(APrintStm node)
