@@ -114,7 +114,8 @@ public class TypeChecker extends DepthFirstAdapter {
 	}
 
 	private boolean canBeCast(Type type) {
-		return type instanceof BuiltInType && type != stringType;
+		Type underlying = type.getUnderlying();
+		return underlying instanceof BuiltInType && underlying != stringType;
 	}
 
 	private boolean isNumericType(Type type) {
@@ -609,7 +610,7 @@ public class TypeChecker extends DepthFirstAdapter {
 	private void processTypeCast(Node node, Type to, PExp exp) {
 		Type from = getType(exp);
 
-		if (canBeCast(from.getUnderlying()) && canBeCast(to.getUnderlying()))
+		if (canBeCast(from) && canBeCast(to))
 			setType(node, to);
 		else
 			errorTypeCast(node, from, to);
