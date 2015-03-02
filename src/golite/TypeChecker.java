@@ -24,6 +24,7 @@ public class TypeChecker extends DepthFirstAdapter {
 	final BuiltInType floatType = new BuiltInType("float64");
 	final BuiltInType runeType = new BuiltInType("rune");
 	final BuiltInType stringType = new BuiltInType("string");
+	final VoidType voidType = new VoidType();
 
 
 	public TypeChecker(PrintWriter out, PositionHelper positionHelper) {
@@ -169,7 +170,7 @@ public class TypeChecker extends DepthFirstAdapter {
 		PTypeExp returnType = node.getReturnType();
 
 		if (returnType == null)  {
-			funcSignature.setReturnType(new VoidType());
+			funcSignature.setReturnType(voidType);
 		} else {
 			returnType.apply(this);
 			funcSignature.setReturnType(getType(returnType));
