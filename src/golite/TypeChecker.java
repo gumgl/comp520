@@ -358,7 +358,7 @@ public class TypeChecker extends DepthFirstAdapter {
 			Type lType = getType(node.getLvalue().get(i));
 			PExp value = node.getExp().get(i);
 			Type vType = getType(value);
-
+			
 			if ( ! Type.Similar(lType, vType)) // Value's type is not the same as the declared type
 				errorSymbolType(value, vType, lType);
 		}
@@ -366,10 +366,24 @@ public class TypeChecker extends DepthFirstAdapter {
 	}
 	public void outAOpAssignStm(AOpAssignStm node)
 	{
+			Type lType = getType(node.getLvalue());
+			PExp valueExp = node.getExp();
+			Type vType = getType(valueExp);
+			//PAssignOp valueOp = node.getAssignOp();
+			//Type opType = getType(valueOp);
+			if ( !Type.Similar(lType, vType)) { // Value's type is not the same as the declared type
+				errorSymbolType(valueExp, vType, lType);
+			}
 		defaultOut(node);
 	}
 	public void outAIncDecStm(AIncDecStm node)
 	{
+		PExp value = node.getExp();
+		Type vType = getType(value);
+		//PPostfixOp node.getPostfixOp()
+		if (!Type.Similar(floatType, vType)|!Type.Similar(intType,vType)){
+			errorSymbolType(value, vType,floatType); //found vType, expected int/float
+		}
 		defaultOut(node);
 	}
 
@@ -413,49 +427,150 @@ public class TypeChecker extends DepthFirstAdapter {
 	}
 	public void outAVariableDecStm(AVariableDecStm node)
 	{
+		assert node.getVariableSpec().size()>0;
+		for (int i=0; i < node.getVariableSpec().size(); i++) {
+			PVariableSpec value = node.getVariableSpec().get(i);
+			Type vType = getType(value);
+		}
 		defaultOut(node);
 	}
 	public void outATypeDecStm(ATypeDecStm node)
 	{
+		assert node.getTypeSpec().size()>0;
+		for (int i=0; i < node.getTypeSpec().size(); i++) {
+			PTypeSpec value = node.getTypeSpec().get(i);
+			Type vType = getType(value);
+		}
 		defaultOut(node);
 	}
 	public void outAPrintStm(APrintStm node)
 	{
+		//PPrintOp op= node.getPrintOp();
+		for (int i=0; i<node.getExp().size(); i++) {
+			PExp value = node.getExp().get(i);
+			Type vType = getType(value);
+			if(Type.Similar(null, vType)){
+			
+			}
+		}
 		defaultOut(node);
 	}
 	public void outAReturnStm(AReturnStm node)
 	{
+		if (node.getExp()!=null){
+			//check exp
+			PExp valueExp = node.getExp();
+			Type expType = getType(valueExp);
+		}
 		defaultOut(node);
 	}
 	public void outAIfStm(AIfStm node)
 	{
+		if (node.getStm()!=null){
+			//check stm
+			PStm valueStm = node.getStm();
+			Type stmType = getType(valueStm);
+		}
+		
+		PExp valueExp = node.getExp();
+		Type expType = getType(valueExp);
+		if (!Type.Similar(boolType, expType)){ //exp is not bool type
+			errorSymbolType(valueExp, expType, boolType);
+		}
+		if (node.getIfBlock().size()!=0){
+			for (int i=0; i<node.getIfBlock().size();i++){
+				PStm valueStm = node.getIfBlock().get(i);
+				Type stmType = getType(valueStm);
+			}
+		}
+		for (int j=0; j<node.getElseBlock().size();j++){
+			PStm valueStm = node.getIfBlock().get(j);
+			Type stmType = getType(valueStm);
+		}
+		 
 		defaultOut(node);
 	}
 	public void outASwitchStm(ASwitchStm node)
 	{
+		if (node.getStm()!=null){
+			PStm valueStm = node.getStm();
+			Type stmType = getType (valueStm);
+		}
+		if (node.getExp()!=null){
+			PExp valueExp = node.getExp();
+			Type expType = getType (valueExp);
+		}
+		//SwitchClause
+		if (node.getSwitchClause().size()!=0){
+			for (int i=0; i<node.getSwitchClause().size();i++){
+				PSwitchClause valueSwitch = node.getSwitchClause().get(i);
+				Type switchType = getType(valueSwitch);
+			}
+		}
 		defaultOut(node);
 	}
 	public void outAForStm(AForStm node)
 	{
+		//[init]:stm? exp? [post]:stm? stm*
+		if (node.getInit()!=null){
+			PStm valueStm = node.getInit();			
+		}
+		
+		if (node.getExp()!=null){
+			PExp valueExp = node.getExp();
+			Type expType = getType(valueExp);
+			if (!Type.Similar(boolType, expType)){//expected bool but found expType
+				errorSymbolType(valueExp,expType,boolType);
+			}
+		}
+		if (node.getPost()!=null){
+			PStm valuePost = node.getPost();
+			Type postType = getType(valuePost);
+		}
+		if (node.getStm().size()>0){
+			for (int i=0; i<node.getStm().size();i++){
+				PStm valueStm = node.getStm().get(i);
+				Type stmType = getType(valueStm);
+			}
+		}
 		defaultOut(node);
 	}
-	public void outABreakStm(ABreakStm node)
+	public void outABreakStm(ABreakStm node)//trivially well-typed
 	{
 		defaultOut(node);
 	}
-	public void outAContinueStm(AContinueStm node)
+	public void outAContinueStm(AContinueStm node) //trivially well-typed
 	{
 		defaultOut(node);
 	}
 	public void outAConditionalSwitchClause(AConditionalSwitchClause node)
 	{
+		assert node.getExp().size()>0;
+		//exp+ stm* fallthrough_stm?
+		for (int i=0; i<node.getExp().size(); i++){
+			PExp valueExp = node.getExp().get(i);
+			Type expType = getType(valueExp);
+			
+		}
 		defaultOut(node);
 	}
 	public void outADefaultSwitchClause(ADefaultSwitchClause node)
 	{
+		assert node.getStm().size()>=0;
+		//{default} stm* fallthrough_stm?
+		if (node.getStm().size()>0){
+			for (int i=0; i<node.getStm().size(); i++){
+				PStm valueStm = node.getStm().get(i);
+				Type stmType = getType(valueStm);
+			}
+		}
+
+		if (node.getFallthroughStm()!=null){
+			//
+		}
 		defaultOut(node);
 	}
-	public void outAFallthroughStm(AFallthroughStm node)
+	public void outAFallthroughStm(AFallthroughStm node)//trivially well-defined
 	{
 		defaultOut(node);
 	}
@@ -467,7 +582,7 @@ public class TypeChecker extends DepthFirstAdapter {
 	{
 		defaultOut(node);
 	}
-
+	
 	/* ******************** Expressions ******************** */
 	public void outAVariableExp(AVariableExp node)
 	{
