@@ -472,11 +472,17 @@ public class TypeChecker extends DepthFirstAdapter {
 			//and expType=return type of the enclosing func		
 			PExp valueExp = node.getExp();
 			Type expType = getType(valueExp);
-			
-			/*to get return type of enclosing function
-			if (!Type.Similar(expType,funcType)){
-				errorSymbolType(valueExp, expType, funcType);
-			}*/
+			Type returnType = null;
+			for (Symbol symbol : symbolTable.getSymbols()){
+			//to get return type of enclosing function
+				if (symbol instanceof Function){
+					returnType = ((Function) symbol).getReturnType();
+				}
+			//PTypeExp returnType = node.getReturnType();
+			}
+			if (!Type.Similar(expType, returnType)){
+				errorSymbolType(valueExp, expType,returnType);
+			}
 		}
 		
 		defaultOut(node);
@@ -619,6 +625,7 @@ public class TypeChecker extends DepthFirstAdapter {
 	{
 		defaultOut(node);
 	}
+
 	/* ******************** Expressions ******************** */
 	public void outAVariableExp(AVariableExp node)
 	{
