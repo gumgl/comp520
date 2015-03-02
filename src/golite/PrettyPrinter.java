@@ -399,6 +399,19 @@ public class PrettyPrinter extends DepthFirstAdapter {
 		}
 		outAReturnStm(node);
 	}
+	
+	@Override
+	public void caseABlockStm(ABlockStm node) {
+		inABlockStm(node);
+		p("{");
+		endl();
+		shift();
+		printConsecutiveLines(node.getStm());
+		unshift();
+		startl();
+		p("}");
+		outABlockStm(node);
+	}
 
 	@Override
 	public void caseAIfStm(AIfStm node)
