@@ -360,13 +360,13 @@ public class TypeChecker extends DepthFirstAdapter {
 	public void outAAssignStm(AAssignStm node)
 	{
 		assert node.getLvalue().size() == node.getExp().size();
-
+		assert node.getLvalue().size()>0;
 		for (int i=0; i<node.getLvalue().size(); i++) {
 			Type lType = getType(node.getLvalue().get(i));
 			PExp value = node.getExp().get(i);
 			Type vType = getType(value);
-
-			if ( ! lType.isIdentical(vType)) // Value's type is not the same as the declared type
+			
+			if ( ! Type.Similar(lType, vType)) // Value's type is not the same as the declared type
 				errorSymbolType(value, vType, lType);
 		}
 		defaultOut(node);
@@ -378,17 +378,17 @@ public class TypeChecker extends DepthFirstAdapter {
 			Type vType = getType(valueExp);
 			//PAssignOp valueOp = node.getAssignOp();
 			//Type opType = getType(valueOp);
-			if ( !lType.isIdentical(vType)) { // Value's type is not the same as the declared type
-				errorSymbolType(valueExp, vType, lType);
-			}
+			//valueOp accept (lType,vType) and returns vType
+			
 		defaultOut(node);
 	}
+
 	public void outAIncDecStm(AIncDecStm node)
 	{
 		PExp value = node.getExp();
 		Type vType = getType(value);
 		//PPostfixOp node.getPostfixOp()
-		if (isNumericType(vType)) {
+		if (!Type.Similar(floatType, vType)|!Type.Similar(intType,vType)){
 			errorSymbolType(value, vType,floatType); //found vType, expected int/float
 		}
 		defaultOut(node);
@@ -420,14 +420,10 @@ public class TypeChecker extends DepthFirstAdapter {
 			if (symbol == null) {
 				hasNewVariable = true;
 				symbolTable.addSymbol(new Variable(id, getType(exp)));
-			} else {
-				if (!(symbol instanceof Variable))
-					errorSymbolClass(node.getIds().get(i), symbol, Variable.class);
-
-				Variable redeclaredVariable = (Variable)symbol;
-
-				if (!redeclaredVariable.getType().isIdentical(getType(exp)))
-					errorSymbolType(exp, getType(exp), redeclaredVariable.getType());
+			} else if (!(symbol instanceof Variable)) {
+				errorSymbolClass(node.getIds().get(i), symbol, Variable.class);
+			} else if (!Type.Similar(((Variable)symbol).getType(), getType(exp))) {
+				errorSymbolType(exp, symbol, new Variable(id, getType(exp)));
 			}
 		}
 
@@ -456,23 +452,33 @@ public class TypeChecker extends DepthFirstAdapter {
 	}
 	public void outAPrintStm(APrintStm node)
 	{
-		//PPrintOp op= node.getPrintOp();
+		assert node.getExp().size()>=0;
 		for (int i=0; i<node.getExp().size(); i++) {
 			PExp value = node.getExp().get(i);
 			Type vType = getType(value);
-//			if(Type.Similar(null, vType)){
-//			
-//			}
+			if(Type.Similar(null, vType)){
+			
+			}
 		}
 		defaultOut(node);
 	}
 	public void outAReturnStm(AReturnStm node)
 	{
-		if (node.getExp()!=null){
-			//check exp
+		if (node.getExp()==null){
+			//well-typed if enclosing func has no return type
+			
+		} else {
+			//well-typed if its expression is well-typed 
+			//and expType=return type of the enclosing func		
 			PExp valueExp = node.getExp();
 			Type expType = getType(valueExp);
+			
+			/*to get return type of enclosing function
+			if (!Type.Similar(expType,funcType)){
+				errorSymbolType(valueExp, expType, funcType);
+			}*/
 		}
+		
 		defaultOut(node);
 	}
 	public void outAIfStm(AIfStm node)
@@ -488,21 +494,28 @@ public class TypeChecker extends DepthFirstAdapter {
 		if (!isBooleanType(expType)){ //exp is not bool type
 			errorSymbolType(valueExp, expType, boolType);
 		}
-		if (node.getIfBlock().size()!=0){
+		
+		if (node.getIfBlock().size()==0){
+			
+		} else {
 			for (int i=0; i<node.getIfBlock().size();i++){
 				PStm valueStm = node.getIfBlock().get(i);
 				Type stmType = getType(valueStm);
 			}
 		}
-		for (int j=0; j<node.getElseBlock().size();j++){
-			PStm valueStm = node.getIfBlock().get(j);
-			Type stmType = getType(valueStm);
+		if (node.getElseBlock().size()==0){
+			
+		} else {
+			for (int j=0; j<node.getElseBlock().size();j++){
+				PStm valueStm = node.getIfBlock().get(j);
+				Type stmType = getType(valueStm);
+			}
 		}
-		 
 		defaultOut(node);
 	}
 	public void outASwitchStm(ASwitchStm node)
 	{
+		assert node.getSwitchClause().size()>=0;
 		if (node.getStm()!=null){
 			PStm valueStm = node.getStm();
 			Type stmType = getType (valueStm);
@@ -512,7 +525,9 @@ public class TypeChecker extends DepthFirstAdapter {
 			Type expType = getType (valueExp);
 		}
 		//SwitchClause
-		if (node.getSwitchClause().size()!=0){
+		if (node.getSwitchClause().size()==0){
+			
+		} else {
 			for (int i=0; i<node.getSwitchClause().size();i++){
 				PSwitchClause valueSwitch = node.getSwitchClause().get(i);
 				Type switchType = getType(valueSwitch);
@@ -522,6 +537,7 @@ public class TypeChecker extends DepthFirstAdapter {
 	}
 	public void outAForStm(AForStm node)
 	{
+		assert node.getStm().size()>=0;
 		//[init]:stm? exp? [post]:stm? stm*
 		if (node.getInit()!=null){
 			PStm valueStm = node.getInit();			
@@ -538,7 +554,10 @@ public class TypeChecker extends DepthFirstAdapter {
 			PStm valuePost = node.getPost();
 			Type postType = getType(valuePost);
 		}
-		if (node.getStm().size()>0){
+		
+		if (node.getStm().size()==0){
+			
+		} else {
 			for (int i=0; i<node.getStm().size();i++){
 				PStm valueStm = node.getStm().get(i);
 				Type stmType = getType(valueStm);
@@ -557,10 +576,16 @@ public class TypeChecker extends DepthFirstAdapter {
 	public void outAConditionalSwitchClause(AConditionalSwitchClause node)
 	{
 		assert node.getExp().size()>0;
+		assert node.getStm().size()>=0;
 		//exp+ stm* fallthrough_stm?
 		for (int i=0; i<node.getExp().size(); i++){
 			PExp valueExp = node.getExp().get(i);
 			Type expType = getType(valueExp);
+			
+		}
+		if (node.getStm().size()==0){
+			
+		} else {
 			
 		}
 		defaultOut(node);
@@ -569,7 +594,9 @@ public class TypeChecker extends DepthFirstAdapter {
 	{
 		assert node.getStm().size()>=0;
 		//{default} stm* fallthrough_stm?
-		if (node.getStm().size()>0){
+		if (node.getStm().size()==0){
+		
+		} else {
 			for (int i=0; i<node.getStm().size(); i++){
 				PStm valueStm = node.getStm().get(i);
 				Type stmType = getType(valueStm);
@@ -577,11 +604,10 @@ public class TypeChecker extends DepthFirstAdapter {
 		}
 
 		if (node.getFallthroughStm()!=null){
-			//
 		}
 		defaultOut(node);
 	}
-	public void outAFallthroughStm(AFallthroughStm node)//trivially well-defined
+	public void outAFallthroughStm(AFallthroughStm node)
 	{
 		defaultOut(node);
 	}
@@ -593,7 +619,6 @@ public class TypeChecker extends DepthFirstAdapter {
 	{
 		defaultOut(node);
 	}
-	
 	/* ******************** Expressions ******************** */
 	public void outAVariableExp(AVariableExp node)
 	{
