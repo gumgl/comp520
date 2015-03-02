@@ -1,59 +1,63 @@
 package golite.typechecker;
 
-import java.util.AbstractCollection;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Deque;
 
 public class SymbolTable {
 
-	SymbolTable parent = null;
-	List<Symbol> table = new ArrayList<Symbol>();
+	Deque<List<Symbol>> scopes = new ArrayDeque<List<Symbol>>();
 	
-	
-	public SymbolTable(SymbolTable pParent) {
-		parent = pParent;
+	public SymbolTable() {
+		addScope();
 	}
 	
 	public void addSymbol(Symbol symbol) {
-		table.add(symbol);
+		scopes.peek().add(symbol);
 	}
 
 	public void addSymbols(Collection<? extends Symbol> symbols) {
-		table.addAll(symbols);
+		scopes.peek().addAll(symbols);
 	}
 	
 	public List<Symbol> getSymbols() {
-		return table;
+		return scopes.peek();
 	}
 	
-	public SymbolTable newScope() {
-		return new SymbolTable(this);
+	private List<Symbol> newScope() {
+		return new ArrayList<Symbol>();
 	}
 	
-	public SymbolTable popScope() {
-		return this.parent;
+	public void addScope() {
+		scopes.push(newScope());
+	}
+	
+	public void dropScope() {
+		scopes.pop();
 	}
 	
 	// Used when an identifier is referenced
 	public Symbol get(String id) {
-		SymbolTable scope = this; // Start in current scope
-		while (scope != null) { // Search up through all scopes
-			Symbol found = getInScope(scope, id);
+		Iterator<List<Symbol>> iter = scopes.descendingIterator();
+		while (iter.hasNext()) {
+			Symbol found = getInScope(iter.next(), id);
+
 			if (found != null)
 				return found;
-			scope = scope.popScope(); // Go up one level
 		}
 		return null; // Not found
 	}
 	
 	// Used when a new identifier is declared
 	public Symbol getInScope(String id) {
-		return getInScope(this, id);
+		return getInScope(scopes.peek(), id);
 	}
 	
-	public Symbol getInScope(SymbolTable scope, String id) {
-		for (Symbol symbol : scope.table) // Search in current scope
+	public Symbol getInScope(List<Symbol> scope, String id) {
+		for (Symbol symbol : scope) // Search in current scope
 			if (symbol.getId().equals(id))
 				return symbol;
 		
