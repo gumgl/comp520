@@ -2,15 +2,24 @@ package golite.typechecker;
 
 import java.util.ArrayList;
 
-public class Function extends Symbol {
+public class Function implements Symbol {
 
+	private String identifier;
 	protected Type returnType;
 	protected ArrayList<Type> argumentTypes = new ArrayList<Type>();
 	
 	public Function(String identifier) {
-		super(identifier);
+		this.identifier = identifier;
 	}
 	
+	public String getId() {
+		return identifier;
+	}
+
+	public void setId(String id) {
+		identifier = id;
+	}
+
 	public void addArgument(Type argument) {
 		argumentTypes.add(argument);
 	}

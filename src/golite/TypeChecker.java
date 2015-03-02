@@ -71,8 +71,11 @@ public class TypeChecker extends DepthFirstAdapter {
 		error (node, "Expected " + found + " to be a " + collectionToString(expected, ",", "or"));
 	}
 	// When we expect the symbol to be a certain type
-	private void errorSymbolType(Node node, Symbol found, Symbol expected) {
-		error(node, "Expected a " + expected + " instead of a " + found);
+	private void errorSymbolType(Node node, Type found, Type expected) {
+		error(node, "Expected type " + expected + " instead of " + found);
+	}
+	private void errorSymbolType(Node node, Type found, String expected) {
+		error(node, "Expected " + expected + " instead of " + found);
 	}
 	private void errorTypeCast(Node node, Type from, Type to) {
 		error(node, "Cannot typecast " + from + " to "+  to);
@@ -124,7 +127,7 @@ public class TypeChecker extends DepthFirstAdapter {
 	}
 
 	private boolean isOrderedType(Type type) {
-		BuiltInType underlying = type.getUnderlying();
+		Type underlying = type.getUnderlying();
 		return underlying instanceof BuiltInType && underlying != boolType;
 	}
 
@@ -210,7 +213,7 @@ public class TypeChecker extends DepthFirstAdapter {
 				PExp value = node.getExp().get(i);
 
 				// Value's type is not the same as the declared type
-				if (!Type.Similar(getType(value), type))
+				if (!type.isIdentical(getType(value)))
 					errorSymbolType(value, getType(value), type);
 			}
 
@@ -240,7 +243,7 @@ public class TypeChecker extends DepthFirstAdapter {
 	{
 		TId id = node.getId();
 		ensureUndeclared(id);
-		Type type = new AliasType(id.getText(), getType(node.getTypeExp()));
+		AliasType type = new AliasType(id.getText(), getType(node.getTypeExp()));
 		symbolTable.addSymbol(type);
 		defaultOut(node);
 	}
@@ -266,7 +269,7 @@ public class TypeChecker extends DepthFirstAdapter {
 		if (symbol == null)
 			errorSymbolNotFound(id, id.getText());
 		else if ( !(symbol instanceof Type))
-			errorSymbolClass(node, symbol, Type.class);
+			errorSymbolClass(node, symbol, AliasType.class);
 		else
 			setType(node, (Type) symbol);
 
@@ -322,16 +325,18 @@ public class TypeChecker extends DepthFirstAdapter {
 	}
 	public void outASliceTypeExp(ASliceTypeExp node)
 	{
-		SliceType sliceType = new SliceType();
-		sliceType.setType(getType(node.getTypeExp()));
+		SliceType sliceType = new SliceType(getType(node.getTypeExp()));
 		setType(node, sliceType);
 		defaultOut(node);
 	}
 	public void outAArrayTypeExp(AArrayTypeExp node)
 	{
-		ArrayType arrayType = new ArrayType();
-		arrayType.setType(getType(node.getTypeExp()));
-		symbolTable.addSymbol(arrayType);
+		Type typeOfArray = getType(node.getTypeExp());
+		// FIXME: this is absolutely not what we should be doing here
+		int arraySize = Integer.parseInt(node.getLitInt().getText());
+
+		ArrayType arrayType = new ArrayType(typeOfArray, arraySize);
+		setType(node, arrayType);
 		defaultOut(node);
 	}
 	public void outAFieldDec(AFieldDec node)
@@ -359,7 +364,7 @@ public class TypeChecker extends DepthFirstAdapter {
 			PExp value = node.getExp().get(i);
 			Type vType = getType(value);
 
-			if ( ! Type.Similar(lType, vType)) // Value's type is not the same as the declared type
+			if ( ! lType.isIdentical(vType)) // Value's type is not the same as the declared type
 				errorSymbolType(value, vType, lType);
 		}
 		defaultOut(node);
@@ -399,10 +404,14 @@ public class TypeChecker extends DepthFirstAdapter {
 			if (symbol == null) {
 				hasNewVariable = true;
 				symbolTable.addSymbol(new Variable(id, getType(exp)));
-			} else if (!(symbol instanceof Variable)) {
-				errorSymbolClass(node.getIds().get(i), symbol, Variable.class);
-			} else if (!Type.Similar(((Variable)symbol).getType(), getType(exp))) {
-				errorSymbolType(exp, symbol, new Variable(id, getType(exp)));
+			} else {
+				if (!(symbol instanceof Variable))
+					errorSymbolClass(node.getIds().get(i), symbol, Variable.class);
+
+				Variable redeclaredVariable = (Variable)symbol;
+
+				if (!redeclaredVariable.getType().isIdentical(getType(exp)))
+					errorSymbolType(exp, getType(exp), redeclaredVariable.getType());
 			}
 		}
 
@@ -486,12 +495,14 @@ public class TypeChecker extends DepthFirstAdapter {
 	{
 		Type t = getType(node.getArray());
 
-		if (!Type.Similar(getType(node.getIndex()), intType)) {
+		// Per the GoLite spec, we check that the index *is* an int, rather
+		// than checking if its underlying type is
+		if (!intType.isIdentical(getType(node.getIndex()))) {
 			errorSymbolType(node.getIndex(), getType(node.getIndex()), intType);
 		}
 
 		if (!(t instanceof ArrayType || t instanceof SliceType))
-			errorSymbolType(node.getArray(), t, new ArrayType());
+			errorSymbolType(node.getArray(), t, "an array or slice");
 
 		setType(node, t);
 		defaultOut(node);
@@ -501,7 +512,7 @@ public class TypeChecker extends DepthFirstAdapter {
 		Type t = getType(node.getExp());
 
 		if (!(t instanceof StructType))
-			errorSymbolType(node.getExp(), t, new StructType());
+			errorSymbolType(node.getExp(), t, "a struct with a field named "+node.getId().getText());
 
 		Variable field = ((StructType)t).getField(node.getId().getText());
 
@@ -572,7 +583,7 @@ public class TypeChecker extends DepthFirstAdapter {
 				PExp exp = exps.get(i);
 				Type expType = getType(exp);
 				Type argType = func.getArguments().get(i);
-				if (!Type.Similar(expType, argType))
+				if (!expType.isIdentical(argType))
 					errorSymbolType(exp, expType, argType);
 			}
 
@@ -583,7 +594,7 @@ public class TypeChecker extends DepthFirstAdapter {
 
 			Collection<Class<? extends Symbol>> expected = new ArrayList<Class<? extends Symbol>>();
 			expected.add(Function.class);
-			expected.add(Type.class);
+			expected.add(NamedType.class);
 			errorSymbolClasses(node, functorSymbol, expected);
 		}
 		defaultOut(node);
@@ -616,8 +627,8 @@ public class TypeChecker extends DepthFirstAdapter {
 		Type sliceType = ((Variable)slice).getType();
 		Type expType = getType(node.getExp());
 
-		if (!(sliceType instanceof SliceType && Type.Similar(((SliceType)sliceType).getType(), expType)))
-			errorSymbolType(node.getId(), sliceType, new SliceType(null, expType));
+		if (!(sliceType instanceof SliceType && expType.isIdentical(((SliceType)sliceType).getType())))
+			errorSymbolType(node.getId(), sliceType, new SliceType(expType));
 
 		setType(node, sliceType);
 		defaultOut(node);
@@ -642,7 +653,7 @@ public class TypeChecker extends DepthFirstAdapter {
 
 			operatorFound = true;
 		} else {
-			if (!Type.Similar(leftType, rightType))
+			if (!leftType.isIdentical(rightType))
 				error(node, "Mismatched types "+leftType+" and "+rightType);
 
 			if (op instanceof AEqBinaryOp || op instanceof ANotEqBinaryOp) {

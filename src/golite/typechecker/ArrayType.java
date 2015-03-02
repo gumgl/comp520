@@ -5,14 +5,9 @@ public class ArrayType extends Type {
 	Type type;
 	int size;
 
-	public ArrayType(String identifier, Type pType, int pSize) {
-		super(identifier);
+	public ArrayType(Type pType, int pSize) {
 		type = pType;
 		size = pSize;
-	}
-
-	public ArrayType() {
-		
 	}
 
 	public Type getType() {
@@ -32,8 +27,19 @@ public class ArrayType extends Type {
 	}
 
 	@Override
-	public BuiltInType getUnderlying() {
-		return null;
+	public boolean isIdentical(Type other) {
+		if (this == other)
+			return true;
+
+		if (!(other instanceof ArrayType))
+			return false;
+
+		ArrayType otherArrayType = (ArrayType)other;
+		return size == otherArrayType.getSize() && type.isIdentical(otherArrayType.getType());
+	}
+
+	public String toString() {
+		return "["+size+"]"+type;
 	}
 
 }

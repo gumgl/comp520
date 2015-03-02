@@ -10,9 +10,6 @@ public class StructType extends Type {
 	public StructType() {
 		super();
 	}
-	public StructType(String identifier) {
-		super(identifier);
-	}
 
 	public void addField(Variable field) {
 		fields.add(field);
@@ -26,9 +23,44 @@ public class StructType extends Type {
 		return null; // Not found
 	}
 
-	@Override
-	public BuiltInType getUnderlying() {
-		return null;
+	public boolean isIdentical(Type other) {
+		if (this == other)
+			return true;
+
+		if (!(other instanceof StructType))
+			return false;
+
+		StructType otherStructType = (StructType)other;
+
+		if (otherStructType.fields.size() != fields.size())
+			return false;
+
+		// Struct fields are ordered
+		for (int i=0; i < fields.size(); i++) {
+			Variable myField = fields.get(i);
+			Variable otherField = otherStructType.fields.get(i);
+
+			if (myField.getId() != otherField.getId())
+				return false;
+
+			if (!myField.getType().isIdentical(otherField.getType()))
+				return false;
+		}
+
+		return true;
+	}
+
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("struct { ");
+		for (Variable field : fields) {
+			builder.append(field.getId());
+			builder.append(" ");
+			builder.append(field.getType().toString());
+			builder.append("; ");
+		}
+		builder.append("}");
+		return builder.toString();
 	}
 
 }

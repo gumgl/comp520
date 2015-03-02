@@ -1,27 +1,16 @@
 package golite.typechecker;
 
-public abstract class Type extends Symbol {
+public abstract class Type {
 	
-	public Type() {
-		super();
-	}
-	public Type(String identifier) {
-		super(identifier);
-	}
-	
-	public static boolean Similar(Type t1, Type t2) {
-		if (t1 == null && t2 == null)
-			return true;
-		else if (t1 == null || t2 == null)
-			return false;
-		else
-			return (t1 == t2);
-	}
+	public abstract boolean isIdentical(Type other);
 	
 	/*
-	 * Returns the underlying type (in the case of aliases or built-ins
-	 * Return null in any other case
+	 * Returns the underlying type
+	 * For unnamed types and builtins this is the type itself
+	 * For aliases this is the type that is aliased
 	 */
-	public abstract BuiltInType getUnderlying();
+	public Type getUnderlying() {
+		return this;
+	}
 
 }
