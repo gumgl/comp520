@@ -305,7 +305,9 @@ func short_decl() {
 
 func block() {
 	println(1)
-	println(2)
+	{
+		println(2)
+	}
 	println(3)
 }
 
