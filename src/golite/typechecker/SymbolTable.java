@@ -54,7 +54,7 @@ public class SymbolTable {
 	
 	public Symbol getInScope(SymbolTable scope, String id) {
 		for (Symbol symbol : scope.table) // Search in current scope
-			if (symbol.id.equals(id))
+			if (symbol.getId().equals(id))
 				return symbol;
 		
 		return null; // Not found

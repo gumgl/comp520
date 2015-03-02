@@ -2,14 +2,9 @@ package golite.typechecker;
 
 public class SliceType extends Type {
 
-	Type type;
-	
-	public SliceType() {
-		super();
-	}
-	
-	public SliceType(String identifier, Type pType) {
-		super(identifier);
+	protected Type type;
+
+	public SliceType(Type pType) {
 		type = pType;
 	}
 
@@ -22,8 +17,15 @@ public class SliceType extends Type {
 	}
 
 	@Override
-	public BuiltInType getUnderlying() {
-		return null;
+	public boolean isIdentical(Type other) {
+		if (this == other)
+			return true;
+
+		return other instanceof SliceType && type.isIdentical(((SliceType)other).getType());
 	}
-	
+
+	public String toString() {
+		return "[]"+type;
+	}
+
 }

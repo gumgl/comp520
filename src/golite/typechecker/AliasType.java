@@ -1,6 +1,6 @@
 package golite.typechecker;
 
-public class AliasType extends Type {
+public class AliasType extends NamedType {
 	
 	Type type;
 
@@ -10,7 +10,7 @@ public class AliasType extends Type {
 	}
 
 	@Override
-	public BuiltInType getUnderlying() {
+	public Type getUnderlying() {
 		return type.getUnderlying();
 	}
 

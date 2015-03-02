@@ -5,13 +5,17 @@ public class VoidType extends Type {
 	public VoidType() {
 	}
 
-	public VoidType(String identifier) {
-		super(identifier);
+	public boolean isIdentical(Type other) {
+		return other instanceof VoidType;
 	}
 
 	@Override
-	public BuiltInType getUnderlying() {
+	public Type getUnderlying() {
 		return null;
+	}
+
+	public String toString() {
+		return "(no value)";
 	}
 
 }
