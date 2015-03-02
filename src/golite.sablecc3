@@ -258,6 +258,7 @@ Productions
 		| {print} print_op paren_l exp_list_star paren_r semicolon
 			{-> New stm.print(print_op, [exp_list_star.exp])}
 		| {return} return exp? semicolon {-> New stm.return(exp)}
+		| {block} brace_l stm* brace_r {-> New stm.block([stm])}
 		| {if} if_stm {-> if_stm.stm}
 		| {switch} switch simple_stm? exp? brace_l switch_clause* brace_r
 			{-> New stm.switch(simple_stm.stm, exp, [switch_clause])}
@@ -487,6 +488,7 @@ Abstract Syntax Tree
 		| {type_dec} type_spec+
 		| {print} print_op exp*
 		| {return} exp?
+		| {block} stm*
 		| {if} stm? exp [if_block]:stm* [else_block]:stm*
 		| {switch} stm? exp? switch_clause*
 		| {for} [init]:stm? exp? [post]:stm? stm*
