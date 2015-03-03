@@ -16,7 +16,7 @@ main: ../golite.jar ../golite
 
 # Create jarfile
 ../golite.jar: $(java_class) $(sablecc_generated)
-	jar cvfe ../golite.jar golite.Main $(java_class) $(jar_resource)
+	jar cfe ../golite.jar golite.Main $(java_class) $(jar_resource)
 
 $(java_class): $(java_source) $(sablecc_generated)
 	javac $(java_source)
