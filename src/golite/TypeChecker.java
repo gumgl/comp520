@@ -466,11 +466,11 @@ public class TypeChecker extends DepthFirstAdapter {
 	public void inABlockStm(ABlockStm node)
 	{
 		defaultIn(node);
-		symbolTable = symbolTable.newScope();
+		symbolTable.addScope();
 	}
 	public void outABlockStm(ABlockStm node)
 	{
-		symbolTable = symbolTable.popScope();
+		symbolTable.dropScope();
 		defaultOut(node);
 	}
 	public void outAIfStm(AIfStm node)
