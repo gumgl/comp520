@@ -1,6 +1,7 @@
 package golite;
 
 import golite.parser.* ;
+import golite.typechecker.SymbolTableLogger;
 import golite.typechecker.Type;
 import golite.lexer.* ;
 import golite.node.* ;
@@ -46,15 +47,7 @@ public class Main {
 				ast.apply(display);
 			}
 
-			if (options.dumpSymbolTable) {
-				throw new RuntimeException("Not implemented: -dumpsymtab");
-			}
-
-			if (options.dumpSymbolTableAll) {
-				throw new RuntimeException("Not implemented: -dumpsymtaball");
-			}
-
-			HashMap<Node, Type> types = typeCheck(ast, options.basePath, positionHelper);
+			HashMap<Node, Type> types = typeCheck(ast, options.basePath, positionHelper, options.dumpSymbolTable);
 
 			if (options.prettyPrintTyped) {
 				prettyPrintTyped(ast, options.basePath, types);
@@ -94,10 +87,10 @@ public class Main {
 		for (i=0; i < args.length && args[i].startsWith("-"); i++) {
 			switch (args[i]) {
 			case "-dumpsymtab":
-				options.dumpSymbolTable = true;
+				options.dumpSymbolTable = CLIOptions.ScopeInfoDumpLevel.LAST_FRAME;
 				break;
 			case "-dumpsymtaball":
-				options.dumpSymbolTableAll = true;
+				options.dumpSymbolTable = CLIOptions.ScopeInfoDumpLevel.ALL;
 				break;
 			case "-pprint":
 				options.prettyPrint = true;
@@ -220,13 +213,38 @@ public class Main {
 		filePretty.close();
 	}
 
-	public static HashMap<Node, Type> typeCheck(Node ast, String path, PositionHelper positionHelper) throws FileNotFoundException {
-		PrintWriter fileTypeChecker = new PrintWriter(new PrintWriter(path+".symbol.txt"), true);
-		TypeChecker typechecker = new TypeChecker(fileTypeChecker, positionHelper);
+	public static HashMap<Node, Type> typeCheck(Node ast, String path, PositionHelper positionHelper,
+			CLIOptions.ScopeInfoDumpLevel infoDumpLevel) throws FileNotFoundException {
+
+		SymbolTableLogger logger = null;
+		boolean logVerbose = false;
+		PrintWriter logFile = null;
+
+		switch (infoDumpLevel) {
+		case NOTHING:
+			break;
+
+		case ALL:
+			logVerbose = true;
+			// fallthrough
+
+		case LAST_FRAME:
+			logFile = new PrintWriter(new PrintWriter(path+".symtab"), true);
+			logger = new SymbolTableLogger(logFile, logVerbose);
+			break;
+
+		default:
+			throw new IllegalArgumentException("Bad scope logging value "+infoDumpLevel);	
+		}
+
+		TypeChecker typechecker = new TypeChecker(positionHelper, logger);
+
 		try {
 			ast.apply(typechecker);
 		} finally {
-			fileTypeChecker.close();
+			if (logFile != null) {
+				logFile.close();
+			}
 		}
 		return typechecker.types;
 	}
@@ -234,8 +252,14 @@ public class Main {
 
 /** Container class for command-line interface options */
 class CLIOptions {
-	public boolean dumpSymbolTable;
-	public boolean dumpSymbolTableAll;
+	// Debugging: dumping scope info
+	public static enum ScopeInfoDumpLevel {
+		NOTHING,
+		LAST_FRAME,
+		ALL
+	}
+
+	public ScopeInfoDumpLevel dumpSymbolTable = ScopeInfoDumpLevel.NOTHING;
 	public boolean prettyPrint;
 	public boolean prettyPrintTyped;
 	public boolean dumpToks;

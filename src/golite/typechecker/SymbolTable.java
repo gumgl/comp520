@@ -10,11 +10,22 @@ import java.util.Deque;
 public class SymbolTable {
 
 	Deque<List<Symbol>> scopes = new ArrayDeque<List<Symbol>>();
+	protected SymbolTableLogger logger;
 	
-	public SymbolTable() {
+	public SymbolTable(SymbolTableLogger logger) {
+		// We don't need to log the opening of the zeroth scope; it should never close
 		addScope();
+
+		if (logger != null) {
+			this.logger = logger;
+			logger.setTable(this);
+		}
 	}
 	
+	public SymbolTable() {
+		this(null);
+	}
+
 	public void addSymbol(Symbol symbol) {
 		scopes.peek().add(symbol);
 	}
@@ -26,19 +37,24 @@ public class SymbolTable {
 	public List<Symbol> getSymbols() {
 		return scopes.peek();
 	}
-	
-	private List<Symbol> newScope() {
-		return new ArrayList<Symbol>();
-	}
-	
+
 	public void addScope() {
-		scopes.push(newScope());
+		if (logger != null)
+			logger.logScopeEntry();
+		scopes.push(new ArrayList<Symbol>());
 	}
-	
+
 	public void dropScope() {
+		if (logger != null)
+			logger.logScopeExit();
 		scopes.pop();
 	}
 	
+	public Symbol getLastSymbol() {
+		List<Symbol> scope = scopes.peek();
+		return scope.get(scope.size()-1);
+	}
+
 	// Used when an identifier is referenced
 	public Symbol get(String id) {
 		Iterator<List<Symbol>> iter = scopes.descendingIterator();
