@@ -1,6 +1,5 @@
 package golite;
 
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -14,8 +13,7 @@ import golite.typechecker.*;
 public class TypeChecker extends DepthFirstAdapter {
 
 	public HashMap<Node,Type> types = new HashMap<Node,Type>(); // Mapping a Type for every Node
-	public SymbolTable symbolTable = new SymbolTable();
-	PrintWriter stdout;
+	public SymbolTable symbolTable;
 	PositionHelper positionHelper;
 
 	// Builtin types
@@ -26,12 +24,13 @@ public class TypeChecker extends DepthFirstAdapter {
 	final BuiltInType stringType = new BuiltInType("string");
 	final VoidType voidType = new VoidType();
 
-
-	public TypeChecker(PrintWriter out, PositionHelper positionHelper) {
-		stdout = out;
+	public TypeChecker(PositionHelper positionHelper, SymbolTableLogger logger) {
 		this.positionHelper = positionHelper;
+		symbolTable = new SymbolTable(logger);
+	}
 
-		preDeclareBooleans();
+	public TypeChecker(PositionHelper positionHelper) {
+		this(positionHelper, null);
 	}
 
 	static private String collectionToString(Collection<?> collection, String separator, String finalWord) {
@@ -105,14 +104,6 @@ public class TypeChecker extends DepthFirstAdapter {
 		types.put(node, type);
 	}
 
-	private void preDeclareBooleans() {
-		symbolTable.addSymbol(new Variable("true", boolType));
-		symbolTable.addSymbol(new Variable("false", boolType));
-
-		// Shadow them
-		symbolTable.addScope();
-	}
-
 	private boolean canBeCast(Type type) {
 		Type underlying = type.getUnderlying();
 		return underlying instanceof BuiltInType && underlying != stringType;
@@ -149,6 +140,22 @@ public class TypeChecker extends DepthFirstAdapter {
 	{
 		// Do nothing
 	}
+
+	@Override
+	public void inStart(Start node) {
+		symbolTable.addSymbol(new Variable("true", boolType));
+		symbolTable.addSymbol(new Variable("false", boolType));
+
+		// Shadow them
+		symbolTable.addScope();
+	}
+
+	@Override
+	public void outStart(Start node) {
+		symbolTable.dropScope();
+		defaultOut(node);
+	}
+
 	/* ********* Top-level declarations **************** */
 
 	// We don't need to do anything for variable declarations, checks are
