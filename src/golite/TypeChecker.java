@@ -465,27 +465,11 @@ public class TypeChecker extends DepthFirstAdapter {
 	}
 	public void outAReturnStm(AReturnStm node)
 	{
-		if (node.getExp()==null){
-			//well-typed if enclosing func has no return type
-			
-		} else {
-			//well-typed if its expression is well-typed 
-			//and expType=return type of the enclosing func		
+		if (node.getExp()!=null){
+			//check exp
 			PExp valueExp = node.getExp();
 			Type expType = getType(valueExp);
-			Type returnType = null;
-			for (Symbol symbol : symbolTable.getSymbols()){
-			//to get return type of enclosing function
-				if (symbol instanceof Function){
-					returnType = ((Function) symbol).getReturnType();
-				}
-			//PTypeExp returnType = node.getReturnType();
-			}
-			if (!Type.Similar(expType, returnType)){
-				errorSymbolType(valueExp, expType,returnType);
-			}
-		}
-		
+		}	
 		defaultOut(node);
 	}
 	public void inABlockStm(ABlockStm node)
