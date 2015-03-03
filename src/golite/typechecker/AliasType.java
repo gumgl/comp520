@@ -1,6 +1,6 @@
 package golite.typechecker;
 
-public class AliasType extends NamedType {
+public class AliasType extends NamedType implements Symbol {
 	
 	Type type;
 
@@ -12,6 +12,11 @@ public class AliasType extends NamedType {
 	@Override
 	public Type getUnderlying() {
 		return type.getUnderlying();
+	}
+
+	@Override
+	public String getTypeInfo() {
+		return type.getRepresentation();
 	}
 
 }

@@ -6,4 +6,10 @@ public interface Symbol {
 
 	public void setId(String id);
 
+	/**
+	 * Get the symbol's type information. This might be either its type
+	 * or its type signature
+	 */
+	public String getTypeInfo();
+
 }

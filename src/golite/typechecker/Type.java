@@ -13,4 +13,13 @@ public abstract class Type {
 		return this;
 	}
 
+	public abstract String getRepresentation();
+
+	/*
+	 * Unless overridden, the representation is a decent serialization.
+	 * NamedTypes, however, should give more.
+	 */
+	public String toString() {
+		return getRepresentation();
+	}
 }

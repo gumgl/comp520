@@ -14,8 +14,12 @@ public class VoidType extends Type {
 		return null;
 	}
 
+	public String getRepresentation() {
+		return "<void (internal type)>";
+	}
+
 	public String toString() {
-		return "(no value)";
+		return ((Object)this).toString();
 	}
 
 }

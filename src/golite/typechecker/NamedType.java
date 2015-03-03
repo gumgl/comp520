@@ -1,6 +1,6 @@
 package golite.typechecker;
 
-public abstract class NamedType extends Type implements Symbol {
+public abstract class NamedType extends Type {
 
 	protected String identifier;
 
@@ -19,6 +19,10 @@ public abstract class NamedType extends Type implements Symbol {
 	@Override
 	public boolean isIdentical(Type other) {
 		return this == other;
+	}
+
+	public String getRepresentation() {
+		return identifier;
 	}
 
 	public String toString() {

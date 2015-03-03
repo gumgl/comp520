@@ -73,13 +73,13 @@ public class TypeChecker extends DepthFirstAdapter {
 	}
 	// When we expect the symbol to be a certain type
 	private void errorSymbolType(Node node, Type found, Type expected) {
-		error(node, "Expected type " + expected + " instead of " + found);
+		error(node, "Expected type " + expected.getRepresentation() + " instead of " + found.getRepresentation());
 	}
 	private void errorSymbolType(Node node, Type found, String expected) {
-		error(node, "Expected " + expected + " instead of " + found);
+		error(node, "Expected " + expected + " instead of " + found.getRepresentation());
 	}
 	private void errorTypeCast(Node node, Type from, Type to) {
-		error(node, "Cannot typecast " + from + " to "+  to);
+		error(node, "Cannot typecast " + from.getRepresentation() + " to "+  to.getRepresentation());
 	}
 
 	private void ensureUndeclared(Node node, String id) {
@@ -729,7 +729,7 @@ public class TypeChecker extends DepthFirstAdapter {
 
 			Collection<Class<? extends Symbol>> expected = new ArrayList<Class<? extends Symbol>>();
 			expected.add(Function.class);
-			expected.add(NamedType.class);
+			expected.add(AliasType.class);
 			errorSymbolClasses(node, functorSymbol, expected);
 		}
 		defaultOut(node);
