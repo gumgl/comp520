@@ -1,11 +1,13 @@
 /* Package declaration, golite 2.2 */
 package main
 
+type my_int int
+
 func main() {
 
 	/* Type casts, golite 2.9.8 */
 	a := 7.1415726
-	b := int64(a)                               // losing the decimals here
+	b := my_int(a)                              // losing the decimals here
 	println("should be 7"+" and we have...", b) //should be 7
 
 	//initialize sum to 0
