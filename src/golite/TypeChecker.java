@@ -57,7 +57,7 @@ public class TypeChecker extends DepthFirstAdapter {
 
 	// When a symbol is already declared
 	private void errorSymbolDeclared(Node node, Symbol found) {
-		error(node, "\"" + found + "\" already declared in current scope");
+		error(node, "\"" + found.getId() + "\" already declared in current scope");
 	}
 	// When a symbol is not found in the symbol table
 	private void errorSymbolNotFound(Node node, String id) {
@@ -65,11 +65,11 @@ public class TypeChecker extends DepthFirstAdapter {
 	}
 	// e.g. When we expect the symbol to be a function instead of a variable
 	private void errorSymbolClass(Node node, Symbol found, Class<? extends Symbol> expected) {
-		error(node, "Expected " + found + " to be a " + expected.getSimpleName());
+		error(node, "Expected " + found.getId() + " to be a " + expected.getSimpleName());
 	}
 	// e.g. When we expect the symbol to be a function instead of a variable
 	private void errorSymbolClasses(Node node, Symbol found, Collection<Class<? extends Symbol> > expected) {
-		error (node, "Expected " + found + " to be a " + collectionToString(expected, ",", "or"));
+		error (node, "Expected " + found.getId() + " to be a " + collectionToString(expected, ",", "or"));
 	}
 	// When we expect the symbol to be a certain type
 	private void errorSymbolType(Node node, Type found, Type expected) {
