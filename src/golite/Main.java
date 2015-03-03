@@ -56,25 +56,26 @@ public class Main {
 
 			HashMap<Node, Type> types = typeCheck(ast, options.basePath, positionHelper);
 
-			if (options.prettyPrintType) {
+			if (options.prettyPrintTyped) {
 				prettyPrintTyped(ast, options.basePath, types);
 			}
 
 			// TODO: code generation
 
 		} catch (golite.lexer.LexerException e) {
-			System.err.println("INVALID (lexer error) at " + e.getMessage());
+			handleError("Lexer", e);
 		} catch (golite.parser.ParserException e) {
-			System.err.println("INVALID (parser error) at " + e.getMessage());
+			handleError("Parser", e);
 		} catch (GoLiteWeedingException e) {
-			System.err.println("INVALID (weeder error) at " + e.getMessage());
+			handleError("Weeding", e);
 		} catch (GoLiteTypeException e) {
-			System.err.println("INVALID (type error) at " + e.getMessage());
+			handleError("Type", e);
 		} catch (FileNotFoundException e) {
-			System.err.println("Error: File \"" + options.fullPath + "\" not found.");
+			handleError("File \"" + options.fullPath + "\" not found.");
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.err.println(e);
+			System.exit(2);
 		}
 	}
 
@@ -102,7 +103,7 @@ public class Main {
 				options.prettyPrint = true;
 				break;
 			case "-pptype":
-				options.prettyPrintType = true;
+				options.prettyPrintTyped = true;
 				break;
 			case "-dumptoks":
 				options.dumpToks = true;
@@ -140,16 +141,26 @@ public class Main {
 				+ "    golite [options] inputFile\n\n"
 				+ "Options:\n"
 				+ "    Where [filename] is the base component of inputFile...\n"
-				+ "    -dumpsymtab: Dump the topmost frame of each scope to [filename].symtab\n"
-				+ "    -dumpsymtaball: Dump all frames to [filename].symtab\n"
 				+ "    -pprint: Write a pretty printed file to [filename].pretty.go\n"
 				+ "    -pptype: Write a pretty printed file with type information to\n"
 				+ "        [filename].pptype.go\n"
+				+ "    -dumpsymtab: Dump the topmost frame of each scope to [filename].symtab\n"
+				+ "    -dumpsymtaball: Dump all frames to [filename].symtab\n"
 				+ "    -dumptoks: Write a tokenized representation of the input to\n"
 				+ "        [filename].tokens.html\n"
 				+ "    -displayast: Display the abstract syntax tree in a graphical\n"
-				+ "        interface (blocking)"
+				+ "        interface"
 		);
+	}
+
+	public static void handleError(String errorType, Exception e) {
+		System.err.println(errorType+" error at "+e.getMessage());
+		System.exit(1);
+	}
+
+	public static void handleError(String message) {
+		System.err.println("Error: "+message);
+		System.exit(1);
 	}
 
 	public static Node getParsedAST(String filename) throws ParserException, LexerException, IOException {
@@ -226,7 +237,7 @@ class CLIOptions {
 	public boolean dumpSymbolTable;
 	public boolean dumpSymbolTableAll;
 	public boolean prettyPrint;
-	public boolean prettyPrintType;
+	public boolean prettyPrintTyped;
 	public boolean dumpToks;
 	public boolean displayAST;
 	public String fullPath;
