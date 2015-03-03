@@ -40,7 +40,7 @@ public class StructType extends Type {
 			Variable myField = fields.get(i);
 			Variable otherField = otherStructType.fields.get(i);
 
-			if (myField.getId() != otherField.getId())
+			if (!myField.getId().equals(otherField.getId()))
 				return false;
 
 			if (!myField.getType().isIdentical(otherField.getType()))
