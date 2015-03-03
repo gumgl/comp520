@@ -524,8 +524,9 @@ public class TypeChecker extends DepthFirstAdapter {
 		if (node.getExp()!=null){
 			PExp valueExp = node.getExp();
 			Type expType = getType (valueExp);
+		} else {
+			//
 		}
-		//SwitchClause
 		if (node.getSwitchClause().size()==0){
 			
 		} else {
@@ -539,11 +540,11 @@ public class TypeChecker extends DepthFirstAdapter {
 	public void outAForStm(AForStm node)
 	{
 		assert node.getStm().size()>=0;
-		//[init]:stm? exp? [post]:stm? stm*
+		//[init]:stm? exp? [post]:stm? 
 		if (node.getInit()!=null){
-			PStm valueStm = node.getInit();			
+			PStm valueStm = node.getInit();		
+			Type stmType = getType(valueStm);
 		}
-		
 		if (node.getExp()!=null){
 			PExp valueExp = node.getExp();
 			Type expType = getType(valueExp);
@@ -556,14 +557,16 @@ public class TypeChecker extends DepthFirstAdapter {
 			Type postType = getType(valuePost);
 		}
 		
+		//stm*
+		symbolTable = symbolTable.newScope();
 		if (node.getStm().size()==0){
-			
 		} else {
 			for (int i=0; i<node.getStm().size();i++){
 				PStm valueStm = node.getStm().get(i);
 				Type stmType = getType(valueStm);
 			}
 		}
+		symbolTable = symbolTable.popScope();
 		defaultOut(node);
 	}
 	public void outABreakStm(ABreakStm node)//trivially well-typed
@@ -587,7 +590,15 @@ public class TypeChecker extends DepthFirstAdapter {
 		if (node.getStm().size()==0){
 			
 		} else {
-			
+			symbolTable = symbolTable.newScope();
+			for (int j=0;j<node.getStm().size();j++){
+				PStm valueStm = node.getStm().get(j);
+				Type stmType = getType(valueStm);
+			}
+		}
+		if (node.getFallthroughStm()!=null){
+		} else {
+			symbolTable = symbolTable.popScope();
 		}
 		defaultOut(node);
 	}
