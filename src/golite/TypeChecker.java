@@ -493,7 +493,7 @@ public class TypeChecker extends DepthFirstAdapter {
 		PExp valueExp = node.getExp();
 		Type expType = getType(valueExp);
 		if (!isBooleanType(expType)){ //exp is not bool type
-			errorSymbolType(valueExp, expType, boolType);
+			error(valueExp,"Expected boolean type but got "+ expType);
 		}
 		
 		if (node.getIfBlock().size()==0){
@@ -524,16 +524,17 @@ public class TypeChecker extends DepthFirstAdapter {
 		if (node.getExp()!=null){
 			PExp valueExp = node.getExp();
 			Type expType = getType (valueExp);
-		} else {
-			//
-		}
-		if (node.getSwitchClause().size()==0){
-			
-		} else {
-			for (int i=0; i<node.getSwitchClause().size();i++){
+			if (!isBooleanType(expType)){//expected bool
+				error(valueExp,"Expected boolean type but got "+ expType);
+			}
+		} else { //no exp. check all cases have bool
+			if (node.getSwitchClause().size()>0){
+				for (int i=0; i<node.getSwitchClause().size();i++){
 				PSwitchClause valueSwitch = node.getSwitchClause().get(i);
 				Type switchType = getType(valueSwitch);
 			}
+			}
+			
 		}
 		defaultOut(node);
 	}
@@ -549,7 +550,7 @@ public class TypeChecker extends DepthFirstAdapter {
 			PExp valueExp = node.getExp();
 			Type expType = getType(valueExp);
 			if (!isBooleanType(expType)){//expected bool but found expType
-				errorSymbolType(valueExp,expType,boolType);
+				error(valueExp,"Expected boolean type but got "+ expType);
 			}
 		}
 		if (node.getPost()!=null){
@@ -582,11 +583,23 @@ public class TypeChecker extends DepthFirstAdapter {
 		assert node.getExp().size()>0;
 		assert node.getStm().size()>=0;
 		//exp+ stm* fallthrough_stm?
-		for (int i=0; i<node.getExp().size(); i++){
+		if (((ASwitchStm) node.parent()).getExp()!=null){
+			for (int i=0; i<node.getExp().size(); i++){
 			PExp valueExp = node.getExp().get(i);
 			Type expType = getType(valueExp);
-			
+			}
+		} else { 
+			//all exp have boolType
+			for (int i=0; i<node.getExp().size(); i++){
+				PExp valueExp = node.getExp().get(i);
+				Type expType = getType(valueExp);
+				if (!isBooleanType (expType)){
+					error(valueExp,"Expected boolean type but got "+ expType);
+				}
+			}
 		}
+
+		
 		if (node.getStm().size()==0){
 			
 		} else {
@@ -605,7 +618,6 @@ public class TypeChecker extends DepthFirstAdapter {
 	public void outADefaultSwitchClause(ADefaultSwitchClause node)
 	{
 		assert node.getStm().size()>=0;
-		//{default} stm* fallthrough_stm?
 		if (node.getStm().size()==0){
 		
 		} else {
