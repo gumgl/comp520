@@ -420,22 +420,28 @@ public class TypeChecker extends DepthFirstAdapter {
 		// Ids are expressions here, but guaranteed by the weeder to be
 		// variables
 		for (int i=0; i < node.getIds().size(); i++) {
-			String id = ((AVariableExp)node.getIds().get(i)).getId().getText();
+			Node idExp = node.getIds().get(i);
+			String id = ((AVariableExp)idExp).getId().getText();
+
 			PExp exp = node.getExp().get(i);
 			Symbol symbol = symbolTable.getInScope(id);
+			Type varType;
 
 			if (symbol == null) {
 				hasNewVariable = true;
-				symbolTable.addSymbol(new Variable(id, getType(exp)));
+				varType = getType(exp);
+				symbolTable.addSymbol(new Variable(id, varType));
 			} else {
 				if (!(symbol instanceof Variable))
 					errorSymbolClass(node.getIds().get(i), symbol, Variable.class);
 
-				Variable redeclaredVariable = (Variable)symbol;
+				varType = ((Variable)symbol).getType();
 
-				if (!redeclaredVariable.getType().isIdentical(getType(exp)))
-					errorSymbolType(exp, getType(exp), redeclaredVariable.getType());
+				if (!varType.isIdentical(getType(exp)))
+					errorSymbolType(exp, getType(exp), varType);
 			}
+
+			setType(idExp, varType);
 		}
 
 		if (!hasNewVariable)
