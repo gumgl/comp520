@@ -26,4 +26,8 @@ public class Variable implements Symbol {
 		this.type = type;
 	}
 
+	public String getTypeInfo() {
+		return type.getRepresentation();
+	}
+
 }

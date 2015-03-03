@@ -24,8 +24,8 @@ public class SliceType extends Type {
 		return other instanceof SliceType && type.isIdentical(((SliceType)other).getType());
 	}
 
-	public String toString() {
-		return "[]"+type;
+	public String getRepresentation() {
+		return "[]"+type.getRepresentation();
 	}
 
 }

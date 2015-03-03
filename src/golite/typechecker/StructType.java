@@ -50,13 +50,13 @@ public class StructType extends Type {
 		return true;
 	}
 
-	public String toString() {
+	public String getRepresentation() {
 		StringBuilder builder = new StringBuilder();
 		builder.append("struct { ");
 		for (Variable field : fields) {
 			builder.append(field.getId());
 			builder.append(" ");
-			builder.append(field.getType().toString());
+			builder.append(field.getType().getRepresentation());
 			builder.append("; ");
 		}
 		builder.append("}");

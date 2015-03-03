@@ -43,4 +43,25 @@ public class Function implements Symbol {
 		this.returnType = returnType;
 	}
 
+	public String getTypeInfo() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("func : (");
+
+		boolean first = true;
+		for (Type t : argumentTypes) {
+			if (first) {
+				first = false;
+			} else {
+				builder.append(" * ");
+			}
+			builder.append(t.getRepresentation());
+		}
+		if (!(returnType instanceof VoidType)) {
+			builder.append(" -> ");
+			builder.append(returnType.getRepresentation());
+		}
+		builder.append(")");
+		return builder.toString();
+	}
+
 }

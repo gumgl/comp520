@@ -38,8 +38,8 @@ public class ArrayType extends Type {
 		return size == otherArrayType.getSize() && type.isIdentical(otherArrayType.getType());
 	}
 
-	public String toString() {
-		return "["+size+"]"+type;
+	public String getRepresentation() {
+		return "["+size+"]"+type.getRepresentation();
 	}
 
 }
