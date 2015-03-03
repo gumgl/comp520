@@ -151,15 +151,13 @@ Productions
 
 	package_dec {-> id} = package id semicolon {-> id};
 
-	declaration {-> declaration?} =
+	declaration {-> declaration} =
 		  {variable} var variable_specs semicolon
 			{-> New declaration.variable([variable_specs.variable_spec])}
 		| {type} type type_specs semicolon
 			{-> New declaration.type([type_specs.type_spec])}
-		| {function} func id paren_l func_param_list paren_r type_exp? block
+		| {function} func id paren_l func_param_list paren_r type_exp? block semicolon
 			{-> New declaration.function(id, [func_param_list.func_param], type_exp, [block.stm])}
-		| {empty} semicolon
-			{-> Null}
 	;
 
 	/* Variable declarations */
@@ -258,7 +256,7 @@ Productions
 		| {print} print_op paren_l exp_list_star paren_r semicolon
 			{-> New stm.print(print_op, [exp_list_star.exp])}
 		| {return} return exp? semicolon {-> New stm.return(exp)}
-		| {block} brace_l stm* brace_r {-> New stm.block([stm])}
+		| {block} block semicolon {-> New stm.block([block.stm])}
 		| {if} if_stm {-> if_stm.stm}
 		| {switch} switch simple_stm? exp? brace_l switch_clause* brace_r
 			{-> New stm.switch(simple_stm.stm, exp, [switch_clause])}
