@@ -360,13 +360,13 @@ public class TypeChecker extends DepthFirstAdapter {
 	public void outAAssignStm(AAssignStm node)
 	{
 		assert node.getLvalue().size() == node.getExp().size();
-		assert node.getLvalue().size()>0;
+
 		for (int i=0; i<node.getLvalue().size(); i++) {
 			Type lType = getType(node.getLvalue().get(i));
 			PExp value = node.getExp().get(i);
 			Type vType = getType(value);
-			
-			if ( ! Type.Similar(lType, vType)) // Value's type is not the same as the declared type
+
+			if ( ! lType.isIdentical(vType)) // Value's type is not the same as the declared type
 				errorSymbolType(value, vType, lType);
 		}
 		defaultOut(node);
@@ -388,7 +388,7 @@ public class TypeChecker extends DepthFirstAdapter {
 		PExp value = node.getExp();
 		Type vType = getType(value);
 		//PPostfixOp node.getPostfixOp()
-		if (!Type.Similar(floatType, vType)|!Type.Similar(intType,vType)){
+		if (isNumericType(vType)) {
 			errorSymbolType(value, vType,floatType); //found vType, expected int/float
 		}
 		defaultOut(node);
@@ -420,10 +420,14 @@ public class TypeChecker extends DepthFirstAdapter {
 			if (symbol == null) {
 				hasNewVariable = true;
 				symbolTable.addSymbol(new Variable(id, getType(exp)));
-			} else if (!(symbol instanceof Variable)) {
-				errorSymbolClass(node.getIds().get(i), symbol, Variable.class);
-			} else if (!Type.Similar(((Variable)symbol).getType(), getType(exp))) {
-				errorSymbolType(exp, symbol, new Variable(id, getType(exp)));
+			} else {
+				if (!(symbol instanceof Variable))
+					errorSymbolClass(node.getIds().get(i), symbol, Variable.class);
+
+				Variable redeclaredVariable = (Variable)symbol;
+
+				if (!redeclaredVariable.getType().isIdentical(getType(exp)))
+					errorSymbolType(exp, getType(exp), redeclaredVariable.getType());
 			}
 		}
 
@@ -456,9 +460,6 @@ public class TypeChecker extends DepthFirstAdapter {
 		for (int i=0; i<node.getExp().size(); i++) {
 			PExp value = node.getExp().get(i);
 			Type vType = getType(value);
-			if(Type.Similar(null, vType)){
-			
-			}
 		}
 		defaultOut(node);
 	}
