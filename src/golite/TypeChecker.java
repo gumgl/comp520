@@ -505,11 +505,11 @@ public class TypeChecker extends DepthFirstAdapter {
 			PSwitchClause valueSwitch = node.getSwitchClause().get(i);
 			Type switchType = getType(valueSwitch);
 			if (!hasExp) {
-				if(!isBooleanType(switchType)){ //exp is not bool type
+				if(!isBooleanType(switchType)){ //case type is not boolType
 					errorSymbolType(valueSwitch,switchType, boolType);
 				}
-			} else {
-				if(!expType.isIdentical(switchType)){
+			} else { 
+				if(!expType.isIdentical(switchType)){ //case type is not expType
 					errorSymbolType(valueSwitch,switchType, expType);
 				}
 			}
@@ -540,16 +540,9 @@ public class TypeChecker extends DepthFirstAdapter {
 	}
 	public void outAConditionalSwitchClause(AConditionalSwitchClause node)
 	{
-		assert node.getExp().size()>0;
-		assert node.getStm().size()>=0;
-		//exp+ stm* fallthrough_stm?
-		if (((ASwitchStm) node.parent()).getExp()!=null){
-			for (int i=0; i<node.getExp().size(); i++){
-			PExp valueExp = node.getExp().get(i);
-			Type expType = getType(valueExp);
-			}
-		} else { 
-			//all exp have boolType
+		symbolTable.addScope();
+		if (((ASwitchStm) node.parent()).getExp()==null){
+			//set type to boolType
 			for (int i=0; i<node.getExp().size(); i++){
 				PExp valueExp = node.getExp().get(i);
 				Type expType = getType(valueExp);
@@ -557,21 +550,19 @@ public class TypeChecker extends DepthFirstAdapter {
 					error(valueExp, "Expected boolean type but got "+ expType);
 				}
 			}
-		}
-
-		
-		if (node.getStm().size()==0){
-			
+			setType(node,boolType);
 		} else {
-			symbolTable = symbolTable.newScope();
-			for (int j=0;j<node.getStm().size();j++){
-				PStm valueStm = node.getStm().get(j);
-				Type stmType = getType(valueStm);
-			}
+			Type compareType = null;
+			for (int i=0; i<node.getExp().size(); i++){
+				PExp valueExp = node.getExp().get(i);
+				Type expType = getType(valueExp);
+				if (!BooleanType (expType)){
+					error(valueExp, "Expected boolean type but got "+ expType);
+				}
+			}			
 		}
-		if (node.getFallthroughStm()!=null){
-		} else {
-			symbolTable = symbolTable.popScope();
+		if (node.getFallthroughStm()==null){ //drops scope if a fallthrough stm exists, else stays in the same scope
+			symbolTable.dropScope();
 		}
 		defaultOut(node);
 	}
