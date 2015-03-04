@@ -380,21 +380,18 @@ public class TypeChecker extends DepthFirstAdapter {
 	}
 	public void outAOpAssignStm(AOpAssignStm node)
 	{
-			Type lType = getType(node.getLvalue());
-			PExp valueExp = node.getExp();
-			Type vType = getType(valueExp);
-			//PAssignOp valueOp = node.getAssignOp();
-			//Type opType = getType(valueOp);
-			//valueOp accept (lType,vType) and returns vType
-			
+		Type lType = getType(node.getLvalue());
+		PExp valueExp = node.getExp();
+		Type vType = getType(valueExp);
+		if (!lType.isIdentical(vType)){
+			error(node,"mismatched types for op assignment");
+		}
 		defaultOut(node);
 	}
-
 	public void outAIncDecStm(AIncDecStm node)
 	{
 		PExp value = node.getExp();
 		Type vType = getType(value);
-		//PPostfixOp node.getPostfixOp()
 		if (!isNumericType(vType)) {
 			errorSymbolType(value, vType, "a numeric type"); //found vType, expected a numeric type
 		}
