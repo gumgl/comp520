@@ -1,6 +1,5 @@
 package golite;
 
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -14,8 +13,7 @@ import golite.typechecker.*;
 public class TypeChecker extends DepthFirstAdapter {
 
 	public HashMap<Node,Type> types = new HashMap<Node,Type>(); // Mapping a Type for every Node
-	public SymbolTable symbolTable = new SymbolTable(null);
-	PrintWriter stdout;
+	public SymbolTable symbolTable;
 	PositionHelper positionHelper;
 
 	// Builtin types
@@ -26,12 +24,13 @@ public class TypeChecker extends DepthFirstAdapter {
 	final BuiltInType stringType = new BuiltInType("string");
 	final VoidType voidType = new VoidType();
 
-
-	public TypeChecker(PrintWriter out, PositionHelper positionHelper) {
-		stdout = out;
+	public TypeChecker(PositionHelper positionHelper, SymbolTableLogger logger) {
 		this.positionHelper = positionHelper;
+		symbolTable = new SymbolTable(logger);
+	}
 
-		preDeclareBooleans();
+	public TypeChecker(PositionHelper positionHelper) {
+		this(positionHelper, null);
 	}
 
 	static private String collectionToString(Collection<?> collection, String separator, String finalWord) {
@@ -57,7 +56,7 @@ public class TypeChecker extends DepthFirstAdapter {
 
 	// When a symbol is already declared
 	private void errorSymbolDeclared(Node node, Symbol found) {
-		error(node, "\"" + found + "\" already declared in current scope");
+		error(node, "\"" + found.getId() + "\" already declared in current scope");
 	}
 	// When a symbol is not found in the symbol table
 	private void errorSymbolNotFound(Node node, String id) {
@@ -65,21 +64,21 @@ public class TypeChecker extends DepthFirstAdapter {
 	}
 	// e.g. When we expect the symbol to be a function instead of a variable
 	private void errorSymbolClass(Node node, Symbol found, Class<? extends Symbol> expected) {
-		error(node, "Expected " + found + " to be a " + expected.getSimpleName());
+		error(node, "Expected " + found.getId() + " to be a " + expected.getSimpleName());
 	}
 	// e.g. When we expect the symbol to be a function instead of a variable
 	private void errorSymbolClasses(Node node, Symbol found, Collection<Class<? extends Symbol> > expected) {
-		error (node, "Expected " + found + " to be a " + collectionToString(expected, ",", "or"));
+		error (node, "Expected " + found.getId() + " to be a " + collectionToString(expected, ",", "or"));
 	}
 	// When we expect the symbol to be a certain type
 	private void errorSymbolType(Node node, Type found, Type expected) {
-		error(node, "Expected type " + expected + " instead of " + found);
+		error(node, "Expected type " + expected.getRepresentation() + " instead of " + found.getRepresentation());
 	}
 	private void errorSymbolType(Node node, Type found, String expected) {
-		error(node, "Expected " + expected + " instead of " + found);
+		error(node, "Expected " + expected + " instead of " + found.getRepresentation());
 	}
 	private void errorTypeCast(Node node, Type from, Type to) {
-		error(node, "Cannot typecast " + from + " to "+  to);
+		error(node, "Cannot typecast " + from.getRepresentation() + " to "+  to.getRepresentation());
 	}
 
 	private void ensureUndeclared(Node node, String id) {
@@ -103,14 +102,6 @@ public class TypeChecker extends DepthFirstAdapter {
 	}
 	private void setType(Node node, Type type) {
 		types.put(node, type);
-	}
-
-	private void preDeclareBooleans() {
-		symbolTable.addSymbol(new Variable("true", boolType));
-		symbolTable.addSymbol(new Variable("false", boolType));
-
-		// Shadow them
-		symbolTable = symbolTable.newScope();
 	}
 
 	private boolean canBeCast(Type type) {
@@ -149,6 +140,22 @@ public class TypeChecker extends DepthFirstAdapter {
 	{
 		// Do nothing
 	}
+
+	@Override
+	public void inStart(Start node) {
+		symbolTable.addSymbol(new Variable("true", boolType));
+		symbolTable.addSymbol(new Variable("false", boolType));
+
+		// Shadow them
+		symbolTable.addScope();
+	}
+
+	@Override
+	public void outStart(Start node) {
+		symbolTable.dropScope();
+		defaultOut(node);
+	}
+
 	/* ********* Top-level declarations **************** */
 
 	// We don't need to do anything for variable declarations, checks are
@@ -180,7 +187,7 @@ public class TypeChecker extends DepthFirstAdapter {
 		// Add the symbol before checking the function body to support recursion
 		symbolTable.addSymbol(funcSignature);
 
-		symbolTable = symbolTable.newScope();
+		symbolTable.addScope();
 		for (PFuncParam param : node.getFuncParam()) {
 			param.apply(this);
 			funcSignature.addArguments(((AFuncParam)param).getId().size(), getType(param));
@@ -189,7 +196,7 @@ public class TypeChecker extends DepthFirstAdapter {
 		for (Node stm : node.getStm())
 			stm.apply(this);
 
-		symbolTable = symbolTable.popScope();
+		symbolTable.dropScope();
 
 		outAFunctionDeclaration(node);
 	}
@@ -307,7 +314,7 @@ public class TypeChecker extends DepthFirstAdapter {
 	{
 		defaultIn(node);
 		// Create a new scope in which we declare fields as Variables
-		symbolTable = symbolTable.newScope();
+		symbolTable.addScope();
 	}
 
 	public void outAStructTypeExp(AStructTypeExp node)
@@ -320,7 +327,7 @@ public class TypeChecker extends DepthFirstAdapter {
 			structType.addField((Variable)symbol);
 		}
 
-		symbolTable = symbolTable.popScope();
+		symbolTable.dropScope();
 		setType(node, structType);
 
 		defaultOut(node);
@@ -389,7 +396,7 @@ public class TypeChecker extends DepthFirstAdapter {
 		Type vType = getType(value);
 		//PPostfixOp node.getPostfixOp()
 		if (!isNumericType(vType)) {
-			error(node,"not a numeric type.\n"); //found vType, expected numeric type
+			errorSymbolType(value, vType, "a numeric type"); //found vType, expected a numeric type
 		}
 		defaultOut(node);
 	}
@@ -413,22 +420,28 @@ public class TypeChecker extends DepthFirstAdapter {
 		// Ids are expressions here, but guaranteed by the weeder to be
 		// variables
 		for (int i=0; i < node.getIds().size(); i++) {
-			String id = ((AVariableExp)node.getIds().get(i)).getId().getText();
+			Node idExp = node.getIds().get(i);
+			String id = ((AVariableExp)idExp).getId().getText();
+
 			PExp exp = node.getExp().get(i);
 			Symbol symbol = symbolTable.getInScope(id);
+			Type varType;
 
 			if (symbol == null) {
 				hasNewVariable = true;
-				symbolTable.addSymbol(new Variable(id, getType(exp)));
+				varType = getType(exp);
+				symbolTable.addSymbol(new Variable(id, varType));
 			} else {
 				if (!(symbol instanceof Variable))
 					errorSymbolClass(node.getIds().get(i), symbol, Variable.class);
 
-				Variable redeclaredVariable = (Variable)symbol;
+				varType = ((Variable)symbol).getType();
 
-				if (!redeclaredVariable.getType().isIdentical(getType(exp)))
-					errorSymbolType(exp, getType(exp), redeclaredVariable.getType());
+				if (!varType.isIdentical(getType(exp)))
+					errorSymbolType(exp, getType(exp), varType);
 			}
+
+			setType(idExp, varType);
 		}
 
 		if (!hasNewVariable)
@@ -436,37 +449,23 @@ public class TypeChecker extends DepthFirstAdapter {
 
 		defaultOut(node);
 	}
-	public void outAVariableDecStm(AVariableDecStm node)
-	{
-		assert node.getVariableSpec().size()>0;
-		for (int i=0; i < node.getVariableSpec().size(); i++) {
-			PVariableSpec value = node.getVariableSpec().get(i);
-			Type vType = getType(value);
-		}
+	/* We don't need to do anything for variable and type declaration statements
+	 * except for short variable declarations: in the other cases, all the work
+	 * is done in the type or variable spec */
+	public void outAVariableDecStm(AVariableDecStm node) {
 		defaultOut(node);
 	}
-	public void outATypeDecStm(ATypeDecStm node)
-	{
-		assert node.getTypeSpec().size()>0;
-		for (int i=0; i < node.getTypeSpec().size(); i++) {
-			PTypeSpec value = node.getTypeSpec().get(i);
-			Type vType = getType(value);
-		}
+	public void outATypeDecStm(ATypeDecStm node) {
 		defaultOut(node);
 	}
 	public void outAPrintStm(APrintStm node)
 	{
-		assert node.getExp().size()>=0;
-		for (int i=0; i<node.getExp().size(); i++) {
-			PExp value = node.getExp().get(i);
-			Type vType = getType(value);
-		}
 		defaultOut(node);
 	}
 	public void outAReturnStm(AReturnStm node)
 	{
 		if (node.getExp()!=null){
-			//check exp
+			//check exp has same type as enclosing function returnType
 			PExp valueExp = node.getExp();
 			Type expType = getType(valueExp);
 		}	
@@ -475,99 +474,60 @@ public class TypeChecker extends DepthFirstAdapter {
 	public void inABlockStm(ABlockStm node)
 	{
 		defaultIn(node);
-		symbolTable = symbolTable.newScope();
+		symbolTable.addScope();
 	}
 	public void outABlockStm(ABlockStm node)
 	{
-		symbolTable = symbolTable.popScope();
+		symbolTable.dropScope();
 		defaultOut(node);
 	}
 	public void outAIfStm(AIfStm node)
 	{
-		if (node.getStm()!=null){
-			//check stm
-			PStm valueStm = node.getStm();
-			Type stmType = getType(valueStm);
-		}
-		
 		PExp valueExp = node.getExp();
 		Type expType = getType(valueExp);
 		if (!isBooleanType(expType)){ //exp is not bool type
-			error(valueExp,"Expected boolean type but got "+ expType);
-		}
-		
-		if (node.getIfBlock().size()==0){
-			
-		} else {
-			for (int i=0; i<node.getIfBlock().size();i++){
-				PStm valueStm = node.getIfBlock().get(i);
-				Type stmType = getType(valueStm);
-			}
-		}
-		if (node.getElseBlock().size()==0){
-			
-		} else {
-			for (int j=0; j<node.getElseBlock().size();j++){
-				PStm valueStm = node.getIfBlock().get(j);
-				Type stmType = getType(valueStm);
-			}
+			errorSymbolType(valueExp, expType, boolType);
 		}
 		defaultOut(node);
 	}
 	public void outASwitchStm(ASwitchStm node)
 	{
-		assert node.getSwitchClause().size()>=0;
-		if (node.getStm()!=null){
-			PStm valueStm = node.getStm();
-			Type stmType = getType (valueStm);
-		}
+		boolean hasExp = false;
+		Type expType = null;
 		if (node.getExp()!=null){
+			hasExp = true;
 			PExp valueExp = node.getExp();
-			Type expType = getType (valueExp);
-			if (!isBooleanType(expType)){//expected bool
-				error(valueExp,"Expected boolean type but got "+ expType);
+			expType = getType (valueExp);
+		}	
+			//if hasExp, checks if cases e1, e2, . . . , en have same type as valueExp
+			//else, checks if cases e1, e2, . . . , en are well-typed and have type bool
+		for (int i=0; i<node.getSwitchClause().size();i++){
+			PSwitchClause valueSwitch = node.getSwitchClause().get(i);
+			Type switchType = getType(valueSwitch);
+			if (!hasExp) {
+				if(!isBooleanType(switchType)){ //exp is not bool type
+					errorSymbolType(valueSwitch,switchType, boolType);
+				}
+			} else {
+				if(!expType.isIdentical(switchType)){
+					errorSymbolType(valueSwitch,switchType, expType);
+				}
 			}
-		} else { //no exp. check all cases have bool
-			if (node.getSwitchClause().size()>0){
-				for (int i=0; i<node.getSwitchClause().size();i++){
-				PSwitchClause valueSwitch = node.getSwitchClause().get(i);
-				Type switchType = getType(valueSwitch);
-			}
-			}
-			
 		}
 		defaultOut(node);
 	}
 	public void outAForStm(AForStm node)
 	{
-		assert node.getStm().size()>=0;
-		//[init]:stm? exp? [post]:stm? 
-		if (node.getInit()!=null){
-			PStm valueStm = node.getInit();		
-			Type stmType = getType(valueStm);
-		}
-		if (node.getExp()!=null){
+		if (node.getExp()==null){
+			//An infinite for loop type checks if its body type checks
+			//The body opens a new scope in the symbol table.
+		} else {
 			PExp valueExp = node.getExp();
 			Type expType = getType(valueExp);
 			if (!isBooleanType(expType)){//expected bool but found expType
-				error(valueExp,"Expected boolean type but got "+ expType);
+				errorSymbolType(valueExp,expType,boolType);
 			}
 		}
-		if (node.getPost()!=null){
-			PStm valuePost = node.getPost();
-			Type postType = getType(valuePost);
-		}
-		
-		//stm*
-		symbolTable = symbolTable.newScope();
-		if (node.getStm().size()==0){
-		} else {
-			for (int i=0; i<node.getStm().size();i++){
-				PStm valueStm = node.getStm().get(i);
-				Type stmType = getType(valueStm);
-			}
-		}
-		symbolTable = symbolTable.popScope();
 		defaultOut(node);
 	}
 	public void outABreakStm(ABreakStm node)//trivially well-typed
@@ -583,16 +543,10 @@ public class TypeChecker extends DepthFirstAdapter {
 		assert node.getExp().size()>0;
 		assert node.getStm().size()>=0;
 		//exp+ stm* fallthrough_stm?
-		
 		if (((ASwitchStm) node.parent()).getExp()!=null){
-			PExp parentExp = ((ASwitchStm) node.parent()).getExp();
-			Type parentType = getType(parentExp);
 			for (int i=0; i<node.getExp().size(); i++){
 			PExp valueExp = node.getExp().get(i);
 			Type expType = getType(valueExp);
-			if (!expType.isIdentical(parentType)){
-				errorSymbolType(valueExp,expType,parentType);
-			}
 			}
 		} else { 
 			//all exp have boolType
@@ -600,31 +554,29 @@ public class TypeChecker extends DepthFirstAdapter {
 				PExp valueExp = node.getExp().get(i);
 				Type expType = getType(valueExp);
 				if (!isBooleanType (expType)){
-					error(valueExp,"Expected boolean type but got "+ expType);
+					error(valueExp, "Expected boolean type but got "+ expType);
 				}
 			}
 		}
-		if (node.getStm().size()!=0){
+
+		
+		if (node.getStm().size()==0){
+			
+		} else {
 			symbolTable = symbolTable.newScope();
 			for (int j=0;j<node.getStm().size();j++){
 				PStm valueStm = node.getStm().get(j);
 				Type stmType = getType(valueStm);
 			}
 		}
-		if (node.getFallthroughStm()==null){
+		if (node.getFallthroughStm()!=null){
+		} else {
 			symbolTable = symbolTable.popScope();
 		}
 		defaultOut(node);
 	}
 	public void outADefaultSwitchClause(ADefaultSwitchClause node)
 	{
-		assert node.getStm().size()>=0;
-		if (node.getStm().size()>0){
-			for (int i=0; i<node.getStm().size(); i++){
-				PStm valueStm = node.getStm().get(i);
-				Type stmType = getType(valueStm);
-			}
-		}
 		defaultOut(node);
 	}
 	public void outAFallthroughStm(AFallthroughStm node)
@@ -757,7 +709,7 @@ public class TypeChecker extends DepthFirstAdapter {
 
 			Collection<Class<? extends Symbol>> expected = new ArrayList<Class<? extends Symbol>>();
 			expected.add(Function.class);
-			expected.add(NamedType.class);
+			expected.add(AliasType.class);
 			errorSymbolClasses(node, functorSymbol, expected);
 		}
 		defaultOut(node);
