@@ -513,6 +513,10 @@ public class TypeChecker extends DepthFirstAdapter {
 		}
 		defaultOut(node);
 	}
+	public void inAForStm(AForStm node)
+	{
+		symbolTable.addScope();
+	}	
 	public void outAForStm(AForStm node)
 	{
 		if (node.getExp()==null){
@@ -525,6 +529,7 @@ public class TypeChecker extends DepthFirstAdapter {
 				errorSymbolType(valueExp,expType,boolType);
 			}
 		}
+		symbolTable.dropScope();
 		defaultOut(node);
 	}
 	public void outABreakStm(ABreakStm node)//trivially well-typed
