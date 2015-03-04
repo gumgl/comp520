@@ -393,7 +393,7 @@ public class TypeChecker extends DepthFirstAdapter {
 		PExp value = node.getExp();
 		Type vType = getType(value);
 		if (!isNumericType(vType)) {
-			errorSymbolType(value, vType, "a numeric type"); //found vType, expected a numeric type
+			error(value,"expected a numeric type"); //found vType, expected a numeric type
 		}
 		defaultOut(node);
 	}
