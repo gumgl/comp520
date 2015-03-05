@@ -512,7 +512,6 @@ public class TypeChecker extends DepthFirstAdapter {
 			Node valueSwitch = node.getSwitchClause().get(i);
 			Type switchType = getType(valueSwitch);
 			if (!hasExp) {
-				if (valueSwitch instanceof )
 				if(!isBooleanType(switchType)){ //case type is not boolType
 					errorSymbolType(valueSwitch,switchType, boolType);
 				}
@@ -547,38 +546,37 @@ public class TypeChecker extends DepthFirstAdapter {
 	}
 	public void outABreakStm(ABreakStm node)//trivially well-typed
 	{
-		//symbolTable.dropScope(); 
 		defaultOut(node);
 	}
 	public void outAContinueStm(AContinueStm node) //trivially well-typed
 	{
 		defaultOut(node);
 	}
-	public void inAConditionalSwitchClause(AConditionalSwitchClause node)
-	{
-		
-	}
 	public void outAConditionalSwitchClause(AConditionalSwitchClause node)
 	{
-		Node parent = node.parent();
-		//set type to boolType			
+		PExp first = node.getExp().get(0);
+		Type firstType = getType(valueExp);
+		if (isBooleanType(firstType){
+			//all the rest cases should have boolType			
+			for (int i=1; i<node.getExp().size(); i++){
+				PExp valueExp = node.getExp().get(i);
+				Type expType = getType(valueExp);
+				if (!isBooleanType (expType)){
+					error(valueExp, "Expected boolean type but got "+ expType);
+				}
+			}
+		setType(node,boolType);
+		} else { 
+			//check all the rest have the same type as expType
 		for (int i=0; i<node.getExp().size(); i++){
 			PExp valueExp = node.getExp().get(i);
 			Type expType = getType(valueExp);
-			if (!isBooleanType (expType)){
+			if (!expType.isIdentical(firstType)){
 				error(valueExp, "Expected boolean type but got "+ expType);
 			}
 		}
-		setType(node,boolType);
-		
-		Type compareType = null;
-		for (int i=0; i<node.getExp().size(); i++){
-			PExp valueExp = node.getExp().get(i);
-			Type expType = getType(valueExp);
-			if (!BooleanType (expType)){
-				error(valueExp, "Expected boolean type but got "+ expType);
-			}
-		}			
+		setType(node,firstType);
+		}
 		defaultOut(node);
 	}
 	public void outADefaultSwitchClause(ADefaultSwitchClause node)
