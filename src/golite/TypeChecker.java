@@ -465,6 +465,15 @@ public class TypeChecker extends DepthFirstAdapter {
 			//check exp has same type as enclosing function returnType
 			PExp valueExp = node.getExp();
 			Type expType = getType(valueExp);
+			Type enclosingType = ((AFunctionDeclaration) node.parent()).getReturnType();
+			if (expType!=enclosingType){
+				errorSymbolTable(valueExp,expType,enclosingType);
+			}
+		} else {
+			//check enclosing function returnType is voidType
+			Type enclosingType = ((AFunctionDeclaration) node.parent()).getReturnType();
+			if (enclosingType==voidType){
+				errorSymbolTable(valueExp,expType,enclosingType);
 		}	
 		defaultOut(node);
 	}
