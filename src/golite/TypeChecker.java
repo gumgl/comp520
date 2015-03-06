@@ -24,6 +24,8 @@ public class TypeChecker extends DepthFirstAdapter {
 	final BuiltInType stringType = new BuiltInType("string");
 	final VoidType voidType = new VoidType();
 
+	private Type functionReturnType;
+
 	public TypeChecker(PositionHelper positionHelper, SymbolTableLogger logger) {
 		this.positionHelper = positionHelper;
 		symbolTable = new SymbolTable(logger);
@@ -178,14 +180,17 @@ public class TypeChecker extends DepthFirstAdapter {
 		ensureUndeclared(id);
 
 		Function funcSignature = new Function(id.getText());
-		PTypeExp returnType = node.getReturnType();
+		PTypeExp returnTypeExp = node.getReturnType();
 
-		if (returnType == null)  {
-			funcSignature.setReturnType(voidType);
+		// Expose the function return type to nested statements
+		if (returnTypeExp == null)  {
+			functionReturnType = voidType;
 		} else {
-			returnType.apply(this);
-			funcSignature.setReturnType(getType(returnType));
+			returnTypeExp.apply(this);
+			functionReturnType = getType(returnTypeExp);
 		}
+
+		funcSignature.setReturnType(functionReturnType);
 
 		// Add the symbol before checking the function body to support recursion
 		symbolTable.addSymbol(funcSignature);
@@ -200,6 +205,8 @@ public class TypeChecker extends DepthFirstAdapter {
 			stm.apply(this);
 
 		symbolTable.dropScope();
+
+		functionReturnType = null;
 
 		outAFunctionDeclaration(node);
 	}
@@ -465,23 +472,20 @@ public class TypeChecker extends DepthFirstAdapter {
 	}
 	public void outAReturnStm(AReturnStm node)
 	{
+		Type returnedType;
+
+		// check exp has same type as enclosing function returnType
+
 		if (node.getExp()!=null){
-			//check exp has same type as enclosing function returnType
-			PExp valueExp = node.getExp();
-			Type expType = getType(valueExp);
-			PTypeExp enclosing = ((AFunctionDeclaration) node.parent()).getReturnType();
-			Type enclosingType = getType(enclosing);
-			if (expType!=enclosingType){
-				errorSymbolType(valueExp,expType,enclosingType);
-			}
+			returnedType = getType(node.getExp());
 		} else {
-			//check enclosing function returnType is voidType
-			PTypeExp enclosing = ((AFunctionDeclaration) node.parent()).getReturnType();
-			Type enclosingType = getType(enclosing);
-			if (enclosingType!=voidType){
-				errorSymbolType(node.getExp(),enclosingType,voidType);
+			returnedType = voidType;
 		}
+
+		if (!returnedType.isIdentical(functionReturnType)) {
+			errorSymbolType(node.getExp(), returnedType, functionReturnType);
 		}
+
 		defaultOut(node);
 	}
 	public void inABlockStm(ABlockStm node)
