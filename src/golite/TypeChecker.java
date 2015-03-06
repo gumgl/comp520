@@ -410,7 +410,6 @@ public class TypeChecker extends DepthFirstAdapter {
 	}
 
 	// Override case so it won't recurse on the IDs
-	// FIXME: does this get the scoping right?
 	@Override
 	public void caseAShortVariableDecStm(AShortVariableDecStm node) {
 		inAShortVariableDecStm(node);
