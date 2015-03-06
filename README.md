@@ -19,20 +19,17 @@ $ make checkall
 ~~~
 
 Running `make` creates the file `golite.jar` in the toplevel directory
-as well as Bash and Windows batch file utility scripts named `golite` and
+as well as a Bash utility script named `golite`. If make is run under
+Cygwin on a Windows machine, it also creates a Batch utility file named
 `golite.bat`.
 
 # Instructions
 
-These are instructions to invoke the behavior specified for the
-given milestone with the code in this revision, after having built
-the code as specified above.
-
 ## Milestone 1
 
-From the root directory, run `golite -pprint inputFile`.
+[Build](#building) the code as described above. From the root directory, run `golite -pprint inputFile`.
 
 ## Milestone 2
 
-From the root directory, run
+[Build](#building) the code as described above. From the root directory, run
 `golite [-dumpsymtab] [-dumpsymtaball] [-pptype] inputFile`.
