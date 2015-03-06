@@ -383,13 +383,12 @@ public class TypeChecker extends DepthFirstAdapter {
 	}
 	public void outAOpAssignStm(AOpAssignStm node)
 	{
-			Type lType = getType(node.getLvalue());
-			PExp valueExp = node.getExp();
-			Type vType = getType(valueExp);
-			//PAssignOp valueOp = node.getAssignOp();
-			//Type opType = getType(valueOp);
-			//valueOp accept (lType,vType) and returns vType
-			
+		Type lType = getType(node.getLvalue());
+		PExp valueExp = node.getExp();
+		Type vType = getType(valueExp);
+		if (!lType.isIdentical(vType)){
+			error(node,"mismatched types for op assignment");		
+		}
 		defaultOut(node);
 	}
 
@@ -397,7 +396,6 @@ public class TypeChecker extends DepthFirstAdapter {
 	{
 		PExp value = node.getExp();
 		Type vType = getType(value);
-		//PPostfixOp node.getPostfixOp()
 		if (!isNumericType(vType)) {
 			errorSymbolType(value, vType, "a numeric type"); //found vType, expected int/float
 		}
@@ -463,20 +461,27 @@ public class TypeChecker extends DepthFirstAdapter {
 	}
 	public void outAPrintStm(APrintStm node)
 	{
-		assert node.getExp().size()>=0;
-		for (int i=0; i<node.getExp().size(); i++) {
-			PExp value = node.getExp().get(i);
-			Type vType = getType(value);
-		}
 		defaultOut(node);
 	}
 	public void outAReturnStm(AReturnStm node)
 	{
 		if (node.getExp()!=null){
-			//check exp
+			//check exp has same type as enclosing function returnType
 			PExp valueExp = node.getExp();
 			Type expType = getType(valueExp);
-		}	
+			PTypeExp enclosing = ((AFunctionDeclaration) node.parent()).getReturnType();
+			Type enclosingType = getType(enclosing);
+			if (expType!=enclosingType){
+				errorSymbolType(valueExp,expType,enclosingType);
+			}
+		} else {
+			//check enclosing function returnType is voidType
+			PTypeExp enclosing = ((AFunctionDeclaration) node.parent()).getReturnType();
+			Type enclosingType = getType(enclosing);
+			if (enclosingType!=voidType){
+				errorSymbolType(node.getExp(),enclosingType,voidType);
+		}
+		}
 		defaultOut(node);
 	}
 	public void inABlockStm(ABlockStm node)
@@ -491,86 +496,59 @@ public class TypeChecker extends DepthFirstAdapter {
 	}
 	public void outAIfStm(AIfStm node)
 	{
-		if (node.getStm()!=null){
-			//check stm
-			PStm valueStm = node.getStm();
-			Type stmType = getType(valueStm);
-		}
-		
 		PExp valueExp = node.getExp();
 		Type expType = getType(valueExp);
 		if (!isBooleanType(expType)){ //exp is not bool type
 			errorSymbolType(valueExp, expType, boolType);
 		}
-		
-		if (node.getIfBlock().size()==0){
-			
-		} else {
-			for (int i=0; i<node.getIfBlock().size();i++){
-				PStm valueStm = node.getIfBlock().get(i);
-				Type stmType = getType(valueStm);
-			}
-		}
-		if (node.getElseBlock().size()==0){
-			
-		} else {
-			for (int j=0; j<node.getElseBlock().size();j++){
-				PStm valueStm = node.getIfBlock().get(j);
-				Type stmType = getType(valueStm);
-			}
-		}
 		defaultOut(node);
 	}
 	public void outASwitchStm(ASwitchStm node)
 	{
-		assert node.getSwitchClause().size()>=0;
-		if (node.getStm()!=null){
-			PStm valueStm = node.getStm();
-			Type stmType = getType (valueStm);
-		}
-		if (node.getExp()!=null){
+		boolean hasExp = false;
+		Type expType = null;
+		
+		if (node.getExp()!=null){ //switch has an expr
+			hasExp = true;
 			PExp valueExp = node.getExp();
-			Type expType = getType (valueExp);
-		}
-		//SwitchClause
-		if (node.getSwitchClause().size()==0){
-			
-		} else {
-			for (int i=0; i<node.getSwitchClause().size();i++){
-				PSwitchClause valueSwitch = node.getSwitchClause().get(i);
-				Type switchType = getType(valueSwitch);
+			expType = getType (valueExp);
+		}	
+			//if switch has expr, checks if cases e1, e2, . . . , en have same type as valueExp
+			//else, checks if cases e1, e2, . . . , en are well-typed and have type bool
+		for (int i=0; i<node.getSwitchClause().size();i++){
+			Node valueSwitch = node.getSwitchClause().get(i);
+			Type switchType = getType(valueSwitch);
+			if (!hasExp) {
+				if(!isBooleanType(switchType)){ //case type is not boolType
+					errorSymbolType(valueSwitch,switchType, boolType);
+				}
+			} else { 
+				if(!expType.isIdentical(switchType)){ //case type is not expType
+					errorSymbolType(valueSwitch,switchType, expType);
+				}
 			}
 		}
 		defaultOut(node);
 	}
+	@Override
+	public void inAForStm(AForStm node)
+	{
+		defaultIn(node);
+		symbolTable.addScope();
+	}	
 	public void outAForStm(AForStm node)
 	{
-		assert node.getStm().size()>=0;
-		//[init]:stm? exp? [post]:stm? stm*
-		if (node.getInit()!=null){
-			PStm valueStm = node.getInit();			
-		}
-		
-		if (node.getExp()!=null){
+		if (node.getExp()==null){
+			//An infinite for loop type checks if its body type checks
+			//The body opens a new scope in the symbol table.
+		} else {
 			PExp valueExp = node.getExp();
 			Type expType = getType(valueExp);
 			if (!isBooleanType(expType)){//expected bool but found expType
 				errorSymbolType(valueExp,expType,boolType);
 			}
 		}
-		if (node.getPost()!=null){
-			PStm valuePost = node.getPost();
-			Type postType = getType(valuePost);
-		}
-		
-		if (node.getStm().size()==0){
-			
-		} else {
-			for (int i=0; i<node.getStm().size();i++){
-				PStm valueStm = node.getStm().get(i);
-				Type stmType = getType(valueStm);
-			}
-		}
+		symbolTable.dropScope();
 		defaultOut(node);
 	}
 	public void outABreakStm(ABreakStm node)//trivially well-typed
@@ -583,36 +561,33 @@ public class TypeChecker extends DepthFirstAdapter {
 	}
 	public void outAConditionalSwitchClause(AConditionalSwitchClause node)
 	{
-		assert node.getExp().size()>0;
-		assert node.getStm().size()>=0;
-		//exp+ stm* fallthrough_stm?
+		PExp first = node.getExp().get(0);
+		Type firstType = getType(first);
+		if (isBooleanType(firstType)){
+			//all the rest cases should have boolType			
+			for (int i=1; i<node.getExp().size(); i++){
+				PExp valueExp = node.getExp().get(i);
+				Type expType = getType(valueExp);
+				if (!isBooleanType (expType)){
+					error(valueExp, "Expected boolean type but got "+ expType);
+				}
+			}
+		setType(node,boolType);
+		} else { 
+			//check all the rest have the same type as expType
 		for (int i=0; i<node.getExp().size(); i++){
 			PExp valueExp = node.getExp().get(i);
 			Type expType = getType(valueExp);
-			
+			if (!expType.isIdentical(firstType)){
+				error(valueExp, "Expected boolean type but got "+ expType);
+			}
 		}
-		if (node.getStm().size()==0){
-			
-		} else {
-			
+		setType(node,firstType);
 		}
 		defaultOut(node);
 	}
 	public void outADefaultSwitchClause(ADefaultSwitchClause node)
 	{
-		assert node.getStm().size()>=0;
-		//{default} stm* fallthrough_stm?
-		if (node.getStm().size()==0){
-		
-		} else {
-			for (int i=0; i<node.getStm().size(); i++){
-				PStm valueStm = node.getStm().get(i);
-				Type stmType = getType(valueStm);
-			}
-		}
-
-		if (node.getFallthroughStm()!=null){
-		}
 		defaultOut(node);
 	}
 	public void outAFallthroughStm(AFallthroughStm node)
