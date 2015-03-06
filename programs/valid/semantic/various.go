@@ -6,19 +6,19 @@ func main() {
 	/*Variables Declarations 1.1 */
 	var num1 int
 	num1 = 12
-	var num2 int = num1 * 1.0 + 2.0
+	var num2 int = num1 * 1 + 2
 	
 	/*Block 2.9*/
 	{var num3 = num1 * num1
 	println("In the block. num3 should be 144:", num3)
 	}
 	
-	var num3 = num1 * 3.0
+	var num3 = num1 * 3
 	println( "Three numbers should be 12 14 36:",num1,num2,num3 )
 	
 	/*Short Declaration 2.5*/
 	/*Assignment 2.7*/
-	num4,num5 := num1+1, num2*2.0
+	num4,num5 := num1+1, num2*2
 	var num6,num7 int
 	num6,num7 = num4-num1, num2/num5
 	println( "Should be 13 28 1 0:",num4,num5,num6,num7)
