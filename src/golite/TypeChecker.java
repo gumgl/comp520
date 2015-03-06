@@ -469,15 +469,17 @@ public class TypeChecker extends DepthFirstAdapter {
 			//check exp has same type as enclosing function returnType
 			PExp valueExp = node.getExp();
 			Type expType = getType(valueExp);
-			Type enclosingType = ((AFunctionDeclaration) node.parent()).getReturnType();
+			PTypeExp enclosing = ((AFunctionDeclaration) node.parent()).getReturnType();
+			Type enclosingType = getType(enclosing);
 			if (expType!=enclosingType){
-				errorSymbolTable(valueExp,expType,enclosingType);
+				errorSymbolType(valueExp,expType,enclosingType);
 			}
 		} else {
 			//check enclosing function returnType is voidType
-			Type enclosingType = ((AFunctionDeclaration) node.parent()).getReturnType();
-			if (enclosingType==voidType){
-				errorSymbolTable(valueExp,expType,enclosingType);
+			PTypeExp enclosing = ((AFunctionDeclaration) node.parent()).getReturnType();
+			Type enclosingType = getType(enclosing);
+			if (enclosingType!=voidType){
+				errorSymbolType(node.getExp(),enclosingType,voidType);
 		}
 		}
 		defaultOut(node);
@@ -560,7 +562,7 @@ public class TypeChecker extends DepthFirstAdapter {
 	public void outAConditionalSwitchClause(AConditionalSwitchClause node)
 	{
 		PExp first = node.getExp().get(0);
-		Type firstType = getType(valueExp);
+		Type firstType = getType(first);
 		if (isBooleanType(firstType)){
 			//all the rest cases should have boolType			
 			for (int i=1; i<node.getExp().size(); i++){
