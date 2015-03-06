@@ -125,7 +125,10 @@ public class TypeChecker extends DepthFirstAdapter {
 	}
 
 	private boolean isComparableType(Type type) {
-		return type.getUnderlying() instanceof BuiltInType;
+		Type underlying = type.getUnderlying();
+		return underlying instanceof BuiltInType
+				|| underlying instanceof ArrayType
+				|| underlying instanceof StructType;
 	}
 
 	private boolean isBooleanType(Type type) {
@@ -384,10 +387,11 @@ public class TypeChecker extends DepthFirstAdapter {
 		PExp valueExp = node.getExp();
 		Type vType = getType(valueExp);
 		if (!lType.isIdentical(vType)){
-			error(node,"mismatched types for op assignment");
+			error(node,"mismatched types for op assignment");		
 		}
 		defaultOut(node);
 	}
+
 	public void outAIncDecStm(AIncDecStm node)
 	{
 		PExp value = node.getExp();
@@ -474,7 +478,8 @@ public class TypeChecker extends DepthFirstAdapter {
 			Type enclosingType = ((AFunctionDeclaration) node.parent()).getReturnType();
 			if (enclosingType==voidType){
 				errorSymbolTable(valueExp,expType,enclosingType);
-		}	
+		}
+		}
 		defaultOut(node);
 	}
 	public void inABlockStm(ABlockStm node)
@@ -556,7 +561,7 @@ public class TypeChecker extends DepthFirstAdapter {
 	{
 		PExp first = node.getExp().get(0);
 		Type firstType = getType(valueExp);
-		if (isBooleanType(firstType){
+		if (isBooleanType(firstType)){
 			//all the rest cases should have boolType			
 			for (int i=1; i<node.getExp().size(); i++){
 				PExp valueExp = node.getExp().get(i);
