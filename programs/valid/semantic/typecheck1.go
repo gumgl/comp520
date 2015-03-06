@@ -27,7 +27,20 @@ func main() {
 	println(x) 
 	}
 	
-	/*Functions Declarations 1.3 */
+	var res int = regularPower(2,3)
+	println("2^3 is:",res)
+	
+	
+}
 
 	
+/*Functions Declarations 1.3 */
+func regularPower(a int, b int) int {
+	var res int
+	res = 1
+	for b>0 {
+		res *= a
+		b --
+   }
+   return res 
 }
