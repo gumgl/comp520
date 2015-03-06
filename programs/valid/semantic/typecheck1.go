@@ -2,12 +2,6 @@
 package main
 
 func main() {
-
-	/*print and println 2.10, runeType*/
-	print('a')
-	print(" ",'b')
-	/*Function Call 3.5*/
-	println("3*(-3) is:",f(3))
 	
 	/*Variables Declarations 1.1 */
 	var num1 int
@@ -27,8 +21,15 @@ func main() {
 	num4,num5 := num1+1, num2*2.0
 	var num6,num7 int
 	num6,num7 = num4-num1, num2/num5
-	println( "Three numbers should be 13 28 1 0:",num4,num5,num6,num7 )
+	println( "Should be 13 28 1 0:",num4,num5,num6,num7)
+	println("13<=28 ",num4<=num5," 1<<2",num6<<2)
 
+	var flag1,flag2 bool
+	flag1,flag2 = true,true
+	/*runeType, Binary expr 3.4*/
+	println('a','b',flag1||!flag2," ",flag1&&!flag2," ",num4!=num5)
+	/*Function Call 3.5*/
+	println("3*(-3) is:",f(3))
 	/*Types Declarations 1.2 */
 	type a int 
 	var x a = 2
@@ -51,7 +52,7 @@ func main() {
 	
 	/*If statement 2.12, Type cast*/
 	if z:="error";x>a(10){
-		println(x , "is bigger", 'then', "10")
+		println(x , "is bigger then 10")
 	} else {
 		println(z + "should be bigger than 10")
 	}
