@@ -27,7 +27,7 @@ In most cases it was sufficient to apply typechecks after the the typechecker ha
 
 \begin{itemize}
     \item In short assignment statements, the list of variables is implemented as a list of expressions for reasons having to do with the parser implementation. It was therefore necessary to stop the typechecker from typechecking the variables before they had been added to the symbol table.
-    \item To typecheck function declarations, it was necessary to open a scope after having typechecked some but not all of the child nodes.
+    \item To typecheck function declarations and if statements, it was necessary to open a scope after having typechecked some but not all of the child nodes.
 \end{itemize}
 
 In each of these special cases we overrode the \verb|case| method which controls the recursion over the child nodes.
@@ -74,11 +74,103 @@ TODO description and concordance
 
 In some cases there are multiple code paths which lead to the same error. For instance, the helper method \texttt{ensureUndeclared(TId id)} is called in a number of places to ensure that an identifier has not previously been declared in the current scope. While we have done fuzz testing, we have not created an exhaustive suite of failing programs to cover each possible path to the error in such cases.
 
+\subsection{General}
+
 \begin{description}
-  \item[Use of undefined variable:] \texttt{identifier.go}
-  \item[Assignment to a variable with different underlying basic type:] \texttt{assign.go}
-  \item[Mismatching types in binary operation:] \verb|binary_op_mismatch.go|
+  \item[Use of undefined variable:] \verb|identifier_undefined_in_symtab.go|, \verb|append_id_undefined.go|
+  \item[Redeclaration of variable in same scope:] \verb|redeclaration_of_var_in_same_scope.go|
+  \item[Mismatching types in binary operation:] Generic check that operands share the same type. \verb|binary_op_mismatch.go|, \verb|assign_op.go|
+  \item[Mismatching types in op-assign statement:] Check that operands are of a type the operation supports. \verb|field_selection_id_mismatched.go|
 \end{description}
+
+\subsection{Toplevel declarations}
+
+\subsection{Statements}
+
+\subsubsection{Assignment}
+\begin{description}
+  \item[Assignment to a variable with different underlying basic type:] \verb|use_different_type_in_assignment.go|
+\end{description}
+
+\subsubsection{Op assignment}
+\begin{description}
+  \item ***
+\end{description}
+
+\subsubsection{Increment/decrement statement}
+***
+
+\subsubsection{Short variable declaration}
+***
+
+\subsubsection{Variable declaration}
+***
+
+\subsubsection{Type declaration}
+***
+
+\subsubsection{Print statement}
+***
+
+\subsubsection{Return statement}
+***
+
+\subsubsection{If statement}
+***
+
+\subsubsection{Switch statement}
+***
+
+\subsubsection{For statement}
+***
+% forloop_3pt_expr_not_bool.go
+% forloop_expr_not_bool.go
+
+
+\subsection{Expressions}
+
+\subsubsection{Variable reference}
+***
+
+\subsubsection{Array access}
+***
+
+\subsubsection{Field access}
+\begin{description}
+  \item[Field not in struct type:] \verb|field_missing.go|
+  \item[Expression is not a struct:] \verb|field_from_non_struct.go|
+\end{description}
+
+\subsubsection{Function call}
+***
+
+\subsubsection{Type cast}
+***
+
+\subsubsection{Append}
+\begin{description}
+  \item[Append to a slice of the wrong type:] \verb|append_expr_bad_type.go|
+  \item[Append to a non-slice variable:] \verb|append_id_not_slice.go|
+\end{description}
+
+\subsubsection{Operator expressions}
+\begin{description}
+  \item[Operands should be of a type supported by the operator]: \\
+    \verb|binary_op_unsupported_type.go|
+  \item[Operands should have the same type:] Covering a number of operators and types...\\
+    \verb|field_selection_id_mismatched_type.go|\\
+    \verb|binary_expr_mismatched_types1.go|\\
+    \verb|binary_expr_mismatched_types2.go|\\
+    \verb|binary_expr_mismatched_types3.go|\\
+    \verb|binary_expr_mismatched_types4.go|\\
+    \verb|binary_expr_mismatched_types5.go|\\
+    \verb|binary_expr_mismatched_types6.go|\\
+    \verb|binary_expr_mismatched_types7.go|
+\end{description}
+
+
+\subsubsection{Unary expression}
+***
 
 \section{Breakdown of major contributions}
 
