@@ -36,7 +36,7 @@ A further implementation detail that is worth noting is our implementation of st
 
 \subsection{Symbol table}
 
-TODO
+Initially the symbol table was simply a scope with a reference to the parent scope. Traversing up and down the scopes meant overwriting the variable used to reference the scope, so we decided to make \texttt{SymbolTable} be what its name suggests, and take care of scoping up and down. It holds a double-ended queue (Java's \texttt{ArrayDeque}) to store the scopes. We have methods for different use cases: searching for an identifier through all scope levels, and searching only in the current scope.
 
 \subsection{Type and symbol class hierarchy}
 
