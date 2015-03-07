@@ -9,6 +9,8 @@ func main(){
 	var a,b int
 	
 	//error: not the same corresding type on both sides
+	//cannot use y * y (type float64) as type int in assignment
+	
 	a,b = x*x , y*y
 	println(a,b)
 }
