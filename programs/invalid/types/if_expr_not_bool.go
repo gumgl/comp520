@@ -8,7 +8,7 @@ func main() {
 	//if loop
 	//expr doesn't type check
 	
-	if x:=y ; y+=10 {
+	if x:=y ; y {
 		print(x,y)
 	} else {
 		print(x,y-1)
