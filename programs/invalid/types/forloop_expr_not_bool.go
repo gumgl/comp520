@@ -11,8 +11,8 @@ func main () {
 		a--
 	}
 	
-	//error: a += a used as value
-	for a+=a {
+	//error: a used as value
+	for a {
 		println(a)
 	}
 	
