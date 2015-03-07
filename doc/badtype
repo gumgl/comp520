@@ -25,4 +25,3 @@ unary_plus_expr_string.go
 use_before_define_in_short_var_dec.go
 use_before_define_in_var_assign.go
 use_different_type_in_assignment.go
-use_different_type_in_function_argument.go
