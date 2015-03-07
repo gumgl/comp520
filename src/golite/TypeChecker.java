@@ -390,12 +390,43 @@ public class TypeChecker extends DepthFirstAdapter {
 	}
 	public void outAOpAssignStm(AOpAssignStm node)
 	{
-		Type lType = getType(node.getLvalue());
-		PExp valueExp = node.getExp();
-		Type vType = getType(valueExp);
-		if (!lType.isIdentical(vType)){
-			error(node,"mismatched types for op assignment");		
+		boolean operatorFound = false;
+
+		Node left = node.getLvalue();
+		Node right = node.getExp();
+		Type leftType = getType(left);
+		Type rightType = getType(right);
+		PAssignOp op = node.getAssignOp();
+
+		if (!leftType.isIdentical(rightType))
+			error(node, "Mismatched types "+leftType+" and "+rightType);
+
+		if (op instanceof APlusAssignOp) {
+			if (!(isNumericType(leftType) || leftType.getUnderlying() == stringType))
+				error(left, "Expected numeric or string type but got "+leftType);
+			setType(node, leftType);
+			operatorFound = true;
+		} else if (op instanceof AMinusAssignOp || op instanceof AStarAssignOp
+				|| op instanceof ASlashAssignOp || op instanceof APercentAssignOp) {
+
+			if (!isNumericType(leftType))
+				error(left, "Expected numeric type but got "+leftType);
+			setType(node, leftType);
+			operatorFound = true;
+		} else if (op instanceof APipeAssignOp || op instanceof AAmpAssignOp
+				|| op instanceof ALshiftAssignOp || op instanceof ARshiftAssignOp
+				|| op instanceof AAmpCaretAssignOp || op instanceof ACaretAssignOp) {
+
+			if (!isIntegerType(leftType))
+				error(left, "Expected integer type but got "+leftType);
+
+			setType(node, leftType);
+			operatorFound = true;
 		}
+
+		if (!operatorFound)
+			throw new IllegalArgumentException("Bad operator: "+op);
+		
 		defaultOut(node);
 	}
 
