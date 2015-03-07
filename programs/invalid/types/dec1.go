@@ -7,7 +7,7 @@ func main(){
 	var b float64
 	var c bool
 	var d rune
-	var e str
+	var e string
 	a = 2
 	b = 1.0
 	c = true
@@ -16,13 +16,13 @@ func main(){
 	
 	var f int = a * a
 	var g = b
-	println(a," ",b," ",c," ",d," ",e," ",f)
+	println(a," ",b," ",c," ",d," ",e," ",f," ",g)
 	{
 	var b bool
 	b = true
 	println("redeclare of b in inner scope:", b)
 	}
-	//error: redeclare c
+	//error: c redeclared in this block, 	previous declaration
 	var c int
 	c = 1
 	println(c)
