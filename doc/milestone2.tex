@@ -82,12 +82,6 @@ TODO description and concordance
 
 In some cases there are multiple code paths which lead to the same error. For instance, the helper method \texttt{ensureUndeclared(TId id)} is called in a number of places to ensure that an identifier has not previously been declared in the current scope. While we have done fuzz testing, we have not created an exhaustive suite of failing programs to cover each possible path to the error in such cases.
 
-\subsection{General}
-
-\begin{description}
-  \item[Use of undefined variable:] \verb|identifier_undefined_in_symtab.go|, \verb|append_id_undefined.go|
-\end{description}
-
 \subsection{Toplevel declarations}
 
 \begin{description}
@@ -131,19 +125,28 @@ In some cases there are multiple code paths which lead to the same error. For in
 ***
 
 \subsubsection{For statement}
-***
-% forloop_3pt_expr_not_bool.go
-% forloop_expr_not_bool.go
+
+\begin{description}
+  \item[Condition is not a boolean:] \ \\
+    \verb|forloop_3pt_expr_not_bool.go| \\
+    \verb|forloop_expr_not_bool.go|
+\end{description}
 
 
 \subsection{Expressions}
 
 \subsubsection{Variable reference}
-***
+\begin{description}
+  \item[Use of undefined variable:] \verb|identifier_undefined_in_symtab.go|,
+\end{description}
 
 \subsubsection{Array access}
-\verb|indexing_index_not_int.go|\\
-\verb|indexing_expr_not_slice_or_array.go|
+\begin{description}
+  \item[Index is not an integer:]\ \\
+    \verb|indexing_index_not_int.go|
+  \item[Indexed expression is not a slice or array:]\ \\
+    \verb|indexing_expr_not_slice_or_array.go|
+\end{description}
 
 \subsubsection{Field access}
 \begin{description}
