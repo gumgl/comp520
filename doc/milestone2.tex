@@ -38,6 +38,8 @@ A further implementation detail that is worth noting is our implementation of st
 
 Initially the symbol table was simply a scope with a reference to the parent scope. Traversing up and down the scopes meant overwriting the variable used to reference the scope, so we decided to make \texttt{SymbolTable} be what its name suggests, and take care of scoping up and down. It holds a double-ended queue (Java's \texttt{ArrayDeque}) to store the scopes. We have methods for different use cases: searching for an identifier through all scope levels, and searching only in the current scope.
 
+We have also added loggers to enable the \verb|-dumpsymtab| and \verb|-dumpsymtaball| CLI options.
+
 \subsection{Type and symbol class hierarchy}
 
 We put considerable effort into developing and revising the hierarchy representing GoLite types and symbols (figure \ref{fig:symbol_table_uml}). We adopted the following goals, listed here roughly in descending order of precedence:
@@ -66,7 +68,13 @@ We extended the \verb|PrettyPrinter| class we implemented in Milestone 1 to have
 
 \section{Scoping rules}
 
-TODO
+The scoping rules are in accordance with the GoLite specifications:
+
+\begin{itemize}
+    \item In a given scope, it is legal to refer to an identifier that was previously declared in the scope or one of the parent scopes.
+    \item It is illegal to declare a new type, variable or function using an identifier previously defined in the current scope only.
+    \item The following language structures create new scopes for themselves: \texttt{if}, \texttt{else}, \texttt{for}, \texttt{func}, \texttt{struct}, standalone block (\verb|{...}|). The if and else branches of the if statement also create their own scopes.
+\end{itemize}
 
 \section{Type check operations}
 
