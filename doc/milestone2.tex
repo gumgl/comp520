@@ -72,7 +72,13 @@ TODO
 
 TODO description and concordance
 
-In some cases there are multiple code paths which lead to the same error. For instance, the helper method \texttt{ensureUndeclared(TId id)} is called in a number of places to ensure that an identifier has not previously been declared in the current scope. While we have done fuzz testing, we have not created an exhaustive suite of failing programs to cover such cases.
+In some cases there are multiple code paths which lead to the same error. For instance, the helper method \texttt{ensureUndeclared(TId id)} is called in a number of places to ensure that an identifier has not previously been declared in the current scope. While we have done fuzz testing, we have not created an exhaustive suite of failing programs to cover each possible path to the error in such cases.
+
+\begin{description}
+  \item[Use of undefined variable:] \texttt{identifier.go}
+  \item[Assignment to a variable with different underlying basic type:] \texttt{assign.go}
+  \item[Mismatching types in binary operation:] \verb|binary_op_mismatch.go|
+\end{description}
 
 \section{Breakdown of major contributions}
 
