@@ -68,7 +68,13 @@ We extended the \verb|PrettyPrinter| class we implemented in Milestone 1 to have
 
 \section{Scoping rules}
 
-TODO
+The scoping rules are in accordance with the GoLite specifications:
+
+\begin{itemize}
+    \item In a given scope, it is legal to refer to an identifier that was previously declared in the scope or one of the parent scopes.
+    \item It is illegal to declare a new type, variable or function using an identifier previously defined in the current scope only.
+    \item The following language structures create new scopes for themselves: \texttt{if}, \texttt{else}, \texttt{for}, \texttt{func}, \texttt{struct}, standalone block (\verb|{...}|).
+\end{itemize}
 
 \section{Type check operations}
 
