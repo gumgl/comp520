@@ -77,8 +77,3 @@ func regularPower(a int, b int) int {
    }
    return res 
 }
-
-/* this example in doc doesn't work in go playground tho */
-//func f(f int) {
-//	var f float64
-//}is:"f(3))
