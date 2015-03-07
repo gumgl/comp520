@@ -9,7 +9,6 @@ func main() {
 	//slice
 	var b [] int
 	var c int
-	d :=[] float64{2.0,1.0}
 	
 	//indexing ok
 	b[1] = 100
