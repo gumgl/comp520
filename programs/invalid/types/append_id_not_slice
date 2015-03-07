@@ -3,6 +3,6 @@ package main
 func main() {
 	var x []string
 	var y string
-	append(y,"a")
+	y = append(y,"a")
 	println(x)
 }
