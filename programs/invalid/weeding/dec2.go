@@ -23,11 +23,13 @@ func main(){
 }
 
 func adder (a int, b int) int {
-	return a+b
+	var c = a+b
+	print(c)
 }
 //error: redeclaration in the same scope
 func adder (a int, b int) int {
-	return a+b+b
+	var c = a+b+b
+	print (c)
 }
 
 func f(f int){
