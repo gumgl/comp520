@@ -2,6 +2,6 @@ package main
 
 func main(){
 
-	println(^"x",^'x',^2.0)
+	println(^'x',^2.0)
 	 
 }
