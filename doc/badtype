@@ -14,10 +14,6 @@ redeclare_of_formal_param_in_func.go
 redeclare_of_func_in_same_scope.go
 redeclare_of_type_in_same_scope.go
 redeclare_of_var_in_same_scope.go
-switch_caseExpr_isnt_bool.go
-switch_cases_mismatched_types.go
-switch_expr_failes_typecheck.go
-switch_stmt_in_alternative_fails_typecheck.go
 typecast_from_string.go
 typecast_to_string.go
 unary_plus_expr_bool.go
