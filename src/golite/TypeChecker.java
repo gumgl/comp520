@@ -137,6 +137,11 @@ public class TypeChecker extends DepthFirstAdapter {
 		return type.getUnderlying() == boolType;
 	}
 
+	private boolean isBlankId(TId id) {
+		return id.getText().equals("_");
+	}
+
+	
 	public void defaultIn(Node node)
 	{
 		// Do nothing
@@ -176,6 +181,9 @@ public class TypeChecker extends DepthFirstAdapter {
 		inAFunctionDeclaration(node);
 
 		TId id = node.getId();
+
+		if (isBlankId(id))
+			return;
 
 		ensureUndeclared(id);
 
@@ -226,6 +234,8 @@ public class TypeChecker extends DepthFirstAdapter {
 		for (int i=0; i<node.getId().size(); i++) {
 			TId id = node.getId().get(i);
 
+			if (isBlankId(id)) continue;
+
 			ensureUndeclared(id);
 
 			if (hasAssignments) {
@@ -249,6 +259,9 @@ public class TypeChecker extends DepthFirstAdapter {
 
 		for (int i=0; i<node.getId().size(); i++) {
 			TId id = node.getId().get(i);
+
+			if (isBlankId(id)) continue;
+			
 			PExp value = node.getExp().get(i);
 			Type type = getType(value);
 
@@ -261,6 +274,7 @@ public class TypeChecker extends DepthFirstAdapter {
 	public void outATypeSpec(ATypeSpec node)
 	{
 		TId id = node.getId();
+		if (isBlankId(id)) return;
 		ensureUndeclared(id);
 		AliasType type = new AliasType(id.getText(), getType(node.getTypeExp()));
 		symbolTable.addSymbol(type);
@@ -381,6 +395,11 @@ public class TypeChecker extends DepthFirstAdapter {
 		for (int i=0; i<node.getLvalue().size(); i++) {
 			Type lType = getType(node.getLvalue().get(i));
 			PExp value = node.getExp().get(i);
+			
+			if (value instanceof AVariableExp && isBlankId(((AVariableExp)value).getId())) {
+				continue;
+			}
+			
 			Type vType = getType(value);
 
 			if ( ! lType.isIdentical(vType)) // Value's type is not the same as the declared type
@@ -458,9 +477,13 @@ public class TypeChecker extends DepthFirstAdapter {
 		// Ids are expressions here, but guaranteed by the weeder to be
 		// variables
 		for (int i=0; i < node.getIds().size(); i++) {
-			Node idExp = node.getIds().get(i);
-			String id = ((AVariableExp)idExp).getId().getText();
-
+			AVariableExp idExp = (AVariableExp)node.getIds().get(i);
+			
+			if (isBlankId(idExp.getId()))
+				continue;
+			
+			String id = idExp.getId().getText();
+			
 			PExp exp = node.getExp().get(i);
 			Symbol symbol = symbolTable.getInScope(id);
 			Type varType;
