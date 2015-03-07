@@ -465,8 +465,17 @@ public class TypeChecker extends DepthFirstAdapter {
 	public void outATypeDecStm(ATypeDecStm node) {
 		defaultOut(node);
 	}
+	/*
+	 * Per https://mycourses2.mcgill.ca/d2l/le/161312/discussions/threads/261614/View,
+	 * only basic types are allowed in print/println statements
+	 */
 	public void outAPrintStm(APrintStm node)
 	{
+		for (Node e : node.getExp()) {
+			if (!(getType(e).getUnderlying() instanceof BuiltInType)) {
+				errorSymbolType(e, getType(e), "a basic type");
+			}
+		}
 		defaultOut(node);
 	}
 	public void outAReturnStm(AReturnStm node)
