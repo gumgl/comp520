@@ -82,6 +82,17 @@ public class TypeChecker extends DepthFirstAdapter {
 	private void errorTypeCast(Node node, Type from, Type to) {
 		error(node, "Cannot typecast " + from.getRepresentation() + " to "+  to.getRepresentation());
 	}
+	private void errorVoidFunctionAsValue(Node node) {
+		if (node instanceof AFunctionCallExp) {
+			Symbol funcSymbol = symbolTable.get(((AFunctionCallExp)node).getId().getText());
+			if (funcSymbol instanceof Function) {
+				Function func = (Function) funcSymbol;
+				String funcRep = func.getId() + (func.getArguments().size()>0 ? "(...)" : "()");
+				error(node, funcRep+" used as value");
+			}
+		}
+		error(node, "function with no return used as value");
+	}
 
 	private void ensureUndeclared(Node node, String id) {
 		Symbol symbol = symbolTable.getInScope(id);
@@ -264,6 +275,9 @@ public class TypeChecker extends DepthFirstAdapter {
 			
 			PExp value = node.getExp().get(i);
 			Type type = getType(value);
+
+			if (type.isIdentical(voidType))
+				errorVoidFunctionAsValue(value);
 
 			ensureUndeclared(id);
 			symbolTable.addSymbol(new Variable(id.getText(), type));
@@ -491,6 +505,10 @@ public class TypeChecker extends DepthFirstAdapter {
 			if (symbol == null) {
 				hasNewVariable = true;
 				varType = getType(exp);
+
+				if (varType.isIdentical(voidType))
+					errorVoidFunctionAsValue(exp);
+
 				symbolTable.addSymbol(new Variable(id, varType));
 			} else {
 				if (!(symbol instanceof Variable))
