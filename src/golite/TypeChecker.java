@@ -565,6 +565,9 @@ public class TypeChecker extends DepthFirstAdapter {
 		inAIfStm(node);
 
 		symbolTable.addScope();
+		
+		if (node.getStm() != null)
+			node.getStm().apply(this);
 
 		// Ensure exp is a bool
 		PExp valueExp = node.getExp();
