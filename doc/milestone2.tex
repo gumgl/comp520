@@ -86,12 +86,13 @@ In some cases there are multiple code paths which lead to the same error. For in
 
 \begin{description}
   \item[Use of undefined variable:] \verb|identifier_undefined_in_symtab.go|, \verb|append_id_undefined.go|
-  \item[Redeclaration of variable in same scope:] \verb|redeclaration_of_var_in_same_scope.go|
-  \item[Mismatching types in binary operation:] Generic check that operands share the same type. \verb|binary_op_mismatch.go|, \verb|assign_op.go|
-  \item[Mismatching types in op-assign statement:] Check that operands are of a type the operation supports. \verb|field_selection_id_mismatched.go|
 \end{description}
 
 \subsection{Toplevel declarations}
+
+\begin{description}
+  \item[Redeclaration of variable in same scope:] \verb|redeclaration_of_var_in_same_scope.go|
+\end{description}
 
 \subsection{Statements}
 
@@ -189,9 +190,5 @@ In some cases there are multiple code paths which lead to the same error. For in
     \item[William Bain] Type checker architecture, command-line interface, type checker implementation (especially expressions and types)
     \item[Si Mei Zhang] Type checker implementation (especially statements), test programs
 \end{description}
-
-\section{Known issues}
-
-We have not yet fully implemented blank identifiers in the parser, with the result that it is possible for illegal occurences inside expressions to make it through. However, a program which uses them legally should typecheck correctly.
 
 \end{document}
