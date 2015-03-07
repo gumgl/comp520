@@ -3,11 +3,6 @@ package main
 func main() {
 // struct type
 
-	// empty struct is ok
-	type nada struct {
-	}
-	
-	
 	type aaa struct {
 		a int
 		b bool
@@ -15,8 +10,7 @@ func main() {
 	}
 
 	sample := aaa{2,true,"2"}
-	println(sample.d)
-
-
+	d := sample.c
+	println(d.d)
 
 }
