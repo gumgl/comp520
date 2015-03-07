@@ -11,12 +11,10 @@ func main () {
 		a--
 	}
 	
-	//error: expr is not boolean
+	//error: a += a used as value
 	for a+=a {
 		println(a)
 	}
 	
-	//error: expr of println is not wel typed
-	println("a"+'a')
 
 }
