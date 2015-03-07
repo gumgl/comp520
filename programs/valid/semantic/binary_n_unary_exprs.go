@@ -15,5 +15,6 @@ func main() {
 	println(+2,+2.0,+'x')
 	println(-2,-2.0,-'x')
 	println(^2,^'x')
+	println(!true,!false)
 	
 }
