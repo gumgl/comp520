@@ -80,10 +80,29 @@ The scoping rules are in accordance with the GoLite specifications:
 
 In some cases there are multiple code paths which lead to the same error. For instance, the helper method \texttt{ensureUndeclared(TId id)} is called in a number of places to ensure that an identifier has not previously been declared in the current scope. While we have done fuzz testing, we have not created an exhaustive suite of failing programs to cover each possible path to the error in such cases.
 
-\subsection{Toplevel declarations}
+\subsection{General}
 
 \begin{description}
-  \item[Redeclaration of variable in same scope:] \verb|redeclaration_of_var_in_same_scope.go|
+  \item[Redeclaration of variable in same scope:]\ \\
+    \verb|redeclaration_of_var_in_same_scope.go|\\
+    \verb|redeclare_of_formal_param_in_func.go|\\
+    \verb|redeclare_of_func_in_same_scope.go|\\
+    \verb|redeclare_of_type_in_same_scope.go|\\
+    \verb|redeclare_of_var_in_same_scope.go|
+\end{description}
+
+\subsection{Declaration}
+
+Few type checks were necessary beyond checks for identifier redeclaration.
+
+\subsubsection{Function declaration}
+\begin{description}
+  \item[Function declares a return type but does not finish with a return:] \verb|func_with_returntype_missing_return.go|\footnote{Technically, this is a weeding error.}
+\end{description}
+
+\subsubsection{Variable declaration}
+\begin{description}
+  \item[Declared type and expression type don't match:] \verb|type_var_spec_mismatch.go|
 \end{description}
 
 \subsection{Statements}
@@ -95,14 +114,20 @@ In some cases there are multiple code paths which lead to the same error. For in
 
 \subsubsection{Op assignment}
 \begin{description}
-  \item ***
+  \item[Lvalue and RHS are of different types:] \verb|op_assign_type_mismatch.go|
+  \item[Operands are of an invalid type:] \verb|op_assign_bool.go|
 \end{description}
 
 \subsubsection{Increment/decrement statement}
-***
+\begin{description}
+  \item[Lvalue is non-numeric:] \verb|postfix_non_numeric.go|
+\end{description}
 
 \subsubsection{Short variable declaration}
-***
+\begin{description}
+  \item[No new variable declared:] \verb|short_var_dec_no_var.go|
+  \item[Variable redeclared with new type:] \verb|short_var_dec_redeclared_new_type.go|
+\end{description}
 
 \subsubsection{Print and println statements}
 \begin{description}
@@ -110,7 +135,10 @@ In some cases there are multiple code paths which lead to the same error. For in
 \end{description}
 
 \subsubsection{Return statement}
-***
+\begin{description}
+  \item[Function without return type returns a value:] \verb|func_no_returntype_has_return.go|
+  \item[Return type does not match declared type:] \verb|function_returns_wrong_type.go|
+\end{description}
 
 \subsubsection{If statement}
 \begin{description}
@@ -162,8 +190,10 @@ In some cases there are multiple code paths which lead to the same error. For in
 
 \subsubsection{Type cast}
 \begin{description}
-  \item[Type cast a string:] \verb|typecast_from_string.go|
-  \item[Type cast to a string:] \verb|typecast_to_string.go|
+  \item[Type cast to or from an uncastable type:]\ \\
+    \verb|typecast_from_string.go|\\
+    \verb|typecast_to_string.go|\\
+    \verb|typecast_with_struct.go|
 \end{description}
 
 \subsubsection{Append}
