@@ -863,7 +863,7 @@ public class TypeChecker extends DepthFirstAdapter {
 			if (!isBooleanType(leftType))
 				errorSymbolType(left, leftType, "boolean type");
 			if (!isBooleanType(rightType))
-				errorSymbolType(left, leftType, "boolean type");
+				errorSymbolType(left, rightType, "boolean type");
 
 			setType(node, boolType);
 
