@@ -17,23 +17,5 @@ func main(){
 	//error: redeclaration in the same scope
 	type num bool
 	var b num = true
-	
-	adder(2,3)
-	f(2)
-}
-
-func adder (a int, b int) int {
-	var c = a+b
-	print(c)
-}
-//error: redeclaration in the same scope
-func adder (a int, b int) int {
-	var c = a+b+b
-	print (c)
-}
-
-func f(f int){
-	// error: redeclare f
-	var f bool
-	f = true;
+	print(b)
 }
