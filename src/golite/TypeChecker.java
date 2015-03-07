@@ -701,7 +701,7 @@ public class TypeChecker extends DepthFirstAdapter {
 	}
 	public void outAFieldAccessExp(AFieldAccessExp node)
 	{
-		Type t = getType(node.getExp());
+		Type t = getType(node.getExp()).getUnderlying();
 
 		if (!(t instanceof StructType))
 			errorSymbolType(node.getExp(), t, "a struct with a field named "+node.getId().getText());
