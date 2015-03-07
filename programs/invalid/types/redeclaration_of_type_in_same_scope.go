@@ -7,7 +7,7 @@ func main(){
 	type num int
 	var a num = 2
 	print(a)
-	//type redecleration in inner scope is ok
+	//type redeclaration in inner scope is ok
 	{
 		type num bool
 		var b num = true
