@@ -196,8 +196,19 @@ In some cases there are multiple code paths which lead to the same error. For in
 \end{description}
 
 
-\subsubsection{Unary expression}
-***
+\subsubsection{Unary expressions}
+\begin{description}
+  \item[Unary plus/minus take a numeric type:] \ \\
+    \verb|unary_arith_neg_bool.go|\\
+    \verb|unary_arith_neg_string.go|\\
+    \verb|unary_plus_expr_bool.go|\\
+    \verb|unary_plus_expr_string.go|
+  \item[Bitwise negation takes a integer type:] \ \\
+    \verb|unary_bitwise_neg_notint1.go|\\
+    \verb|unary_bitwise_neg_notint2.go|
+  \item[Logical negation takes a boolean:] \ \\
+    \verb|unary_logic_neg_notbool.go|
+\end{description}
 
 \section{Breakdown of major contributions}
 
