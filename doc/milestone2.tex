@@ -159,6 +159,8 @@ In some cases there are multiple code paths which lead to the same error. For in
 \begin{description}
   \item[Append to a slice of the wrong type:] \verb|append_expr_bad_type.go|
   \item[Append to a non-slice variable:] \verb|append_id_not_slice.go|
+  \item[Append referencing an undeclared variable] \verb|append_id_undefined.go|
+  \item[LHS of assignment is not a slice] \verb|append_lhs_type_not_slice.go|
 \end{description}
 
 \subsubsection{Operator expressions}
