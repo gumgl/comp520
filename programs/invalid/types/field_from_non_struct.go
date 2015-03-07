@@ -9,7 +9,7 @@ func main() {
 		c string
 	}
 
-	sample := aaa{2,true,"2"}
+	var sample aaa
 	d := sample.c
 	println(d.d)
 
