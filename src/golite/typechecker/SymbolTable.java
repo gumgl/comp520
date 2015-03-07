@@ -57,9 +57,8 @@ public class SymbolTable {
 
 	// Used when an identifier is referenced
 	public Symbol get(String id) {
-		Iterator<List<Symbol>> iter = scopes.descendingIterator();
-		while (iter.hasNext()) {
-			Symbol found = getInScope(iter.next(), id);
+		for (List<Symbol> scope : scopes) {
+			Symbol found = getInScope(scope, id);
 
 			if (found != null)
 				return found;
