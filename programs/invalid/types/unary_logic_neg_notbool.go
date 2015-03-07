@@ -2,6 +2,6 @@ package main
 
 func main(){
 
-	println(!"x")
+	println(!"x",!'x',!2,!2.0)
 	 
 }
