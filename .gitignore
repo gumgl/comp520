@@ -34,3 +34,4 @@ hs_err_pid*
 /doc/*.log
 /doc/*.synctex.gz
 /doc/*.toc
+/doc/*.out
