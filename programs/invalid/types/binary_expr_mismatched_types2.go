@@ -7,5 +7,6 @@ func main () {
 	if  a>b {
   		println(a)
 	} else {
-		println(b)}
+		println(b)
+        }
 }
