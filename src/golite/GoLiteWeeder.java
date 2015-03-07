@@ -1,5 +1,7 @@
 package golite;
 
+import java.util.List;
+
 import golite.analysis.DepthFirstAdapter;
 import golite.node.*;
 
@@ -47,6 +49,16 @@ public class GoLiteWeeder extends DepthFirstAdapter {
 	public void inABreakStm(ABreakStm node) {
 		if (loopNestingLevel == 0) {
 			throwError(node, "Break statement occurs outside loop");
+		}
+	}
+
+	/* Function declarations */
+	@Override
+	public void inAFunctionDeclaration(AFunctionDeclaration node) {
+		if (node.getReturnType() != null) {
+			List<PStm> body = node.getStm();
+			if (body.size() == 0 || !(body.get(body.size()-1) instanceof AReturnStm))
+				throwError(node, "Function with return type does not end with return statement");
 		}
 	}
 
