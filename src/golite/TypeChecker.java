@@ -399,18 +399,18 @@ public class TypeChecker extends DepthFirstAdapter {
 		PAssignOp op = node.getAssignOp();
 
 		if (!leftType.isIdentical(rightType))
-			error(node, "Mismatched types "+leftType+" and "+rightType);
+			error(node, "Mismatched types "+leftType.getRepresentation()+" and "+rightType.getRepresentation());
 
 		if (op instanceof APlusAssignOp) {
 			if (!(isNumericType(leftType) || leftType.getUnderlying() == stringType))
-				error(left, "Expected numeric or string type but got "+leftType);
+				errorSymbolType(left, leftType, "numeric or string type");
 			setType(node, leftType);
 			operatorFound = true;
 		} else if (op instanceof AMinusAssignOp || op instanceof AStarAssignOp
 				|| op instanceof ASlashAssignOp || op instanceof APercentAssignOp) {
 
 			if (!isNumericType(leftType))
-				error(left, "Expected numeric type but got "+leftType);
+				errorSymbolType(left, leftType, "numeric type");
 			setType(node, leftType);
 			operatorFound = true;
 		} else if (op instanceof APipeAssignOp || op instanceof AAmpAssignOp
@@ -418,7 +418,7 @@ public class TypeChecker extends DepthFirstAdapter {
 				|| op instanceof AAmpCaretAssignOp || op instanceof ACaretAssignOp) {
 
 			if (!isIntegerType(leftType))
-				error(left, "Expected integer type but got "+leftType);
+				errorSymbolType(left, leftType, "integer type");
 
 			setType(node, leftType);
 			operatorFound = true;
@@ -612,7 +612,7 @@ public class TypeChecker extends DepthFirstAdapter {
 				PExp valueExp = node.getExp().get(i);
 				Type expType = getType(valueExp);
 				if (!isBooleanType (expType)){
-					error(valueExp, "Expected boolean type but got "+ expType);
+					errorSymbolType(valueExp, expType, "boolean type");
 				}
 			}
 		setType(node,boolType);
@@ -622,7 +622,7 @@ public class TypeChecker extends DepthFirstAdapter {
 			PExp valueExp = node.getExp().get(i);
 			Type expType = getType(valueExp);
 			if (!expType.isIdentical(firstType)){
-				error(valueExp, "Expected boolean type but got "+ expType);
+				errorSymbolType(valueExp, expType, "boolean type");
 			}
 		}
 		setType(node,firstType);
@@ -686,7 +686,7 @@ public class TypeChecker extends DepthFirstAdapter {
 		Variable field = ((StructType)t).getField(node.getId().getText());
 
 		if (field == null)
-			error(node.getId(), "Field "+node.getId().getText()+" is not defined for type "+t);
+			error(node.getId(), "Field "+node.getId().getText()+" is not defined for type "+t.getRepresentation());
 
 		setType(node, field.getType());
 		defaultOut(node);
@@ -814,20 +814,20 @@ public class TypeChecker extends DepthFirstAdapter {
 
 		if (op instanceof ALogicalOrBinaryOp || op instanceof ALogicalAndBinaryOp) {
 			if (!isBooleanType(leftType))
-				error(left, "Expected boolean type but got "+leftType);
+				errorSymbolType(left, leftType, "boolean type");
 			if (!isBooleanType(rightType))
-				error(left, "Expected boolean type but got "+leftType);
+				errorSymbolType(left, leftType, "boolean type");
 
 			setType(node, boolType);
 
 			operatorFound = true;
 		} else {
 			if (!leftType.isIdentical(rightType))
-				error(node, "Mismatched types "+leftType+" and "+rightType);
+				error(node, "Mismatched types "+leftType.getRepresentation()+" and "+rightType.getRepresentation());
 
 			if (op instanceof AEqBinaryOp || op instanceof ANotEqBinaryOp) {
 				if (!isComparableType(leftType))
-					error(left, "Expected comparable type but got "+leftType);
+					errorSymbolType(left, leftType, "comparable type");
 
 				setType(node, boolType);
 				operatorFound = true;
@@ -835,20 +835,20 @@ public class TypeChecker extends DepthFirstAdapter {
 					|| op instanceof AGtEqBinaryOp || op instanceof AGtBinaryOp) {
 
 				if (!isOrderedType(leftType))
-					error(left, "Expected ordered type but got "+leftType);
+					errorSymbolType(left, leftType, "ordered type");
 
 				setType(node, boolType);
 				operatorFound = true;
 			} else if (op instanceof APlusBinaryOp) {
 				if (!(isNumericType(leftType) || leftType.getUnderlying() == stringType))
-					error(left, "Expected numeric or string type but got "+leftType);
+					errorSymbolType(left, leftType, "numeric or string type");
 				setType(node, leftType);
 				operatorFound = true;
 			} else if (op instanceof AMinusBinaryOp || op instanceof AStarBinaryOp
 					|| op instanceof ASlashBinaryOp || op instanceof APercentBinaryOp) {
 
 				if (!isNumericType(leftType))
-					error(left, "Expected numeric type but got "+leftType);
+					errorSymbolType(left, leftType, "numeric type");
 				setType(node, leftType);
 				operatorFound = true;
 			} else if (op instanceof APipeBinaryOp || op instanceof AAmpBinaryOp
@@ -856,7 +856,7 @@ public class TypeChecker extends DepthFirstAdapter {
 					|| op instanceof AAmpCaretBinaryOp || op instanceof ACaretBinaryOp) {
 
 				if (!isIntegerType(leftType))
-					error(left, "Expected integer type but got "+leftType);
+					errorSymbolType(left, leftType, "integer type");
 
 				setType(node, leftType);
 				operatorFound = true;
@@ -877,13 +877,13 @@ public class TypeChecker extends DepthFirstAdapter {
 
 		if (op instanceof APlusUnaryOp || op instanceof AMinusUnaryOp) {
 			if (!isNumericType(expType))
-				error(exp, "Expected numeric type but got "+expType);
+				errorSymbolType(exp, expType, "numeric type");
 		} else if (op instanceof AExclamationUnaryOp) {
 			if (!isBooleanType(expType))
-				error(exp, "Expected boolean type but got "+expType);
+				errorSymbolType(exp, expType, "boolean type");
 		} else if (op instanceof ACaretUnaryOp) {
 			if (!isIntegerType(expType))
-				error(exp, "Expected integer type but got "+expType);
+				errorSymbolType(exp, expType, "integer type");
 		} else {
 			throw new IllegalArgumentException("Bad unary operator: "+op);
 		}
