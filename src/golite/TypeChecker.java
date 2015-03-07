@@ -560,14 +560,38 @@ public class TypeChecker extends DepthFirstAdapter {
 		symbolTable.dropScope();
 		defaultOut(node);
 	}
-	public void outAIfStm(AIfStm node)
+	public void caseAIfStm(AIfStm node)
 	{
+		inAIfStm(node);
+
+		symbolTable.addScope();
+
+		// Ensure exp is a bool
 		PExp valueExp = node.getExp();
+		
+		valueExp.apply(this);
+		
 		Type expType = getType(valueExp);
 		if (!isBooleanType(expType)){ //exp is not bool type
 			errorSymbolType(valueExp, expType, boolType);
 		}
-		defaultOut(node);
+		
+		if (node.getIfBlock() != null) {
+			symbolTable.addScope();
+			for (PStm stm : node.getIfBlock())
+				stm.apply(this);
+			symbolTable.dropScope();
+		}
+
+		if (node.getElseBlock() != null) {
+			symbolTable.addScope();
+			for (PStm stm : node.getElseBlock())
+				stm.apply(this);
+			symbolTable.dropScope();
+		}
+		symbolTable.dropScope();
+
+		outAIfStm(node);
 	}
 	public void outASwitchStm(ASwitchStm node)
 	{
