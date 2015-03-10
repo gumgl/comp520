@@ -627,15 +627,19 @@ public class TypeChecker extends DepthFirstAdapter {
 			//if switch has expr, checks if cases e1, e2, . . . , en have same type as valueExp
 			//else, checks if cases e1, e2, . . . , en are well-typed and have type bool
 		for (int i=0; i<node.getSwitchClause().size();i++){
-			Node valueSwitch = node.getSwitchClause().get(i);
-			Type switchType = getType(valueSwitch);
+			Node switchClause = node.getSwitchClause().get(i);
+
+			if (switchClause instanceof ADefaultSwitchClause)
+				continue;
+
+			Type switchType = getType(switchClause);
 			if (!hasExp) {
 				if(!isBooleanType(switchType)){ //case type is not boolType
-					errorSymbolType(valueSwitch,switchType, boolType);
+					errorSymbolType(switchClause,switchType, boolType);
 				}
 			} else { 
 				if(!expType.isIdentical(switchType)){ //case type is not expType
-					errorSymbolType(valueSwitch,switchType, expType);
+					errorSymbolType(switchClause,switchType, expType);
 				}
 			}
 		}
