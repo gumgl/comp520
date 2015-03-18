@@ -159,10 +159,6 @@ def evaluate_test(filename, expect_success, test_stage, returncode, err_msg):
 
     # Return code 1 means a controlled compiler error
     if returncode == 1:
-        if test_stage == UNDETECTED_STAGE:
-            logger.warn('cannot validate error for %s because the expected error type was not detected', filename)
-            return TESTS_GOOD
-
         error_stage = parse_stage(err_msg)
 
         if error_stage is None:
@@ -173,7 +169,24 @@ def evaluate_test(filename, expect_success, test_stage, returncode, err_msg):
             output_fail(filename, expected, 'got error and could not identify type', err_msg)
             return PROGRAM_ERROR
 
-        error_description = describe_for_stage('error', error_stage, 'unidentified')
+        error_description = describe_for_stage('error', error_stage, 'unidentified error')
+
+        # If the stage the test case targets could not be detected, give a
+        # warning but succeed if the test case was expected to fail. If it
+        # was expected to succeed, give a warning and also fail.
+        #
+        # Give a warning for either UNDETECTED_STAGE or ALL_STAGES if a
+        # failure was expected, since for failures they basically mean the
+        # same thing
+        if (expect_success and test_stage == UNDETECTED_STAGE) or (not expect_success and test_stage >= ALL_STAGES):
+            logger.warn('cannot validate error raised by %s\n'
+                '   The expected error type was not detected', filename)
+
+            if not expect_success:
+                return TESTS_GOOD
+
+            output_fail(filename, 'test to pass', 'got '+error_description, err_msg)
+            return TESTS_FAILED
 
         if expect_success:
             if error_stage < test_stage:
