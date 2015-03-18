@@ -5,7 +5,7 @@ from subprocess import Popen, PIPE, DEVNULL
 
 
 # --- Logging configuration ---
-logging.basicConfig(format='%(levelname)s: %(message)s')
+logging.basicConfig(format='%(levelname)s: %(message)s\n')
 
 # Log test failures at a level above warnings but below errors
 LOG_TEST_FAILURE = (logging.WARNING + logging.ERROR) // 2
@@ -18,6 +18,7 @@ TESTS_GOOD = 0
 TESTS_FAILED = 1
 TEST_ERROR = 2
 PROGRAM_ERROR = 3
+USER_INTERRUPT = 4
 
 # Compiler stages
 STAGES = [
@@ -46,15 +47,13 @@ USAGE_MSG = """\
     The expected result (whether it compiles successfully, what
     error it gives) is determined automagically from the path.
 
-    TODO: allow configuring the run parameters and expected result
-""".format(prog_name=(
-    lambda p=os.path.basename(__file__): \
-            p[:-3] if p.endswith('.py') else p
-    ))
+    TODO: allow configuring the run parameters and expected result\
+""".format(prog_name=sys.argv[0])
 
 def main(targets):
     if len(targets) == 0:
-        print_usage()
+        logging.debug('Got no arguments')
+        print(USAGE_MSG, file=sys.stderr)
         return PROGRAM_ERROR
 
     status = TESTS_GOOD
@@ -184,18 +183,8 @@ def output_fail(filename, expected, actual_result, err_msg=None):
     if err_msg:
         err_msg = err_msg.strip()
         if err_msg:
-            lines = err_msg.split('\n')
+            fail_msg.append('\n'.join(('>  '+line) for line in err_msg.split('\n')))
 
-            if len(lines) == 1:
-                fail_msg.append(lines[0])
-            else:
-                fail_msg.append('----- Error message -----')
-                for line in lines:
-                    fail_msg.append('\n>  ')
-                    fail_msg.append(line)
-                fail_msg.append('\n-------------------------\n')
-
-    fail_msg.append('\n')
     logging.log(LOG_TEST_FAILURE, ''.join(fail_msg))
 
 def all_directories(path):
@@ -203,9 +192,9 @@ def all_directories(path):
         path, base = os.path.split(path)
         yield base
 
-def print_usage():
-    print(USAGE_MSG)
-
 if __name__ == '__main__':
-    sys.exit(main(sys.argv[1:]))
-
+    try:
+        sys.exit(main(sys.argv[1:]))
+    except KeyboardInterrupt as e:
+        logging.debug('Execution interrupted', exc_info=e)
+        sys.exit(USER_INTERRUPT)
