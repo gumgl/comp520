@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 import sys, os, logging, argparse
-from subprocess import Popen, PIPE, DEVNULL
+from subprocess import Popen, PIPE
 
 
 # --- Logging configuration ---
@@ -99,8 +99,9 @@ def main(targets):
     return runner.status
 
 class TestRunner:
-    def __init__(self):
+    def __init__(self, cmd=None):
         self.status = TESTS_GOOD
+        self.cmd = cmd or ('golite' if sys.platform == 'win32' else './golite')
 
         # Succeed, fail, error
         self.counts = [0, 0, 0]
@@ -138,7 +139,10 @@ class TestRunner:
         test_stage = autodetect_stage(dirs)
 
         # TODO: these shouldn't need to run sequentially
-        process = Popen(['golite', target], shell=True, stdout=DEVNULL, stderr=PIPE, universal_newlines=True)
+        args = [self.cmd, target]
+        if sys.platform != 'win32':
+            args = ' '.join(args)
+        process = Popen(args, shell=True, stdout=PIPE, stderr=PIPE, universal_newlines=True, close_fds=True)
         process.wait()
 
         returncode = process.returncode
