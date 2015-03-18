@@ -214,7 +214,7 @@ class TestRunner:
 
         # Any other return code means an internal error
         expected = describe_for_stage('to pass' if expect_success else 'error', test_stage)
-        output_fail(filename, expected, 'internal error', err_msg)
+        output_fail(filename, expected, 'got internal error', err_msg)
 
         self.update(TEST_ERROR)
 
