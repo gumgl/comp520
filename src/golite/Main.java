@@ -10,6 +10,10 @@ import java.io.* ;
 import java.util.HashMap;
 
 public class Main {
+	public static final int EXIT_SUCCESS = 0;
+	public static final int EXIT_INVALID_SOURCE = 1;
+	public static final int EXIT_INTERNAL_ERROR = 2;
+	
 	public static void main(String[] args) {
 		CLIOptions options = null;
 		Node ast;
@@ -20,7 +24,7 @@ public class Main {
 		} catch (IllegalArgumentException e) {
 			System.err.print("Error: "+e.getMessage()+"\n\n");
 			printUsage();
-			System.exit(1);
+			System.exit(EXIT_INTERNAL_ERROR);
 		}
 
 		try {
@@ -56,19 +60,19 @@ public class Main {
 			// TODO: code generation
 
 		} catch (golite.lexer.LexerException e) {
-			handleError("Lexer", e);
+			handleSourceCodeError("Lexer", e);
 		} catch (golite.parser.ParserException e) {
-			handleError("Parser", e);
+			handleSourceCodeError("Parser", e);
 		} catch (GoLiteWeedingException e) {
-			handleError("Weeding", e);
+			handleSourceCodeError("Weeding", e);
 		} catch (GoLiteTypeException e) {
-			handleError("Type", e);
+			handleSourceCodeError("Type", e);
 		} catch (FileNotFoundException e) {
-			handleError("File \"" + options.fullPath + "\" not found.");
+			handleSourceCodeError("File \"" + options.fullPath + "\" not found.");
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.err.println(e);
-			System.exit(2);
+			System.exit(EXIT_INTERNAL_ERROR);
 		}
 	}
 
@@ -146,14 +150,14 @@ public class Main {
 		);
 	}
 
-	public static void handleError(String errorType, Exception e) {
+	public static void handleSourceCodeError(String errorType, Exception e) {
 		System.err.println(errorType+" error at "+e.getMessage());
-		System.exit(1);
+		System.exit(EXIT_INVALID_SOURCE);
 	}
 
-	public static void handleError(String message) {
+	public static void handleSourceCodeError(String message) {
 		System.err.println("Error: "+message);
-		System.exit(1);
+		System.exit(EXIT_INVALID_SOURCE);
 	}
 
 	public static Node getParsedAST(String filename) throws ParserException, LexerException, IOException {
