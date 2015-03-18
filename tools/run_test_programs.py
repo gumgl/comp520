@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-import sys, os, logging
+import sys, os, logging, argparse
 from subprocess import Popen, PIPE, DEVNULL
 
 
@@ -37,23 +37,30 @@ STAGE_ALIASES = {
     'semantic': ALL_STAGES
 }
 
-USAGE_MSG = """\
-{prog_name} target [target ...]
+# --- Command-line interface ---
 
-    Target can be a file or directory. If it is a directory,
-    each file with a .go extension in it and its subdirectories
-    will be tested.
+def get_cli_input(args):
+    ns = get_cli_parser().parse_args(args)
+    return ns.targets
 
-    The expected result (whether it compiles successfully, what
-    error it gives) is determined automagically from the path.
+def get_cli_parser():
+    parser = argparse.ArgumentParser(description='Run test programs and validate errors')
+    parser.add_argument('targets', nargs='+',
+        help='''\
+Files or directories containing test programs. If target is
+a directory, each file with a .go extension in it and its subdirectories
+will be tested.
 
-    TODO: allow configuring the run parameters and expected result\
-""".format(prog_name=sys.argv[0])
+The expected result (whether it compiles successfully and what
+error it gives) is determined automagically from the path.
+''')
+    return parser
+
+# --- Test runner ---
 
 def main(targets):
     if len(targets) == 0:
         logging.debug('Got no arguments')
-        print(USAGE_MSG, file=sys.stderr)
         return PROGRAM_ERROR
 
     status = TESTS_GOOD
@@ -194,7 +201,8 @@ def all_directories(path):
 
 if __name__ == '__main__':
     try:
-        sys.exit(main(sys.argv[1:]))
+        targets = get_cli_input(sys.argv[1:])
+        sys.exit(main(targets))
     except KeyboardInterrupt as e:
         logging.debug('Execution interrupted', exc_info=e)
         sys.exit(USER_INTERRUPT)
