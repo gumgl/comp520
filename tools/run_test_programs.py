@@ -1,7 +1,17 @@
 #!/usr/bin/python3
 
-import sys, os
+import sys, os, logging
 from subprocess import Popen, PIPE, DEVNULL
+
+
+# --- Logging configuration ---
+logging.basicConfig(format='%(levelname)s: %(message)s')
+
+# Log test failures at a level above warnings but below errors
+LOG_TEST_FAILURE = (logging.WARNING + logging.ERROR) // 2
+logging.addLevelName(LOG_TEST_FAILURE, 'TEST FAILED')
+
+# --- Constants ---
 
 # Return codes
 TESTS_GOOD = 0
@@ -67,8 +77,7 @@ def test(target):
     if os.path.isfile(target):
         return testfile(target)
 
-    print("ERROR:", target, "is not a file or directory",
-        file=sys.stderr)
+    logging.error('%s is not a file or directory', target)
     return PROGRAM_ERROR
 
 def testfile(target):
@@ -121,7 +130,7 @@ def evaluate_test(filename, expect_success, test_stage, returncode, err_msg):
     # Return code 1 means a controlled compiler error
     if returncode == 1:
         if test_stage == UNDETECTED_STAGE:
-            print('WARNING: could not detect expected error type for ' + filename, file=sys.stderr)
+            logging.warn('cannot validate error for %s because the expected error type was not detected', filename)
             return TESTS_GOOD
 
         error_stage = parse_stage(err_msg)
@@ -170,25 +179,24 @@ def describe_for_stage(term, stage, fallback=None):
     return term
 
 def output_fail(filename, expected, actual_result, err_msg=None):
-    print('FAIL: ', filename, '\nExpected ', expected, ' but ', actual_result, sep='', end='\n')
+    fail_msg = [filename, '\nExpected ', expected, ' but ', actual_result, '\n']
 
-    if err_msg is None:
-        return
+    if err_msg:
+        err_msg = err_msg.strip()
+        if err_msg:
+            lines = err_msg.split('\n')
 
-    err_msg = err_msg.strip()
+            if len(lines) == 1:
+                fail_msg.append(lines[0])
+            else:
+                fail_msg.append('----- Error message -----')
+                for line in lines:
+                    fail_msg.append('\n>  ')
+                    fail_msg.append(line)
+                fail_msg.append('\n-------------------------\n')
 
-    if not err_msg:
-        return
-
-    lines = err_msg.split('\n')
-
-    if len(lines) == 1:
-        print(lines[0])
-    else:
-        print('----- Error message -----', *lines, sep='\n    ',
-            end='-------------------------\n')
-
-    print()
+    fail_msg.append('\n')
+    logging.log(LOG_TEST_FAILURE, ''.join(fail_msg))
 
 def all_directories(path):
     while path:
