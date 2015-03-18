@@ -1,3 +1,4 @@
+package parser_unit_tests;
 
 import golite.node.Node;
 import golite.node.Token;
