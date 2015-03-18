@@ -86,44 +86,133 @@ def main(targets):
         logger.debug('Got no arguments')
         return PROGRAM_ERROR
 
-    status = TESTS_GOOD
+    runner = TestRunner()
+
     for target in targets:
-        status = max(status, test(target))
+        runner.test(target)
 
-    return status
+    runner.print_results()
 
-def test(target):
-    if os.path.isdir(target):
-        status = TESTS_GOOD
-        for (directory, _, files) in os.walk(target):
-            for f in files:
-                if not f.endswith('.go'):
-                    continue
+    if runner.status == PROGRAM_ERROR:
+        logger.warn('test runner encountered errors')
 
-                status = max(status, testfile(os.path.join(directory,f)))
+    return runner.status
 
-        return status
+class TestRunner:
+    def __init__(self):
+        self.status = TESTS_GOOD
 
-    if os.path.isfile(target):
-        return testfile(target)
+        # Succeed, fail, error
+        self.counts = [0, 0, 0]
 
-    logger.error('%s is not a file or directory', target)
-    return PROGRAM_ERROR
+    def print_results(self):
+        print('Succeeded: {}, Failed: {}, Raised error: {}'.format(*self.counts))
 
-def testfile(target):
-    dirs = list(all_directories(os.path.dirname(target)))
+    def update(self, status):
+        self.counts[status] += 1
 
-    expect_success = 'invalid' not in dirs
-    test_stage = autodetect_stage(dirs)
+        if status > self.status:
+            self.status = status
 
-    # TODO: these shouldn't need to run sequentially
-    process = Popen(['golite', target], shell=True, stdout=DEVNULL, stderr=PIPE, universal_newlines=True)
-    process.wait()
+    def test(self, target):
+        if os.path.isdir(target):
+            for (directory, _, files) in os.walk(target):
+                for f in files:
+                    if not f.endswith('.go'):
+                        continue
 
-    returncode = process.returncode
-    err_msg = process.stderr.read()
+                    self.testfile(os.path.join(directory,f))
+            return
 
-    return evaluate_test(target, expect_success, test_stage, returncode, err_msg)
+        if os.path.isfile(target):
+            self.testfile(target)
+            return
+
+        logger.error('%s is not a file or directory', target)
+        self.status = PROGRAM_ERROR
+
+    def testfile(self, target):
+        dirs = list(all_directories(os.path.dirname(target)))
+
+        expect_success = 'invalid' not in dirs
+        test_stage = autodetect_stage(dirs)
+
+        # TODO: these shouldn't need to run sequentially
+        process = Popen(['golite', target], shell=True, stdout=DEVNULL, stderr=PIPE, universal_newlines=True)
+        process.wait()
+
+        returncode = process.returncode
+        err_msg = process.stderr.read()
+
+        return self.evaluate_test(target, expect_success, test_stage, returncode, err_msg)
+
+    def evaluate_test(self, filename, expect_success, test_stage, returncode, err_msg):
+        if returncode == 0:
+            if expect_success:
+                self.update(TESTS_GOOD)
+                return
+
+            output_fail(filename, describe_for_stage('error', test_stage), 'the test passed all stages')
+            self.update(TESTS_FAILED)
+            return
+
+        # Return code 1 means a controlled compiler error
+        if returncode == 1:
+            error_stage = parse_stage(err_msg)
+
+            if error_stage is None:
+                if expect_success:
+                    expected = 'to pass ' + describe_for_stage('stage', test_stage, 'all stages')
+                else:
+                    expected = describe_for_stage('error', test_stage)
+                output_fail(filename, expected, 'got error and could not identify type', err_msg)
+                self.update(TESTS_FAILED)
+                self.status = PROGRAM_ERROR
+                return
+
+            error_description = describe_for_stage('error', error_stage, 'unidentified error')
+
+            # If the stage the test case targets could not be detected, give a
+            # warning but succeed if the test case was expected to fail. If it
+            # was expected to succeed, give a warning and also fail.
+            #
+            # Give a warning for either UNDETECTED_STAGE or ALL_STAGES if a
+            # failure was expected, since for failures they basically mean the
+            # same thing
+            if (expect_success and test_stage == UNDETECTED_STAGE) or (not expect_success and test_stage >= ALL_STAGES):
+                logger.warn('cannot validate error raised by %s\n'
+                    '   The expected error type was not detected', filename)
+
+                if not expect_success:
+                    self.update(TESTS_GOOD)
+                    return
+
+                output_fail(filename, 'test to pass', 'got '+error_description, err_msg)
+                self.update(TESTS_FAILED)
+                return
+
+            if expect_success:
+                if error_stage < test_stage:
+                    output_fail(filename, describe_for_stage('stage', test_stage, 'all stages') + ' to pass', 'got '+error_description, err_msg)
+                    self.update(TESTS_FAILED)
+                    return
+
+                self.update(TESTS_GOOD)
+                return
+
+            if error_stage != test_stage:
+                output_fail(filename, describe_for_stage('error', test_stage), 'got '+error_description, err_msg)
+                self.update(TESTS_FAILED)
+                return
+
+            self.update(TESTS_GOOD)
+            return
+
+        # Any other return code means an internal error
+        expected = describe_for_stage('to pass' if expect_success else 'error', test_stage)
+        output_fail(filename, expected, 'internal error', err_msg)
+
+        self.update(TEST_ERROR)
 
 def autodetect_stage(dirs):
     stage = None
@@ -147,65 +236,6 @@ def autodetect_stage(dirs):
         return UNDETECTED_STAGE
 
     return stage
-
-
-def evaluate_test(filename, expect_success, test_stage, returncode, err_msg):
-    if returncode == 0:
-        if expect_success:
-            return TESTS_GOOD
-
-        output_fail(filename, describe_for_stage('error', test_stage), 'the test passed all stages')
-        return TESTS_FAILED
-
-    # Return code 1 means a controlled compiler error
-    if returncode == 1:
-        error_stage = parse_stage(err_msg)
-
-        if error_stage is None:
-            if expect_success:
-                expected = 'to pass ' + describe_for_stage('stage', test_stage, 'all stages')
-            else:
-                expected = describe_for_stage('error', test_stage)
-            output_fail(filename, expected, 'got error and could not identify type', err_msg)
-            return PROGRAM_ERROR
-
-        error_description = describe_for_stage('error', error_stage, 'unidentified error')
-
-        # If the stage the test case targets could not be detected, give a
-        # warning but succeed if the test case was expected to fail. If it
-        # was expected to succeed, give a warning and also fail.
-        #
-        # Give a warning for either UNDETECTED_STAGE or ALL_STAGES if a
-        # failure was expected, since for failures they basically mean the
-        # same thing
-        if (expect_success and test_stage == UNDETECTED_STAGE) or (not expect_success and test_stage >= ALL_STAGES):
-            logger.warn('cannot validate error raised by %s\n'
-                '   The expected error type was not detected', filename)
-
-            if not expect_success:
-                return TESTS_GOOD
-
-            output_fail(filename, 'test to pass', 'got '+error_description, err_msg)
-            return TESTS_FAILED
-
-        if expect_success:
-            if error_stage < test_stage:
-                output_fail(filename, describe_for_stage('stage', test_stage, 'all stages') + ' to pass', 'got '+error_description, err_msg)
-                return TESTS_FAILED
-
-            return TESTS_GOOD
-
-        if error_stage != test_stage:
-            output_fail(filename, describe_for_stage('error', test_stage), 'got '+error_description, err_msg)
-            return TESTS_FAILED
-
-        return TESTS_GOOD
-
-    # Any other return code means an internal error
-    expected = describe_for_stage('to pass' if expect_success else 'error', test_stage)
-    output_fail(filename, expected, 'internal error', err_msg)
-
-    return TEST_ERROR
 
 def parse_stage(error):
     error = error.lower()
