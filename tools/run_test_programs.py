@@ -35,6 +35,7 @@ STAGE_ALIASES = {
     'scanner': STAGES.index('lexer'),
     'syntax': STAGES.index('parser'),
     'types': STAGES.index('type'),
+    'weeding': STAGES.index('weed'),
     'semantic': ALL_STAGES
 }
 
