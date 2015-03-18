@@ -96,10 +96,11 @@ def test(target):
     if os.path.isdir(target):
         status = TESTS_GOOD
         for (directory, _, files) in os.walk(target):
-            status = max(status, 0,
-                *(testfile(os.path.join(directory,f))
-                for f in files
-                if f.endswith('.go')))
+            for f in files:
+                if not f.endswith('.go'):
+                    continue
+
+                status = max(status, testfile(os.path.join(directory,f)))
 
         return status
 
@@ -208,14 +209,14 @@ def describe_for_stage(term, stage, fallback=None):
     return term
 
 def output_fail(filename, expected, actual_result, err_msg=None):
-    fail_msg = [filename, '\nExpected ', expected, ' but ', actual_result, '\n']
+    fail_msg = [filename, '   Expected ' + expected + ' but ' + actual_result]
 
     if err_msg:
         err_msg = err_msg.strip()
         if err_msg:
-            fail_msg.append('\n'.join(('>  '+line) for line in err_msg.split('\n')))
+            fail_msg.extend(('   > '+line) for line in err_msg.split('\n'))
 
-    logger.log(LOG_TEST_FAILURE, ''.join(fail_msg))
+    logger.log(LOG_TEST_FAILURE, '\n'.join(fail_msg))
 
 def all_directories(path):
     while path:
