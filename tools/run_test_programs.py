@@ -32,6 +32,7 @@ ALL_STAGES = len(STAGES)
 UNDETECTED_STAGE = ALL_STAGES + 1
 
 STAGE_ALIASES = {
+    'scanner': STAGES.index('lexer'),
     'syntax': STAGES.index('parser'),
     'types': STAGES.index('type'),
     'semantic': ALL_STAGES
