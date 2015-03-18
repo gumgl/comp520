@@ -5,7 +5,7 @@ from subprocess import Popen, PIPE, DEVNULL
 
 
 # --- Logging configuration ---
-logging.basicConfig(format='%(levelname)s: %(message)s\n')
+logger = logging.getLogger(__file__)
 
 # Log test failures at a level above warnings but below errors
 LOG_TEST_FAILURE = (logging.WARNING + logging.ERROR) // 2
@@ -40,8 +40,25 @@ STAGE_ALIASES = {
 
 # --- Command-line interface ---
 
-def get_cli_input(args):
+def initialize_config(args):
     ns = get_cli_parser().parse_args(args)
+
+    handler = logging.StreamHandler(sys.stderr)
+    handler.setFormatter(logging.Formatter('%(levelname)s: %(message)s'))
+    logger.addHandler(handler)
+
+    if not ns.warn:
+        class WarningFilter(logging.Filter):
+            def filter(self, record):
+                return record.levelno != logging.WARNING
+
+        handler.addFilter(WarningFilter())
+
+    if ns.verbose == 1:
+        logger.setLevel(logging.VERBOSE)
+    elif ns.verbose >= 2:
+        logger.setLevel(logging.DEBUG)
+
     return ns.targets
 
 def get_cli_parser():
@@ -55,13 +72,17 @@ will be tested.
 The expected result (whether it compiles successfully and what
 error it gives) is determined automagically from the path.
 ''')
+
+    parser.add_argument('--no-warn', action='store_false', dest='warn', help='Suppress warnings')
+    parser.add_argument('-v', '--verbose', action='count', default=0, help='Increase output verbosity')
+
     return parser
 
 # --- Test runner ---
 
 def main(targets):
     if len(targets) == 0:
-        logging.debug('Got no arguments')
+        logger.debug('Got no arguments')
         return PROGRAM_ERROR
 
     status = TESTS_GOOD
@@ -84,7 +105,7 @@ def test(target):
     if os.path.isfile(target):
         return testfile(target)
 
-    logging.error('%s is not a file or directory', target)
+    logger.error('%s is not a file or directory', target)
     return PROGRAM_ERROR
 
 def testfile(target):
@@ -137,7 +158,7 @@ def evaluate_test(filename, expect_success, test_stage, returncode, err_msg):
     # Return code 1 means a controlled compiler error
     if returncode == 1:
         if test_stage == UNDETECTED_STAGE:
-            logging.warn('cannot validate error for %s because the expected error type was not detected', filename)
+            logger.warn('cannot validate error for %s because the expected error type was not detected', filename)
             return TESTS_GOOD
 
         error_stage = parse_stage(err_msg)
@@ -193,7 +214,7 @@ def output_fail(filename, expected, actual_result, err_msg=None):
         if err_msg:
             fail_msg.append('\n'.join(('>  '+line) for line in err_msg.split('\n')))
 
-    logging.log(LOG_TEST_FAILURE, ''.join(fail_msg))
+    logger.log(LOG_TEST_FAILURE, ''.join(fail_msg))
 
 def all_directories(path):
     while path:
@@ -202,8 +223,8 @@ def all_directories(path):
 
 if __name__ == '__main__':
     try:
-        targets = get_cli_input(sys.argv[1:])
+        targets = initialize_config(sys.argv[1:])
         sys.exit(main(targets))
     except KeyboardInterrupt as e:
-        logging.debug('Execution interrupted', exc_info=e)
+        logger.debug('Execution interrupted', exc_info=e)
         sys.exit(USER_INTERRUPT)
