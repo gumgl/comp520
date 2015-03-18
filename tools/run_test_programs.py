@@ -142,7 +142,7 @@ class TestRunner:
         args = [self.cmd, target]
         if sys.platform != 'win32':
             args = ' '.join(args)
-        process = Popen(args, shell=True, stdout=PIPE, stderr=PIPE, universal_newlines=True, close_fds=True)
+        process = Popen(args, shell=True, stdout=PIPE, stderr=PIPE, universal_newlines=True)
         process.wait()
 
         returncode = process.returncode
