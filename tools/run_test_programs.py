@@ -55,7 +55,7 @@ def initialize_config(args):
         handler.addFilter(WarningFilter())
 
     if ns.verbose == 1:
-        logger.setLevel(logging.VERBOSE)
+        logger.setLevel(logging.INFO)
     elif ns.verbose >= 2:
         logger.setLevel(logging.DEBUG)
 
