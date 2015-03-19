@@ -59,7 +59,7 @@ def initialize_config(args):
     elif ns.verbose >= 2:
         logger.setLevel(logging.DEBUG)
 
-    return ns.targets
+    return ns.targets, ns.exclude
 
 def get_cli_parser():
     parser = argparse.ArgumentParser(description='Run test programs and validate errors')
@@ -75,17 +75,18 @@ error it gives) is determined automagically from the path.
 
     parser.add_argument('--no-warn', action='store_false', dest='warn', help='Suppress warnings')
     parser.add_argument('-v', '--verbose', action='count', default=0, help='Increase output verbosity')
+    parser.add_argument('-x', '--exclude', action='append', help='Exclude files found on this path')
 
     return parser
 
 # --- Test runner ---
 
-def main(targets):
+def main(targets, exclude):
     if len(targets) == 0:
         logger.debug('Got no arguments')
         return PROGRAM_ERROR
 
-    runner = TestRunner()
+    runner = TestRunner(exclude)
 
     for target in targets:
         runner.test(target)
@@ -98,7 +99,11 @@ def main(targets):
     return runner.status
 
 class TestRunner:
-    def __init__(self, cmd=None):
+    def __init__(self, exclude=None, cmd=None):
+        if exclude is None:
+            self.exclude = []
+        else:
+            self.exclude = [os.path.normpath(x) for x in exclude]
         self.status = TESTS_GOOD
         self.cmd = cmd or ('golite' if sys.platform == 'win32' else './golite')
 
@@ -116,12 +121,25 @@ class TestRunner:
 
     def test(self, target):
         if os.path.isdir(target):
-            for (directory, _, files) in os.walk(target):
+            for (directory, subdirs, files) in os.walk(target, topdown=True):
+                directory = os.path.normpath(directory)
+                logger.debug('visiting %s', directory)
+                if directory in self.exclude:
+                    logger.info('skipping directory %s', directory)
+                    # Jump over subdirectories
+                    del subdirs[:]
+                    continue
+
                 for f in files:
                     if not f.endswith('.go'):
                         continue
 
-                    self.testfile(os.path.join(directory,f))
+                    full_path = os.path.join(directory, f)
+                    if full_path in self.exclude:
+                        logger.info('skipping file %s', full_path)
+                        continue
+
+                    self.testfile(full_path)
             return
 
         if os.path.isfile(target):
@@ -271,8 +289,8 @@ def all_directories(path):
 
 if __name__ == '__main__':
     try:
-        targets = initialize_config(sys.argv[1:])
-        sys.exit(main(targets))
+        targets, exclude = initialize_config(sys.argv[1:])
+        sys.exit(main(targets, exclude))
     except KeyboardInterrupt as e:
         logger.debug('Execution interrupted', exc_info=e)
         sys.exit(USER_INTERRUPT)
