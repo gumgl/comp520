@@ -13,11 +13,9 @@ public class Main {
 	public static final int EXIT_SUCCESS = 0;
 	public static final int EXIT_INVALID_SOURCE = 1;
 	public static final int EXIT_INTERNAL_ERROR = 2;
-	
+
 	public static void main(String[] args) {
 		CLIOptions options = null;
-		Node ast;
-		PositionHelper positionHelper;
 
 		try {
 			options = getCLIOptions(args);
@@ -28,37 +26,7 @@ public class Main {
 		}
 
 		try {
-			/* Print HTML representation of tokens */
-			if (options.dumpToks) {
-				tokenPrintHtml(options.fullPath, options.basePath);
-			}
-
-			/* Build AST */
-			ast = getParsedAST(options.fullPath);
-			positionHelper = new PositionHelper(ast);
-
-			// Do the weeding
-			GoLiteWeeder.weed(ast, positionHelper);
-
-			// Pretty print AST
-			if (options.prettyPrint) {
-				prettyPrint(ast, options.basePath);
-			}
-
-			// Display AST in a JTree
-			if (options.displayAST) {
-				ASTDisplay display = new ASTDisplay();
-				ast.apply(display);
-			}
-
-			HashMap<Node, Type> types = typeCheck(ast, options.basePath, positionHelper, options.dumpSymbolTable);
-
-			if (options.prettyPrintTyped) {
-				prettyPrintTyped(ast, options.basePath, types);
-			}
-
-			// TODO: code generation
-
+			processSource(options);
 		} catch (golite.lexer.LexerException e) {
 			handleSourceCodeError("Lexer", e);
 		} catch (golite.parser.ParserException e) {
@@ -158,6 +126,43 @@ public class Main {
 	public static void handleSourceCodeError(String message) {
 		System.err.println("Error: "+message);
 		System.exit(EXIT_INVALID_SOURCE);
+	}
+
+	/* Compiler runtime */
+	public static void processSource(CLIOptions options) throws LexerException, IOException, ParserException {
+		Node ast;
+		PositionHelper positionHelper;
+
+		/* Print HTML representation of tokens */
+		if (options.dumpToks) {
+			tokenPrintHtml(options.fullPath, options.basePath);
+		}
+
+		/* Build AST */
+		ast = getParsedAST(options.fullPath);
+		positionHelper = new PositionHelper(ast);
+
+		// Do the weeding
+		GoLiteWeeder.weed(ast, positionHelper);
+
+		// Pretty print AST
+		if (options.prettyPrint) {
+			prettyPrint(ast, options.basePath);
+		}
+
+		// Display AST in a JTree
+		if (options.displayAST) {
+			ASTDisplay display = new ASTDisplay();
+			ast.apply(display);
+		}
+
+		HashMap<Node, Type> types = typeCheck(ast, options.basePath, positionHelper, options.dumpSymbolTable);
+
+		if (options.prettyPrintTyped) {
+			prettyPrintTyped(ast, options.basePath, types);
+		}
+
+		// TODO: code generation
 	}
 
 	public static Node getParsedAST(String filename) throws ParserException, LexerException, IOException {
