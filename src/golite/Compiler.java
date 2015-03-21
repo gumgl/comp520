@@ -17,7 +17,7 @@ import java.io.PushbackReader;
 import java.util.HashMap;
 
 /**
- * Control the flow of execution of a program
+ * High-level functions to compile a source file
  */
 public class Compiler {
 
@@ -66,7 +66,9 @@ public class Compiler {
 		processSource(opts);
 	}
 
-	public static void processSource(Options options) throws LexerException, IOException, ParserException {
+	public static void processSource(Options options)
+			throws LexerException, IOException, ParserException {
+
 		String pathBase;
 
 		if (options.path.endsWith(".go")) {
