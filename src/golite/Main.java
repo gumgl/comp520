@@ -29,7 +29,7 @@ public class Main {
 		} catch (GoLiteTypeException e) {
 			handleSourceCodeError("Type", e);
 		} catch (FileNotFoundException e) {
-			handleSourceCodeError("File \"" + options.fullPath + "\" not found.");
+			handleSourceCodeError("File \"" + options.path + "\" not found.");
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.err.println(e);
@@ -82,13 +82,7 @@ public class Main {
 			throw new IllegalArgumentException("Exactly one input file should be specified");
 		}
 
-		// Read filename
-		options.fullPath = args[i];
-		if (options.fullPath.endsWith(".go")) {
-			options.basePath = options.fullPath.substring(0, options.fullPath.length() - 3);
-		} else {
-			options.basePath = options.fullPath;
-		}
+		options.path = args[i];
 
 		return options;
 	}
