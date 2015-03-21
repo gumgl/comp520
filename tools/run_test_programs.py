@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
-import sys, os, logging, argparse
-from subprocess import Popen, PIPE
+import sys, os, logging, argparse, cmd, posixpath
+from subprocess import Popen, PIPE, check_call
 
 
 # --- Logging configuration ---
@@ -59,7 +59,7 @@ def initialize_config(args):
     elif ns.verbose >= 2:
         logger.setLevel(logging.DEBUG)
 
-    return ns.targets, ns.exclude
+    return ns.targets, ns.exclude, ns.interactive
 
 def get_cli_parser():
     parser = argparse.ArgumentParser(description='Run test programs and validate errors')
@@ -73,6 +73,7 @@ The expected result (whether it compiles successfully and what
 error it gives) is determined automagically from the path.
 ''')
 
+    parser.add_argument('-i', '--interactive', action='store_true', help='Run an interactive prompt for failing cases')
     parser.add_argument('--no-warn', action='store_false', dest='warn', help='Suppress warnings')
     parser.add_argument('-v', '--verbose', action='count', default=0, help='Increase output verbosity')
     parser.add_argument('-x', '--exclude', action='append', help='Exclude files found on this path')
@@ -81,12 +82,15 @@ error it gives) is determined automagically from the path.
 
 # --- Test runner ---
 
-def main(targets, exclude):
+def main(targets, exclude, interactive=False):
     if len(targets) == 0:
         logger.debug('Got no arguments')
         return PROGRAM_ERROR
 
-    runner = TestRunner(exclude)
+    if interactive:
+        runner = InteractiveTestRunner(exclude)
+    else:
+        runner = TestRunner(exclude)
 
     for target in targets:
         runner.test(target)
@@ -252,6 +256,78 @@ class TestRunner:
         expected = describe_for_stage('to pass' if expect_success else 'error', test_stage)
         self.fail(filename, expected, 'got internal error', err_msg, status=TEST_ERROR)
 
+class InteractiveTestRunner (TestRunner):
+    def fail(self, filename, *args, **kwargs):
+        super().fail(filename, *args, **kwargs)
+
+        print()
+        InteractiveCmd(self, filename).cmdloop()
+
+class InteractiveCmd (cmd.Cmd):
+    intro = 'Response?\n   c: continue\t\te: edit\t\tq: quit\n   s: set expected\tr: rerun\t?: help'
+    prompt = '-> '
+
+    def __init__(self, runner, filename):
+        super().__init__()
+
+        self.runner = runner
+        self.filename = filename
+
+        self.cmds = [c[3:] for c in dir(self) if c.startswith('do_')]
+
+    def precmd(self, line):
+        words = line.split()
+
+        if not (words and words[0] not in self.cmds):
+            return line
+
+        avail = [c for c in self.cmds if c.startswith(words[0])]
+
+        if len(avail) == 0:
+            return line
+
+        if len(avail) > 1:
+            print('   Multiple possibilities:', '\t'.join(avail))
+            return ''
+
+        words[0] = avail[0]
+        return ' '.join(words)
+
+    def do_continue(self, arg):
+        """Run next test
+        """
+        return True
+
+    def do_edit(self, arg):
+        """Open the test program in a shell editor
+        """
+        posix_name = self.filename
+        if os.path != posixpath:
+            posix_name = posixpath.join(*posix_name.split(os.path.sep))
+
+        check_call('vim "'+posix_name+'"')
+
+    def do_rerun(self, arg):
+        """Run this test again
+        """
+        self.runner.queue.insert(0, self.filename)
+        return True
+
+    def do_quit(self, arg):
+        """Stop the test running now
+        """
+        logger.info('Exiting early. %s test cases remaining.', len(self.runner.queue))
+        del self.runner.queue[:]
+        return True
+
+    def do_set_expected(self, arg):
+        """Set a different expected outcome for the test case
+
+        For example:
+           -> set_expected valid parser
+           -> s weeding
+        """
+        print('Not implemented yet!')
 
 def autodetect_stage(dirs):
     stage = None
@@ -297,8 +373,8 @@ def all_directories(path):
 
 if __name__ == '__main__':
     try:
-        targets, exclude = initialize_config(sys.argv[1:])
-        sys.exit(main(targets, exclude))
+        targets, exclude, interactive = initialize_config(sys.argv[1:])
+        sys.exit(main(targets, exclude, interactive))
     except KeyboardInterrupt as e:
         logger.debug('Execution interrupted', exc_info=e)
         sys.exit(USER_INTERRUPT)
