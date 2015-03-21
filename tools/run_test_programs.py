@@ -110,6 +110,8 @@ class TestRunner:
         # Succeed, fail, error
         self.counts = [0, 0, 0]
 
+        self.queue = []
+
     def print_results(self):
         print('Succeeded: {}, Failed: {}, Raised error: {}'.format(*self.counts))
 
@@ -136,33 +138,39 @@ class TestRunner:
 
     def test(self, target):
         if os.path.isdir(target):
-            for (directory, subdirs, files) in os.walk(target, topdown=True):
-                directory = os.path.normpath(directory)
-                logger.debug('visiting %s', directory)
-                if directory in self.exclude:
-                    logger.info('skipping directory %s', directory)
-                    # Jump over subdirectories
-                    del subdirs[:]
+            self.enqueue_dir(target)
+
+        elif os.path.isfile(target):
+            self.queue.append(target)
+
+        else:
+            logger.error('%s is not a file or directory', target)
+            self.status = PROGRAM_ERROR
+            return
+
+        while self.queue:
+            self.testfile(self.queue.pop(0))
+
+    def enqueue_dir(self, target):
+        for (directory, subdirs, files) in os.walk(target, topdown=True):
+            directory = os.path.normpath(directory)
+
+            if directory in self.exclude:
+                logger.info('skipping directory %s', directory)
+                # Jump over subdirectories
+                del subdirs[:]
+                continue
+
+            for f in files:
+                if not f.endswith('.go'):
                     continue
 
-                for f in files:
-                    if not f.endswith('.go'):
-                        continue
+                full_path = os.path.join(directory, f)
+                if full_path in self.exclude:
+                    logger.info('skipping file %s', full_path)
+                    continue
 
-                    full_path = os.path.join(directory, f)
-                    if full_path in self.exclude:
-                        logger.info('skipping file %s', full_path)
-                        continue
-
-                    self.testfile(full_path)
-            return
-
-        if os.path.isfile(target):
-            self.testfile(target)
-            return
-
-        logger.error('%s is not a file or directory', target)
-        self.status = PROGRAM_ERROR
+                self.queue.append(full_path)
 
     def testfile(self, target):
         dirs = list(all_directories(os.path.dirname(target)))
