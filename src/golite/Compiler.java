@@ -32,7 +32,7 @@ public class Compiler {
 	/** Container class for compilation switches */
 	public static class Options {
 		// Debugging: dumping scope info
-		public static enum ScopeInfoDumpLevel {
+		public static enum SymbolTableLogLevel {
 			NOTHING,
 			LAST_FRAME,
 			ALL
@@ -41,11 +41,13 @@ public class Compiler {
 		// By default we don't assume any particular stage
 		public CompilationStage executeStage = null;
 
-		public ScopeInfoDumpLevel dumpSymbolTable = ScopeInfoDumpLevel.NOTHING;
+		public SymbolTableLogLevel symbolTableLogLevel = SymbolTableLogLevel.NOTHING;
+
 		public boolean prettyPrint;
 		public boolean prettyPrintTyped;
 		public boolean dumpToks;
 		public boolean displayAST;
+
 		String path;
 	}
 
@@ -110,7 +112,7 @@ public class Compiler {
 		}
 
 		HashMap<Node, Type> types = typeCheck(ast, pathBase+".symtab", positionHelper,
-				getSymbolTableLogger(options.dumpSymbolTable));
+				getSymbolTableLogger(options.symbolTableLogLevel));
 
 		if (options.prettyPrintTyped) {
 			prettyPrint(ast, new TypedPrettyPrinter(types), pathBase+".pptype.go");
@@ -207,9 +209,9 @@ public class Compiler {
 	}
 
 	public static SymbolTableLogger getSymbolTableLogger(
-			Options.ScopeInfoDumpLevel infoDumpLevel) {
+			Options.SymbolTableLogLevel level) {
 
-		switch (infoDumpLevel) {
+		switch (level) {
 		case NOTHING:
 			return null;
 
@@ -220,7 +222,7 @@ public class Compiler {
 			return new SymbolTableLogger(false);
 
 		default:
-			throw new IllegalArgumentException("Bad scope logging value "+infoDumpLevel);	
+			throw new IllegalArgumentException("Bad symbol table logging level "+level);
 		}
 	}
 }

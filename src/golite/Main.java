@@ -52,10 +52,10 @@ public class Main {
 		for (i=0; i < args.length && args[i].startsWith("-"); i++) {
 			switch (args[i]) {
 			case "-dumpsymtab":
-				options.dumpSymbolTable = Compiler.Options.ScopeInfoDumpLevel.LAST_FRAME;
+				options.symbolTableLogLevel = Compiler.Options.SymbolTableLogLevel.LAST_FRAME;
 				break;
 			case "-dumpsymtaball":
-				options.dumpSymbolTable = Compiler.Options.ScopeInfoDumpLevel.ALL;
+				options.symbolTableLogLevel = Compiler.Options.SymbolTableLogLevel.ALL;
 				break;
 			case "-pprint":
 				options.prettyPrint = true;
