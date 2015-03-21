@@ -1,6 +1,24 @@
 /* Package declaration, golite 2.2 */
 package main
 
+/*Functions Declarations 1.3, Unary expr 3.3 */
+func f(f int) int {
+	f *=(-f)
+	return f
+}
+
+func regularPower(a int, b int) int {
+	var res int
+	res = 1
+	/*For loop 2.11*/
+	for b>0 {
+		/*Op-assignment 2.8*/
+		res *= a
+		b --
+   }
+   return res 
+}
+
 func main() {
 	
 	/*Variables Declarations 1.1 */
@@ -32,12 +50,12 @@ func main() {
 	println("3*(-3) is:",f(3))
 	/*Types Declarations 1.2 */
 	type a int 
-	var x a = 2
+	var x a = a(2)
 	println( "x is of type a and it should be 2:",x )
 	
 	/*redeclare type in inner scope*/	
 	{type a bool
-	var x a = false 
+	var x a = a(false)
 	println(x) 
 	}
 	
@@ -59,21 +77,3 @@ func main() {
 	
 }
 
-	
-/*Functions Declarations 1.3, Unary expr 3.3 */
-func f(f int) int {
-	f *=(-f)
-	return f
-}
-
-func regularPower(a int, b int) int {
-	var res int
-	res = 1
-	/*For loop 2.11*/
-	for b>0 {
-		/*Op-assignment 2.8*/
-		res *= a
-		b --
-   }
-   return res 
-}
