@@ -38,7 +38,7 @@ public class Compiler {
 
 		// Pretty print AST
 		if (options.prettyPrint) {
-			prettyPrint(ast, options.basePath);
+			prettyPrint(ast, new PrettyPrinter(), options.basePath+".pretty.go");
 		}
 
 		// Display AST in a JTree
@@ -50,7 +50,7 @@ public class Compiler {
 		HashMap<Node, Type> types = typeCheck(ast, options.basePath, positionHelper, options.dumpSymbolTable);
 
 		if (options.prettyPrintTyped) {
-			prettyPrintTyped(ast, options.basePath, types);
+			prettyPrint(ast, new TypedPrettyPrinter(types), options.basePath+".pptype.go");
 		}
 
 		// TODO: code generation
@@ -97,20 +97,20 @@ public class Compiler {
         }
 	}
 
-	public static void prettyPrint(Node ast, String path) throws FileNotFoundException {
-		// Pretty Print
-		PrintWriter filePretty = new PrintWriter(new PrintWriter(path+".pretty.go"), true);
-		PrettyPrinter pretty = new PrettyPrinter(filePretty) ;
-		ast.apply(pretty);
-		filePretty.close();
-	}
-
-	public static void prettyPrintTyped(Node ast, String path, HashMap<Node, Type> types) throws FileNotFoundException {
-		// Pretty Print
-		PrintWriter filePretty = new PrintWriter(new PrintWriter(path+".pptype.go"), true);
-		PrettyPrinter pretty = new TypedPrettyPrinter(filePretty, types);
-		ast.apply(pretty);
-		filePretty.close();
+	/** Pretty print the program
+	 *
+	 * @param ast The root node of the program
+	 * @param printer The pretty printer to use
+	 * @param path The path of the file to print to
+	 */
+	public static void prettyPrint(Node ast, PrettyPrinter printer, String path) throws FileNotFoundException {
+		PrintWriter prettyFile = new PrintWriter(new PrintWriter(path), true);
+		try {
+			printer.setOutputWriter(prettyFile);
+			ast.apply(printer);
+		} finally {
+			prettyFile.close();
+		}
 	}
 
 	public static HashMap<Node, Type> typeCheck(Node ast, String path, PositionHelper positionHelper,

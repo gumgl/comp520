@@ -7,13 +7,28 @@ import golite.node.*;
 
 
 public class PrettyPrinter extends DepthFirstAdapter {
-	static String indent = "\t";
-	StringBuilder prepend = new StringBuilder("");
-	PrintWriter output;
+	protected String indent = "\t";
+	protected StringBuilder prepend = new StringBuilder("");
+	protected PrintWriter output;
 
 	public PrettyPrinter(PrintWriter writer) {
 		output = writer;
 	}
+
+	public PrettyPrinter() {
+		this(null);
+	}
+
+	/* Getters and setters */
+	public PrintWriter getOutputWriter() {
+		return output;
+	}
+
+	public void setOutputWriter(PrintWriter printer) {
+		output = printer;
+	}
+
+	/* Output formatting utilities */
 	protected void p(String text) {
 		output.print(text);
 	}

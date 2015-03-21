@@ -14,6 +14,10 @@ public class TypedPrettyPrinter extends PrettyPrinter {
 		this.types = types;
 	}
 
+	public TypedPrettyPrinter(HashMap<Node, Type> types) {
+		this(null, types);
+	}
+
 	protected void printExpType(PExp exp) {
 		Type type = types.get(exp);
 		
