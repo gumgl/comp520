@@ -17,6 +17,24 @@ public class SymbolTableLogger {
 		this(out, false);
 	}
 
+	public SymbolTableLogger(boolean verbose) {
+		this(null, verbose);
+	}
+
+	public SymbolTableLogger() {
+		this(null, false);
+	}
+
+	// Getters and setters
+
+	public void setOutputWriter(PrintWriter out) {
+		this.out = out;
+	}
+
+	public PrintWriter getOutputWriter() {
+		return out;
+	}
+
 	public void setTable(SymbolTable table) {
 		this.table = table;
 	}
