@@ -26,7 +26,7 @@ public class Compiler {
 
 		/* Print HTML representation of tokens */
 		if (options.dumpToks) {
-			tokenPrintHtml(options.fullPath, options.basePath);
+			tokenPrintHtml(options.fullPath, options.basePath+".tokens.html");
 		}
 
 		/* Build AST */
@@ -64,37 +64,40 @@ public class Compiler {
 		return ast;
 	}
 
-	/*
-	 * Generates a .html file to see tokens
-	 */
-	public static void tokenPrintHtml(String inputPath, String outputPathBase) throws LexerException, IOException {
+	/** Generate an HTML token representation */
+	public static void tokenPrintHtml(String inputPath, String path) throws LexerException, IOException {
+
 		Lexer lexer = new ConservingGoLexer(new PushbackReader(new FileReader(inputPath), 1024));
-		PrintWriter fileHtml = new PrintWriter(new PrintWriter(outputPathBase+".tokens.html"), true);
+		PrintWriter htmlFile = new PrintWriter(new PrintWriter(path), true);
 
 		try {
-			StringBuilder html = new StringBuilder("<html><body><pre>");
 			int count=0; // To prevent some infinite loops
+
+			htmlFile
+				.append("<!DOCTYPE html><html><head><title>")
+				.append(path)
+				.append("</title><style>")
+				.append(".tok.even{background-color:LightSkyBlue}")
+				.append(".tok.odd{background-color:LightSalmon}")
+				.append("</style></head><body><pre>");
+
 			while (lexer.peek() != null && count < 2000) {
 				count ++;
 				Token token = lexer.next();
-				String color = count % 2 == 0 ? "LightSkyBlue" : "LightSalmon";
 
-				html.append("<span style=\"background-color:"+color+"\" title=\"" + token.getClass().getSimpleName() + "\">" + token.getText().replaceAll(" ", "&#32;").replaceAll("(\r\n|\n)", "&#x23CE;$1") + "</span>");
+				htmlFile
+					.append("<span class=\"tok ")
+					.append(count % 2 == 0 ? "even" : "odd")
+					.append("\" title=\"")
+					.append(token.getClass().getSimpleName())
+					.append("\">")
+					.append(token.getText().replaceAll(" ", "&#32;").replaceAll("(\r\n|\n)", "&#x23CE;$1"))
+					.append("</span>");
 			}
-			html.append("</pre></body></html>");
-			fileHtml.write(html.toString());
+			htmlFile.append("</pre></body></html>");
 		} finally {
-			fileHtml.close();
+			htmlFile.close();
 		}
-	}
-
-	public static void tokenPrintText(Lexer lexer) throws LexerException, IOException {
-		int count=0; // To prevent some infinite loops
-        while (lexer.peek() != null && count < 2000) {
-        	count ++;
-        	Token token = lexer.next();
-        	System.out.println(token.getLine() + ": " + token.getClass().getSimpleName() + "(" + token.getText() + ")" );
-        }
 	}
 
 	/** Pretty print the program
