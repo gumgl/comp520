@@ -21,6 +21,14 @@ import java.util.HashMap;
  */
 public class Compiler {
 
+	public static enum CompilationStage {
+		LEXING,
+		PARSING,
+		WEEDING,
+		TYPE_CHECKING,
+		CODE_GEN
+	}
+
 	/** Container class for compilation switches */
 	public static class Options {
 		// Debugging: dumping scope info
@@ -30,6 +38,9 @@ public class Compiler {
 			ALL
 		}
 
+		// By default we don't assume any particular stage
+		public CompilationStage executeStage = null;
+
 		public ScopeInfoDumpLevel dumpSymbolTable = ScopeInfoDumpLevel.NOTHING;
 		public boolean prettyPrint;
 		public boolean prettyPrintTyped;
@@ -38,9 +49,18 @@ public class Compiler {
 		String path;
 	}
 
-	public static void processSource(String path) throws LexerException, IOException, ParserException {
+	public static void processSource(String path)
+			throws LexerException, IOException, ParserException {
+
+		processSource(path, null);
+	}
+
+	public static void processSource(String path, CompilationStage stage)
+			throws LexerException, IOException, ParserException {
+
 		Options opts = new Options();
 		opts.path = path;
+		opts.executeStage = stage;
 		processSource(opts);
 	}
 
@@ -60,10 +80,23 @@ public class Compiler {
 
 		/* Build AST */
 		Node ast = getParsedAST(options.path);
+
+		// End of stages: Lexing and parsing
+		// For now, we'll also parse the file, even if the options say to
+		// just do the lexing
+		if (options.executeStage == CompilationStage.LEXING
+				|| options.executeStage == CompilationStage.PARSING)
+			return;
+
+		// Initialize a helper class to map the position of nodes in the AST
 		PositionHelper positionHelper = new PositionHelper(ast);
 
 		// Do the weeding
 		GoLiteWeeder.weed(ast, positionHelper);
+
+		// End of stage: weeding
+		if (options.executeStage == CompilationStage.WEEDING)
+			return;
 
 		// Pretty print AST
 		if (options.prettyPrint) {
@@ -82,6 +115,10 @@ public class Compiler {
 		if (options.prettyPrintTyped) {
 			prettyPrint(ast, new TypedPrettyPrinter(types), pathBase+".pptype.go");
 		}
+
+		// End of stage: type checking
+		if (options.executeStage == CompilationStage.TYPE_CHECKING)
+			return;
 
 		// TODO: code generation
 	}
