@@ -734,18 +734,25 @@ public class TypeChecker extends DepthFirstAdapter {
 	}
 	public void outAArrayAccessExp(AArrayAccessExp node)
 	{
-		Type t = getType(node.getArray());
-
 		// Per the GoLite spec, we check that the index *is* an int, rather
 		// than checking if its underlying type is
 		if (!intType.isIdentical(getType(node.getIndex()))) {
 			errorSymbolType(node.getIndex(), getType(node.getIndex()), intType);
 		}
 
-		if (!(t instanceof ArrayType || t instanceof SliceType))
-			errorSymbolType(node.getArray(), t, "an array or slice");
+		Type typeOfArray, typeArrayContains;
+		typeOfArray = getType(node.getArray());
+		typeArrayContains = null;
 
-		setType(node, t);
+		if (typeOfArray instanceof ArrayType) {
+			typeArrayContains = ((ArrayType)typeOfArray).getType();
+		} else if (typeOfArray instanceof SliceType) {
+			typeArrayContains = ((SliceType)typeOfArray).getType();
+		} else {
+			errorSymbolType(node.getArray(), typeOfArray, "an array or slice");
+		}
+
+		setType(node, typeArrayContains);
 		defaultOut(node);
 	}
 	public void outAFieldAccessExp(AFieldAccessExp node)
