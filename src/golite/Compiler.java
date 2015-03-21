@@ -20,7 +20,26 @@ import java.util.HashMap;
  * Control the flow of execution of a program
  */
 public class Compiler {
-	public static void processSource(CLIOptions options) throws LexerException, IOException, ParserException {
+
+	/** Container class for compilation switches */
+	public static class Options {
+		// Debugging: dumping scope info
+		public static enum ScopeInfoDumpLevel {
+			NOTHING,
+			LAST_FRAME,
+			ALL
+		}
+
+		public ScopeInfoDumpLevel dumpSymbolTable = ScopeInfoDumpLevel.NOTHING;
+		public boolean prettyPrint;
+		public boolean prettyPrintTyped;
+		public boolean dumpToks;
+		public boolean displayAST;
+		public String fullPath;
+		public String basePath;
+	}
+
+	public static void processSource(Options options) throws LexerException, IOException, ParserException {
 		Node ast;
 		PositionHelper positionHelper;
 
@@ -141,7 +160,7 @@ public class Compiler {
 	}
 
 	public static SymbolTableLogger getSymbolTableLogger(
-			CLIOptions.ScopeInfoDumpLevel infoDumpLevel) {
+			Options.ScopeInfoDumpLevel infoDumpLevel) {
 
 		switch (infoDumpLevel) {
 		case NOTHING:

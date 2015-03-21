@@ -8,7 +8,7 @@ public class Main {
 	public static final int EXIT_INTERNAL_ERROR = 2;
 
 	public static void main(String[] args) {
-		CLIOptions options = null;
+		Compiler.Options options = null;
 
 		try {
 			options = getCLIOptions(args);
@@ -44,18 +44,18 @@ public class Main {
 	 *
 	 * Corner case: this code assumes that the filename doesn't start
 	 * with a `-` */
-	public static CLIOptions getCLIOptions(String[] args) {
-		CLIOptions options = new CLIOptions();
+	public static Compiler.Options getCLIOptions(String[] args) {
+		Compiler.Options options = new Compiler.Options();
 		int i;
 
 		// Read options
 		for (i=0; i < args.length && args[i].startsWith("-"); i++) {
 			switch (args[i]) {
 			case "-dumpsymtab":
-				options.dumpSymbolTable = CLIOptions.ScopeInfoDumpLevel.LAST_FRAME;
+				options.dumpSymbolTable = Compiler.Options.ScopeInfoDumpLevel.LAST_FRAME;
 				break;
 			case "-dumpsymtaball":
-				options.dumpSymbolTable = CLIOptions.ScopeInfoDumpLevel.ALL;
+				options.dumpSymbolTable = Compiler.Options.ScopeInfoDumpLevel.ALL;
 				break;
 			case "-pprint":
 				options.prettyPrint = true;
@@ -120,22 +120,4 @@ public class Main {
 		System.err.println("Error: "+message);
 		System.exit(EXIT_INVALID_SOURCE);
 	}
-}
-
-/** Container class for command-line interface options */
-class CLIOptions {
-	// Debugging: dumping scope info
-	public static enum ScopeInfoDumpLevel {
-		NOTHING,
-		LAST_FRAME,
-		ALL
-	}
-
-	public ScopeInfoDumpLevel dumpSymbolTable = ScopeInfoDumpLevel.NOTHING;
-	public boolean prettyPrint;
-	public boolean prettyPrintTyped;
-	public boolean dumpToks;
-	public boolean displayAST;
-	public String fullPath;
-	public String basePath;
 }
