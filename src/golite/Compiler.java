@@ -35,29 +35,39 @@ public class Compiler {
 		public boolean prettyPrintTyped;
 		public boolean dumpToks;
 		public boolean displayAST;
-		public String fullPath;
-		public String basePath;
+		String path;
+	}
+
+	public static void processSource(String path) throws LexerException, IOException, ParserException {
+		Options opts = new Options();
+		opts.path = path;
+		processSource(opts);
 	}
 
 	public static void processSource(Options options) throws LexerException, IOException, ParserException {
-		Node ast;
-		PositionHelper positionHelper;
+		String pathBase;
+
+		if (options.path.endsWith(".go")) {
+			pathBase = options.path.substring(0, options.path.length() - 3);
+		} else {
+			pathBase = options.path;
+		}
 
 		/* Print HTML representation of tokens */
 		if (options.dumpToks) {
-			tokenPrintHtml(options.fullPath, options.basePath+".tokens.html");
+			tokenPrintHtml(options.path, pathBase+".tokens.html");
 		}
 
 		/* Build AST */
-		ast = getParsedAST(options.fullPath);
-		positionHelper = new PositionHelper(ast);
+		Node ast = getParsedAST(options.path);
+		PositionHelper positionHelper = new PositionHelper(ast);
 
 		// Do the weeding
 		GoLiteWeeder.weed(ast, positionHelper);
 
 		// Pretty print AST
 		if (options.prettyPrint) {
-			prettyPrint(ast, new PrettyPrinter(), options.basePath+".pretty.go");
+			prettyPrint(ast, new PrettyPrinter(), pathBase+".pretty.go");
 		}
 
 		// Display AST in a JTree
@@ -66,16 +76,16 @@ public class Compiler {
 			ast.apply(display);
 		}
 
-		HashMap<Node, Type> types = typeCheck(ast, options.basePath+".symtab", positionHelper,
+		HashMap<Node, Type> types = typeCheck(ast, pathBase+".symtab", positionHelper,
 				getSymbolTableLogger(options.dumpSymbolTable));
 
 		if (options.prettyPrintTyped) {
-			prettyPrint(ast, new TypedPrettyPrinter(types), options.basePath+".pptype.go");
+			prettyPrint(ast, new TypedPrettyPrinter(types), pathBase+".pptype.go");
 		}
 
 		// TODO: code generation
 	}
-	
+
 	public static Node getParsedAST(String filename) throws ParserException, LexerException, IOException {
 		Lexer lexer = new GoLexer(new PushbackReader(new FileReader(filename), 1024));
 		Parser parser = new Parser(lexer);
