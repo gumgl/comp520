@@ -47,7 +47,8 @@ public class Compiler {
 			ast.apply(display);
 		}
 
-		HashMap<Node, Type> types = typeCheck(ast, options.basePath, positionHelper, options.dumpSymbolTable);
+		HashMap<Node, Type> types = typeCheck(ast, options.basePath+".symtab", positionHelper,
+				getSymbolTableLogger(options.dumpSymbolTable));
 
 		if (options.prettyPrintTyped) {
 			prettyPrint(ast, new TypedPrettyPrinter(types), options.basePath+".pptype.go");
@@ -116,39 +117,44 @@ public class Compiler {
 		}
 	}
 
+	/** Type analysis */
 	public static HashMap<Node, Type> typeCheck(Node ast, String path, PositionHelper positionHelper,
-			CLIOptions.ScopeInfoDumpLevel infoDumpLevel) throws FileNotFoundException {
+			SymbolTableLogger logger) throws FileNotFoundException {
 
-		SymbolTableLogger logger = null;
-		boolean logVerbose = false;
+		TypeChecker checker = new TypeChecker(positionHelper, logger);
 		PrintWriter logFile = null;
 
-		switch (infoDumpLevel) {
-		case NOTHING:
-			break;
-
-		case ALL:
-			logVerbose = true;
-			// fallthrough
-
-		case LAST_FRAME:
-			logFile = new PrintWriter(new PrintWriter(path+".symtab"), true);
-			logger = new SymbolTableLogger(logFile, logVerbose);
-			break;
-
-		default:
-			throw new IllegalArgumentException("Bad scope logging value "+infoDumpLevel);	
+		if (logger != null) {
+			logFile = new PrintWriter(new PrintWriter(path), true);
+			logger.setOutputWriter(logFile);
 		}
 
-		TypeChecker typechecker = new TypeChecker(positionHelper, logger);
-
 		try {
-			ast.apply(typechecker);
+			ast.apply(checker);
 		} finally {
 			if (logFile != null) {
 				logFile.close();
 			}
 		}
-		return typechecker.types;
+
+		return checker.types;
+	}
+
+	public static SymbolTableLogger getSymbolTableLogger(
+			CLIOptions.ScopeInfoDumpLevel infoDumpLevel) {
+
+		switch (infoDumpLevel) {
+		case NOTHING:
+			return null;
+
+		case ALL:
+			return new SymbolTableLogger(true);
+
+		case LAST_FRAME:
+			return new SymbolTableLogger(false);
+
+		default:
+			throw new IllegalArgumentException("Bad scope logging value "+infoDumpLevel);	
+		}
 	}
 }
