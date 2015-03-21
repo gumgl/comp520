@@ -31,19 +31,13 @@ public class TestProgram {
 		this.path = path;
 		this.isValid = isValid;
 		this.executedStage = stage;
+		initializeException();
 	}
 
-	@Test
-	public void testProgram() throws LexerException, IOException, ParserException {
+	public void initializeException() {
 		if (!isValid) {
 			if (executedStage == null) {
-				System.err.println("Could not infer type of expected error for "+path);
-				try {
-					Compiler.processSource(path);
-				} catch (LexerException | ParserException | GoLiteWeedingException | GoLiteTypeException e) {
-					return;
-				}
-				fail("Expected a GoLite exception");
+				return;
 			}
 
 			switch (executedStage) {
@@ -61,11 +55,23 @@ public class TestProgram {
 				break;
 			case CODE_GEN:
 				// FIXME: Add real error
-				// Fall through to the null case for now
 				break;
 			default:
 				throw new IllegalArgumentException("Unknown stage "+executedStage);
 			}
+		}
+	}
+
+	@Test
+	public void testProgram() throws LexerException, IOException, ParserException {
+		if (executedStage == null && !isValid) {
+			System.err.println("Could not infer type of expected error for "+path);
+			try {
+				Compiler.processSource(path);
+			} catch (LexerException | ParserException | GoLiteWeedingException | GoLiteTypeException e) {
+				return;
+			}
+			fail("Expected a GoLite exception");
 		}
 
 		Compiler.processSource(path, executedStage);
