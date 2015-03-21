@@ -113,7 +113,22 @@ class TestRunner:
     def print_results(self):
         print('Succeeded: {}, Failed: {}, Raised error: {}'.format(*self.counts))
 
-    def update(self, status):
+    def succeed(self, filename, msg):
+        self._update(TESTS_GOOD)
+        logger.info('%s\n   Test passed: %s', filename, msg)
+
+    def fail(self, filename, expected, actual_result, err_msg=None, status=TESTS_FAILED):
+        fail_msg = [filename, '   Expected ' + expected + ' but ' + actual_result]
+
+        if err_msg:
+            err_msg = err_msg.strip()
+            if err_msg:
+                fail_msg.extend(('   > '+line) for line in err_msg.split('\n'))
+
+        logger.log(LOG_TEST_FAILURE if status == TESTS_FAILED else logging.ERROR, '\n'.join(fail_msg))
+        self._update(status)
+
+    def _update(self, status):
         self.counts[status] += 1
 
         if status > self.status:
@@ -170,11 +185,10 @@ class TestRunner:
     def evaluate_test(self, filename, expect_success, test_stage, returncode, err_msg):
         if returncode == 0:
             if expect_success:
-                self.update(TESTS_GOOD)
+                self.succeed(filename, 'no errors')
                 return
 
-            output_fail(filename, describe_for_stage('error', test_stage), 'the test passed all stages')
-            self.update(TESTS_FAILED)
+            self.fail(filename, describe_for_stage('error', test_stage), 'the test passed all stages')
             return
 
         # Return code 1 means a controlled compiler error
@@ -186,8 +200,8 @@ class TestRunner:
                     expected = 'to pass ' + describe_for_stage('stage', test_stage, 'all stages')
                 else:
                     expected = describe_for_stage('error', test_stage)
-                output_fail(filename, expected, 'got error and could not identify type', err_msg)
-                self.update(TESTS_FAILED)
+
+                self.fail(filename, expected, 'got error and could not identify type', err_msg)
                 self.status = PROGRAM_ERROR
                 return
 
@@ -205,35 +219,31 @@ class TestRunner:
                     '   The expected error type was not detected', filename)
 
                 if not expect_success:
-                    self.update(TESTS_GOOD)
+                    self.succeed(filename, error_description)
                     return
 
-                output_fail(filename, 'test to pass', 'got '+error_description, err_msg)
-                self.update(TESTS_FAILED)
+                self.fail(filename, 'test to pass', 'got '+error_description, err_msg)
                 return
 
             if expect_success:
                 if error_stage < test_stage:
-                    output_fail(filename, describe_for_stage('stage', test_stage, 'all stages') + ' to pass', 'got '+error_description, err_msg)
-                    self.update(TESTS_FAILED)
+                    self.fail(filename, describe_for_stage('stage', test_stage, 'all stages') + ' to pass', 'got '+error_description, err_msg)
                     return
 
-                self.update(TESTS_GOOD)
+                self.succeed(filename, error_description)
                 return
 
             if error_stage != test_stage:
-                output_fail(filename, describe_for_stage('error', test_stage), 'got '+error_description, err_msg)
-                self.update(TESTS_FAILED)
+                self.fail(filename, describe_for_stage('error', test_stage), 'got '+error_description, err_msg)
                 return
 
-            self.update(TESTS_GOOD)
+            self.succeed(filename, error_description)
             return
 
         # Any other return code means an internal error
         expected = describe_for_stage('to pass' if expect_success else 'error', test_stage)
-        output_fail(filename, expected, 'got internal error', err_msg)
+        self.fail(filename, expected, 'got internal error', err_msg, status=TEST_ERROR)
 
-        self.update(TEST_ERROR)
 
 def autodetect_stage(dirs):
     stage = None
@@ -271,16 +281,6 @@ def describe_for_stage(term, stage, fallback=None):
     if fallback:
         return fallback
     return term
-
-def output_fail(filename, expected, actual_result, err_msg=None):
-    fail_msg = [filename, '   Expected ' + expected + ' but ' + actual_result]
-
-    if err_msg:
-        err_msg = err_msg.strip()
-        if err_msg:
-            fail_msg.extend(('   > '+line) for line in err_msg.split('\n'))
-
-    logger.log(LOG_TEST_FAILURE, '\n'.join(fail_msg))
 
 def all_directories(path):
     while path:
