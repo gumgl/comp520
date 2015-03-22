@@ -449,7 +449,7 @@ def parse_stage(error):
     return None
 
 def describe_for_stage(term, stage, fallback=None):
-    if 0 < stage < len(STAGES):
+    if 0 <= stage < len(STAGES):
         return STAGES[stage] + ' ' + term
     if fallback:
         return fallback
