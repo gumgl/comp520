@@ -1,5 +1,6 @@
-# Ignore everything but git files and .go files that are not
-# .pretty.go files
+# Ignore everything but git files, .go files that are not
+# .pretty.go or .pptype.go files, and files named
+# test_configuration.txt
 *.*
 
 !.git*
@@ -7,3 +8,5 @@
 !*.go
 *.pretty.go
 *.pptype.go
+
+!test_configuration.txt
