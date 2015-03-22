@@ -1,0 +1,4 @@
+invalid_cast3.go parser
+invalid_cast8.go parser
+invalid_vardecl2.go parser
+var_decl_count_mismatch.go weeding
