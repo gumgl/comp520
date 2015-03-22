@@ -893,10 +893,12 @@ public class TypeChecker extends DepthFirstAdapter {
 			errorSymbolClass(node.getId(), slice, Variable.class);
 
 		Type sliceType = ((Variable)slice).getType();
+		Type underlyingSliceType = sliceType.getUnderlying();
 		Type expType = getType(node.getExp());
 
-		if (!(sliceType instanceof SliceType && expType.isIdentical(((SliceType)sliceType).getType())))
-			errorSymbolType(node.getId(), sliceType, new SliceType(expType));
+		if (!(underlyingSliceType instanceof SliceType
+				&& expType.isIdentical(((SliceType)underlyingSliceType).getType())))
+			errorSymbolType(node.getId(), underlyingSliceType, new SliceType(expType));
 
 		setType(node, sliceType);
 		defaultOut(node);
