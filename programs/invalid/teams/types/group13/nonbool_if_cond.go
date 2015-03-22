@@ -1,6 +1,6 @@
 package main
 
-func main() int {
+func main() {
 	if 5 + 5 {
 		print()
 	}

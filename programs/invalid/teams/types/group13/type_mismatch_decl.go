@@ -1,5 +1,5 @@
 package main
 
-func main() int {
+func main() {
 	var a int = 5.5;
 }

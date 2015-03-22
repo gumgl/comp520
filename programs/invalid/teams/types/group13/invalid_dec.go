@@ -1,6 +1,6 @@
 package main
 
-func main() int {
+func main() {
 	var a = true;
 	a--;
 }
