@@ -59,11 +59,11 @@ def initialize_config(args):
     elif ns.verbose >= 2:
         logger.setLevel(logging.DEBUG)
 
-    return ns.targets, ns.exclude, ns.interactive
+    return ns.targets, ns.exclude, ns.input, ns.interactive
 
 def get_cli_parser():
     parser = argparse.ArgumentParser(description='Run test programs and validate errors')
-    parser.add_argument('targets', nargs='+',
+    parser.add_argument('targets', nargs='*',
         help='''\
 Files or directories containing test programs. If target is
 a directory, each file with a .go extension in it and its subdirectories
@@ -73,6 +73,7 @@ The expected result (whether it compiles successfully and what
 error it gives) is determined automagically from the path.
 ''')
 
+    parser.add_argument('--input', help='The name of a file which contains the programs to run')
     parser.add_argument('-i', '--interactive', action='store_true', help='Run an interactive prompt for failing cases')
     parser.add_argument('--no-warn', action='store_false', dest='warn', help='Suppress warnings')
     parser.add_argument('-v', '--verbose', action='count', default=0, help='Increase output verbosity')
@@ -82,25 +83,40 @@ error it gives) is determined automagically from the path.
 
 # --- Test runner ---
 
-def main(targets, exclude, interactive=False):
-    if len(targets) == 0:
-        logger.debug('Got no arguments')
-        return PROGRAM_ERROR
+def main(targets, exclude, input_file=None, interactive=False):
+    if targets is None:
+        targets = []
+
+    if input_file:
+        logger.debug('Reading from %s', input_file)
+        try:
+            with open(input_file) as infile:
+                targets.extend(read_test_targets(infile))
+        except IOError as e:
+            logger.error('could not read input file', exc_info=e)
+
+    elif not targets:
+        logger.debug('Reading from stdin')
+        targets.extend(read_test_targets(sys.stdin))
 
     if interactive:
         runner = InteractiveTestRunner(exclude)
     else:
         runner = TestRunner(exclude)
 
-    for target in targets:
-        runner.test(target)
-
+    runner.testall(targets)
     runner.print_results()
 
     if runner.status == PROGRAM_ERROR:
         logger.warn('test runner encountered errors')
 
     return runner.status
+
+def read_test_targets(f):
+    for line in f:
+        line = line.strip()
+        if line:
+            yield line
 
 class TestRunner:
     def __init__(self, exclude=None, cmd=None):
@@ -116,6 +132,7 @@ class TestRunner:
 
         self.config = {}
 
+        self.unprocessed = []
         self.queue = []
 
     def print_results(self):
@@ -141,6 +158,12 @@ class TestRunner:
 
         if status > self.status:
             self.status = status
+
+    def testall(self, targets):
+        self.unprocessed.extend(targets)
+
+        while self.unprocessed:
+            self.test(self.unprocessed.pop(0))
 
     def test(self, target):
         if os.path.isdir(target):
@@ -324,6 +347,22 @@ class InteractiveCmd (cmd.Cmd):
         words[0] = avail[0]
         return ' '.join(words)
 
+    def do_tag(self, arg):
+        """Add this test to a file tracking test cases with a particular tag
+        """
+        tags = arg.split()
+
+        for tag in tags:
+            if not tag:
+                continue
+
+            if len(tag) == 0 or not tag.isidentifier():
+                print('bad tag:', tag)
+                continue
+
+            with open('test_tag_'+tag+'.txt', 'a') as f:
+                f.write('{}\n'.format(os.path.normpath(self.filename)))
+
     def do_notes(self, arg):
         """Write a note about this test to test_notes.txt
         """
@@ -366,6 +405,7 @@ class InteractiveCmd (cmd.Cmd):
         """
         logger.info('Exiting early. %s test cases remaining.', len(self.runner.queue))
         del self.runner.queue[:]
+        del self.runner.unprocessed[:]
         return True
 
     def do_set_expected(self, arg):
@@ -479,8 +519,8 @@ def all_directories(path):
 
 if __name__ == '__main__':
     try:
-        targets, exclude, interactive = initialize_config(sys.argv[1:])
-        sys.exit(main(targets, exclude, interactive))
+        targets, exclude, input_file, interactive = initialize_config(sys.argv[1:])
+        sys.exit(main(targets, exclude, input_file, interactive))
     except KeyboardInterrupt as e:
         logger.debug('Execution interrupted', exc_info=e)
         sys.exit(USER_INTERRUPT)
