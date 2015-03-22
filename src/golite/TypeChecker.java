@@ -139,9 +139,22 @@ public class TypeChecker extends DepthFirstAdapter {
 
 	private boolean isComparableType(Type type) {
 		Type underlying = type.getUnderlying();
-		return underlying instanceof BuiltInType
-				|| underlying instanceof ArrayType
-				|| underlying instanceof StructType;
+
+		if (underlying instanceof BuiltInType)
+			return true;
+
+		if (underlying instanceof ArrayType)
+			return isComparableType(((ArrayType)underlying).getType());
+
+		if (underlying instanceof StructType) {
+			for (Variable v : ((StructType)underlying).getFields()) {
+				if (!isComparableType(v.getType()))
+					return false;
+			}
+			return true;
+		}
+
+		return false;
 	}
 
 	private boolean isBooleanType(Type type) {
