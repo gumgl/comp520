@@ -418,8 +418,8 @@ Productions
 			{-> New exp.lit_raw(lit_raw)}
 		| {lit_rune} lit_rune
 			{-> New exp.lit_rune(lit_rune)}
-		| {function_call} id paren_l exp_list_star paren_r
-			{-> New exp.function_call(id, [exp_list_star.exp])}
+		| {function_call} primary_exp paren_l exp_list_star paren_r
+			{-> New exp.function_call(primary_exp.exp, [exp_list_star.exp])}
 		| {base_type_cast} base_type paren_l exp paren_r
 			{-> New exp.base_type_cast(base_type.type_exp, exp)}
 		| {append} append paren_l id comma exp paren_r
@@ -552,7 +552,7 @@ Abstract Syntax Tree
 		| {lit_interpreted} lit_interpreted
 		| {lit_raw} lit_raw
 		| {lit_rune} lit_rune
-		| {function_call} id exp*
+		| {function_call} [functor]:exp exp*
 		| {base_type_cast} type_exp exp
 		| {append} id exp
 		| {binary} [left]:exp binary_op [right]:exp
