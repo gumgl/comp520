@@ -7,6 +7,7 @@ import golite.node.*;
 
 public class GoLiteWeeder extends DepthFirstAdapter {
 	protected int loopNestingLevel = 0;
+	protected int switchNestingLevel = 0;
 	protected PositionHelper positionHelper;
 
 	public static void weed(Node node, PositionHelper positionHelper) {
@@ -47,8 +48,8 @@ public class GoLiteWeeder extends DepthFirstAdapter {
 
 	@Override
 	public void inABreakStm(ABreakStm node) {
-		if (loopNestingLevel == 0) {
-			throwError(node, "Break statement occurs outside loop");
+		if (loopNestingLevel == 0 && switchNestingLevel == 0) {
+			throwError(node, "Break statement occurs outside loop or switch");
 		}
 	}
 
@@ -92,6 +93,13 @@ public class GoLiteWeeder extends DepthFirstAdapter {
 				defaultEncountered = true;
 			}
 		}
+
+		switchNestingLevel++;
+	}
+
+	@Override
+	public void outASwitchStm(ASwitchStm node) {
+		switchNestingLevel--;
 	}
 
 	/* Short variable declarations */
