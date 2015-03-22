@@ -269,7 +269,7 @@ class TestRunner:
                 return
 
             if expect_success:
-                if error_stage < test_stage:
+                if error_stage <= test_stage:
                     self.fail(filename, describe_for_stage('stage', test_stage, 'all stages') + ' to pass', 'got '+error_description, err_msg)
                     return
 
