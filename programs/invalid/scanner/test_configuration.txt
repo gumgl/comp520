@@ -1,0 +1,6 @@
+float_wrong_decimal.go parser
+float_wrong_integral.go parser
+hex_wrong_character.go parser
+interpreted_unescaped.go parser
+int_leading_0.go parser
+raw_unescaped.go parser
