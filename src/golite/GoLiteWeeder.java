@@ -57,10 +57,60 @@ public class GoLiteWeeder extends DepthFirstAdapter {
 	@Override
 	public void inAFunctionDeclaration(AFunctionDeclaration node) {
 		if (node.getReturnType() != null) {
-			List<PStm> body = node.getStm();
-			if (body.size() == 0 || !(body.get(body.size()-1) instanceof AReturnStm))
-				throwError(node, "Function with return type does not end with return statement");
+			ensureStatementBlockReturns(node, node.getStm());
 		}
+	}
+
+	protected void ensureStatementBlockReturns(Node parent, List<PStm> statements) {
+		PStm lastStm = null;
+		
+		if (statements != null && statements.size() > 0)
+			lastStm = statements.get(statements.size()-1);
+		
+		if (lastStm instanceof AReturnStm)
+			return;
+		
+		if (lastStm instanceof AIfStm) {
+			ensureBranchesReturn((AIfStm)lastStm);
+		} else if (lastStm instanceof ASwitchStm) {
+			ensureBranchesReturn((ASwitchStm)lastStm);
+		} else {
+			throwError(lastStm == null ? parent : lastStm,
+					"Function with return type does not end with return statement");
+		}
+	}
+	
+	protected void ensureBranchesReturn(AIfStm node) {
+		ensureStatementBlockReturns(node, node.getIfBlock());
+		ensureStatementBlockReturns(node, node.getElseBlock());
+	}
+	
+	protected void ensureBranchesReturn(ASwitchStm node) {
+		List<PSwitchClause> clauses = node.getSwitchClause();
+		boolean defaultFound = false;
+		
+		for (PSwitchClause clause : clauses) {
+			if (clause instanceof AConditionalSwitchClause) {
+				AConditionalSwitchClause condClause =
+						(AConditionalSwitchClause)clause;
+				
+				if (condClause.getFallthroughStm() == null)
+					ensureStatementBlockReturns(condClause, condClause.getStm());
+			}
+
+			else if (clause instanceof ADefaultSwitchClause) {
+				defaultFound = true;
+				
+				ADefaultSwitchClause defClause =
+						(ADefaultSwitchClause)clause;
+				
+				if (defClause.getFallthroughStm() == null)
+					ensureStatementBlockReturns(defClause, defClause.getStm());
+			}
+		}
+		
+		if (!defaultFound)
+			throwError(node, "Switch statement does not return on all branches");
 	}
 
 	/* Switch statements */
