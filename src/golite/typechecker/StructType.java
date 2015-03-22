@@ -1,6 +1,7 @@
 package golite.typechecker;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class StructType extends Type {
 
@@ -14,7 +15,11 @@ public class StructType extends Type {
 	public void addField(Variable field) {
 		fields.add(field);
 	}
-	
+
+	public List<Variable> getFields() {
+		return fields;
+	}
+
 	public Variable getField(String id) {
 		for (Variable field : fields)
 			if (field.getId().equals(id))
