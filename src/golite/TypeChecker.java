@@ -760,16 +760,16 @@ public class TypeChecker extends DepthFirstAdapter {
 			errorSymbolType(node.getIndex(), getType(node.getIndex()), intType);
 		}
 
-		Type typeOfArray, typeArrayContains;
-		typeOfArray = getType(node.getArray());
+		Type underlyingTypeOfArray, typeArrayContains;
+		underlyingTypeOfArray = getType(node.getArray()).getUnderlying();
 		typeArrayContains = null;
 
-		if (typeOfArray instanceof ArrayType) {
-			typeArrayContains = ((ArrayType)typeOfArray).getType();
-		} else if (typeOfArray instanceof SliceType) {
-			typeArrayContains = ((SliceType)typeOfArray).getType();
+		if (underlyingTypeOfArray instanceof ArrayType) {
+			typeArrayContains = ((ArrayType)underlyingTypeOfArray).getType();
+		} else if (underlyingTypeOfArray instanceof SliceType) {
+			typeArrayContains = ((SliceType)underlyingTypeOfArray).getType();
 		} else {
-			errorSymbolType(node.getArray(), typeOfArray, "an array or slice");
+			errorSymbolType(node.getArray(), underlyingTypeOfArray, "an array or slice");
 		}
 
 		setType(node, typeArrayContains);
