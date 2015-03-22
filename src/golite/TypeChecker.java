@@ -552,18 +552,25 @@ public class TypeChecker extends DepthFirstAdapter {
 	}
 	public void outAReturnStm(AReturnStm node)
 	{
+		Node returnedTypeExp = node.getExp();
 		Type returnedType;
 
 		// check exp has same type as enclosing function returnType
 
-		if (node.getExp()!=null){
+		if (returnedTypeExp != null){
 			returnedType = getType(node.getExp());
 		} else {
 			returnedType = voidType;
 		}
 
 		if (!returnedType.isIdentical(functionReturnType)) {
-			errorSymbolType(node.getExp(), returnedType, functionReturnType);
+			if (returnedTypeExp == null) {
+				error(node, "Expected a value of type "
+						+ functionReturnType.getRepresentation()
+						+ " to be returned");
+			} else {
+				errorSymbolType(returnedTypeExp, returnedType, functionReturnType);
+			}
 		}
 
 		defaultOut(node);
