@@ -45,7 +45,8 @@ public class GoLexer extends Lexer {
 	 *  so are omitted.)
 	 */
 	protected boolean requiresSemicolon() {
-		if (!(token instanceof TEol)) return false;
+		if (!(token instanceof TEol || token instanceof EOF))
+			return false;
 
 		return (lastSignificantToken instanceof TId
 			// literals
