@@ -226,8 +226,6 @@ Productions
 			{-> New type_exp.slice(type_exp)}
 		| {array} square_l lit_int square_r type_exp
 			{-> New type_exp.array(lit_int, type_exp)}
-		| {recurse} paren_l type_exp paren_r
-			{-> type_exp}
 	;
 
 	base_type {-> type_exp} =
