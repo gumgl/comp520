@@ -1,0 +1,2 @@
+invalid2.go type
+invalid3.go weeding

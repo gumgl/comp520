@@ -1,6 +1,7 @@
 /* Package declaration, golite 2.2 */
 package parser_invalid2
 
+/* These cases are handled as type errors */
 
 func main(){
 
