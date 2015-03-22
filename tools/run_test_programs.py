@@ -324,6 +324,23 @@ class InteractiveCmd (cmd.Cmd):
         words[0] = avail[0]
         return ' '.join(words)
 
+    def do_notes(self, arg):
+        """Write a note about this test to test_notes.txt
+        """
+        fn = os.path.normpath(self.filename)
+        with open('test_notes.txt', 'a') as notes:
+            notes.write('{}: {}\n'.format(fn, arg))
+
+    def do_get_notes(self, arg):
+        """Get stored notes about this test, if any
+        """
+        leader = os.path.normpath(self.filename)+':'
+        if os.path.exists('test_notes.txt'):
+            with open('test_notes.txt') as notes:
+                for line in notes:
+                    if line.startswith(leader):
+                        print(line[len(leader):].strip())
+
     def do_continue(self, arg):
         """Run next test
         """
