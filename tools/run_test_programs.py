@@ -119,7 +119,7 @@ class TestRunner:
         self.queue = []
 
     def print_results(self):
-        print('Succeeded: {}, Failed: {}, Raised error: {}'.format(*self.counts))
+        print('Runs: {}. Failed: {}. Raised error: {}.'.format(sum(self.counts), *self.counts[1:]))
 
     def succeed(self, filename, msg):
         self._update(TESTS_GOOD)
