@@ -926,9 +926,9 @@ public class PrettyPrinter extends DepthFirstAdapter {
 	public void caseAFunctionCallExp(AFunctionCallExp node)
 	{
 		inAFunctionCallExp(node);
-		if(node.getId() != null)
+		if(node.getFunctor() != null)
 		{
-			p(node.getId().getText());
+			node.getFunctor().apply(this);
 		}
 		p("(");
 		printList(node.getExp());

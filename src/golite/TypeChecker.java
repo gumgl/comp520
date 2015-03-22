@@ -84,7 +84,11 @@ public class TypeChecker extends DepthFirstAdapter {
 	}
 	private void errorVoidFunctionAsValue(Node node) {
 		if (node instanceof AFunctionCallExp) {
-			Symbol funcSymbol = symbolTable.get(((AFunctionCallExp)node).getId().getText());
+			PExp functorExp = ((AFunctionCallExp)node).getFunctor();
+			Symbol funcSymbol = null;
+			if (functorExp instanceof AVariableExp) {
+				funcSymbol = symbolTable.get(((AVariableExp)functorExp).getId().getText());
+			}
 			if (funcSymbol instanceof Function) {
 				Function func = (Function) funcSymbol;
 				String funcRep = func.getId() + (func.getArguments().size()>0 ? "(...)" : "()");
@@ -825,23 +829,53 @@ public class TypeChecker extends DepthFirstAdapter {
 		setType(node, runeType);
 		defaultOut(node);
 	}
+
+	/* Override the function case to prevent it from checking the
+	 * functor; since the functor is a variable expression, the
+	 * normal check tests whether it references a regular
+	 * variable, but here of course it should be either a
+	 * function or a type alias */
+	public void caseAFunctionCallExp(AFunctionCallExp node) {
+		inAFunctionCallExp(node);
+		for (PExp argument : node.getExp()) {
+			argument.apply(this);
+		}
+		outAFunctionCallExp(node);
+	}
 	public void outAFunctionCallExp(AFunctionCallExp node)
 	{
-		String identifier = node.getId().getText();
+		PExp functorExp = node.getFunctor();
+
+		if (!(functorExp instanceof AVariableExp)) {
+			error(functorExp, "Function is not a variable");
+		}
+
+		TId functorId = ((AVariableExp)functorExp).getId();
+		String identifier = functorId.getText();
 		Symbol functorSymbol = symbolTable.get(identifier);
 
 		if (functorSymbol == null)
-			errorSymbolNotFound(node.getId(), identifier);
+			errorSymbolNotFound(functorId, identifier);
 
 		List<PExp> exps = node.getExp();
 
 		if (functorSymbol instanceof Type) {
+			// First case: this is a type cast to an alias type
+			// Invariants: there should be one argument, the node type should
+			// be the type cast to.
+			// The processTypeCast helper does the other work
+
 			if (exps.size() != 1)
 				error(node, "Expected an expression to typecast but saw a list of expressions");
 
 			processTypeCast(node, (Type)functorSymbol, exps.get(0));
 			setType(node, (Type)functorSymbol);
 		} else if (functorSymbol instanceof Function) {
+			// Second case: this is a function call
+			// Invariants: the number of arguments should match the function
+			// definition, the type of each argument should match the
+			// definition, the node type should be the return type (possibly void)
+
 			Function func = (Function)functorSymbol;
 
 			if (exps.size() != func.getArguments().size())
