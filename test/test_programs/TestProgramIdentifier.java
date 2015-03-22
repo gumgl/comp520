@@ -1,15 +1,24 @@
 package test_programs;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Hashtable;
 
 import golite.Compiler;
 
 public class TestProgramIdentifier extends SimpleFileVisitor<Path> {
 	protected Collection<Object[]> identifiedParams = new ArrayList<Object[]>();
+
+	protected Hashtable<String,Compiler.CompilationStage> stageConfig =
+			new Hashtable<String,Compiler.CompilationStage>();
+
+	protected Path configFilename = FileSystems.getDefault().getPath("test_configuration.txt");
 
 	protected int lastCheckedDirectory = -1;
 	protected int directoryLevel = 0;
@@ -17,7 +26,7 @@ public class TestProgramIdentifier extends SimpleFileVisitor<Path> {
 	protected boolean isValid = true;
 	protected int validityDeterminingLevel = -1;
 
-	protected Compiler.CompilationStage executedStage = null;
+	protected Compiler.CompilationStage directoryStage = null;
 	protected int stageDeterminingLevel = -1;
 
 	public static Collection<Object[]> findPrograms(String pathRoot) throws IOException {
@@ -35,8 +44,14 @@ public class TestProgramIdentifier extends SimpleFileVisitor<Path> {
 		if (lastCheckedDirectory != directoryLevel)
 			checkDirectories(file.getParent());
 
+		Compiler.CompilationStage pathStage = stageConfig.get(file.normalize().toString());
+
+		if (pathStage == null)
+			pathStage = directoryStage;
+
 		identifiedParams.add(new Object[] {
-				file.toString(), isValid, executedStage});
+				file.toString(), isValid, pathStage});
+
 		return FileVisitResult.CONTINUE;
 	}
 
@@ -45,7 +60,59 @@ public class TestProgramIdentifier extends SimpleFileVisitor<Path> {
 			throws IOException {
 
 		directoryLevel++;
+
+		File localConfig = dir.resolve(configFilename).toFile();
+
+		if (localConfig.exists()) {
+			loadConfiguration(dir, localConfig);
+		}
+
 		return FileVisitResult.CONTINUE;
+	}
+
+	public void loadConfiguration(Path dir, File configFile) {
+		BufferedReader reader = null;
+		try {
+			reader = new BufferedReader(new FileReader(configFile));
+			for (String line=reader.readLine(); line != null; line=reader.readLine()) {
+				if (line.length() == 0)
+					continue;
+
+				String[] components = line.split("\\s+");
+				if (components.length != 2) {
+					System.err.printf("Could not interpret config line: %s\n", line);
+					continue;
+				}
+
+				Compiler.CompilationStage configStage = getCompilationStage(components[1]);
+				if (configStage == null) {
+					System.err.printf("Unrecognized execution stage %s\n", components[1]);
+					continue;
+				}
+
+				String configTarget =
+						dir.resolve(dir.getFileSystem().getPath(components[0]))
+							.normalize()
+							.toString();
+
+				if (stageConfig.contains(configTarget)) {
+					System.err.printf("Ignoring duplicate configuration for %s\n", configTarget);
+					continue;
+				}
+
+				stageConfig.put(configTarget, configStage);
+			}
+		} catch (Exception e) {
+			System.err.printf("Failed to read configuration at %s:\n", configFile.getPath());
+			e.printStackTrace();
+		} finally {
+			if (reader != null)
+				try {
+					reader.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+		}
 	}
 
 	@Override
@@ -62,7 +129,7 @@ public class TestProgramIdentifier extends SimpleFileVisitor<Path> {
 
 		if (directoryLevel == stageDeterminingLevel) {
 			stageDeterminingLevel = -1;
-			executedStage = null;
+			directoryStage = null;
 		}
 
 		directoryLevel--;
@@ -83,44 +150,47 @@ public class TestProgramIdentifier extends SimpleFileVisitor<Path> {
 			dir = dir.getParent();
 		}
 		for (int i=levelsToCheck-1; i >= 0; i--) {
-			checkPathSegment(directoryLevel-i, uncheckedDirs.get(i));
+			checkFinalPathSegment(directoryLevel-i, uncheckedDirs.get(i));
 		}
 	}
 
-	protected void checkPathSegment(int level, Path dir) {
-		switch (dir.getFileName().toString()) {
-		case "valid":
+	protected void checkFinalPathSegment(int level, Path dir) {
+		String segment = dir.getFileName().toString();
+
+		if (segment.equals("valid")) {
 			setValidity(level, dir, true);
-			break;
-
-		case "invalid":
+		} else if (segment.equals("invalid")) {
 			setValidity(level, dir, false);
-			break;
+		} else {
+			Compiler.CompilationStage stage = getCompilationStage(segment);
+			if (stage != null)
+				setStage(level, dir, stage);
+		}
+	}
 
+	public Compiler.CompilationStage getCompilationStage(String stage) {
+		switch (stage) {
 		case "lexer":
 		case "scanner":
-			setStage(level, dir, Compiler.CompilationStage.LEXING);
-			break;
+			return Compiler.CompilationStage.LEXING;
 
 		case "parser":
 		case "syntax":
-			setStage(level, dir, Compiler.CompilationStage.PARSING);
-			break;
+			return Compiler.CompilationStage.PARSING;
 
 		case "weeding":
-			setStage(level, dir, Compiler.CompilationStage.WEEDING);
-			break;
+			return Compiler.CompilationStage.WEEDING;
 
 		case "type":
 		case "types":
-			setStage(level, dir, Compiler.CompilationStage.TYPE_CHECKING);
-			break;
+			return Compiler.CompilationStage.TYPE_CHECKING;
 
 		case "code_gen":
 		case "semantic":
-			setStage(level, dir, Compiler.CompilationStage.CODE_GEN);
-			break;
+			return Compiler.CompilationStage.CODE_GEN;
 		}
+
+		return null;
 	}
 
 	protected void setValidity(int level, Path dir, boolean validity) {
@@ -137,7 +207,7 @@ public class TestProgramIdentifier extends SimpleFileVisitor<Path> {
 			System.err.printf("Ignoring duplicate stage indicator at %s\n", dir.toString());
 		} else {
 			stageDeterminingLevel = level;
-			executedStage = stage;
+			directoryStage = stage;
 		}
 	}
 }

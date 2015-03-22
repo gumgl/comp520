@@ -2,7 +2,7 @@
 
 import sys, os, logging, argparse, cmd, posixpath
 from subprocess import Popen, PIPE, check_call
-
+from collections import OrderedDict
 
 # --- Logging configuration ---
 logger = logging.getLogger(__file__)
@@ -114,6 +114,8 @@ class TestRunner:
         # Succeed, fail, error
         self.counts = [0, 0, 0]
 
+        self.config = {}
+
         self.queue = []
 
     def print_results(self):
@@ -145,6 +147,7 @@ class TestRunner:
             self.enqueue_dir(target)
 
         elif os.path.isfile(target):
+            self.load_dir_config(os.path.dirname(target))
             self.queue.append(target)
 
         else:
@@ -165,6 +168,8 @@ class TestRunner:
                 del subdirs[:]
                 continue
 
+            self.load_dir_config(directory)
+
             for f in files:
                 if not f.endswith('.go'):
                     continue
@@ -176,11 +181,37 @@ class TestRunner:
 
                 self.queue.append(full_path)
 
+    def load_dir_config(self, directory, accept_dups=False):
+        config_path = os.path.join(directory, 'test_configuration.txt')
+
+        if not os.path.exists(config_path):
+            return
+
+        try:
+            with open(config_path) as f:
+                mapping = ConfigFile.load(f).get_map()
+
+        except IOError as e:
+            logger.error('Failed to read configuration at %s', config_path, exc_info=e)
+            return
+
+        for (key, stage) in mapping.items():
+            key = os.path.normpath(os.path.join(directory, key))
+            if key in self.config and self.config[key] != stage and not accept_dups:
+                logger.error('test runner already has configuration for %s', key)
+                continue
+            self.config[key] = stage
+
     def testfile(self, target):
+        target = os.path.normpath(target)
         dirs = list(all_directories(os.path.dirname(target)))
 
         expect_success = 'invalid' not in dirs
-        test_stage = autodetect_stage(dirs)
+
+        if target in self.config:
+            test_stage = self.config[target]
+        else:
+            test_stage = autodetect_stage(dirs)
 
         # TODO: these shouldn't need to run sequentially
         args = [self.cmd, target]
@@ -321,13 +352,71 @@ class InteractiveCmd (cmd.Cmd):
         return True
 
     def do_set_expected(self, arg):
-        """Set a different expected outcome for the test case
+        """Change the expected outcome of a test case
 
         For example:
-           -> set_expected valid parser
+           -> set_expected parser
            -> s weeding
+
+        Note that setting the validity of a file is not supported
         """
-        print('Not implemented yet!')
+
+        stage = autodetect_stage([arg])
+        if stage == UNDETECTED_STAGE:
+            print('unknown stage:', arg)
+            return
+
+        dirname, basename = os.path.split(self.filename)
+
+        config_path = os.path.join(dirname, 'test_configuration.txt')
+
+        if os.path.exists(config_path):
+            with open(config_path, 'r') as f:
+                config = ConfigFile.load(f)
+        else:
+            config = ConfigFile()
+
+        config.get_map()[basename] = stage
+
+        with open(config_path, 'w') as f:
+            config.write(f)
+
+        logger.debug('Added configuration: %s %s', basename, STAGES[stage])
+
+        self.runner.load_dir_config(dirname, accept_dups=True)
+
+class ConfigFile:
+    def __init__(self):
+        self._mapping = OrderedDict()
+
+    @staticmethod
+    def load(file_obj):
+        config = ConfigFile()
+
+        for line in file_obj:
+            if not line:
+                continue
+
+            components = line.split()
+            if len(components) != 2:
+                logger.error('Could not interpret config line: %s', line)
+                continue
+
+            stage = autodetect_stage([components[1]])
+            if stage == UNDETECTED_STAGE:
+                logger.error('Unkown configuration stage: %s', components[1])
+                continue
+
+            config._mapping[components[0]] = stage
+
+        return config
+
+    def get_map(self):
+        return self._mapping
+
+    def write(self, file_obj):
+        for (key, stage) in self._mapping.items():
+            file_obj.write('{} {}\n'.format(key, STAGES[stage]))
 
 def autodetect_stage(dirs):
     stage = None
