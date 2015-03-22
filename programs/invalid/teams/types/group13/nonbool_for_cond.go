@@ -1,6 +1,6 @@
 package main
 
-func main() int {
+func main() {
 	for a := 1; a; a++ {
 		print()
 	}

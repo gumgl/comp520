@@ -1,6 +1,6 @@
 package main
 
-var x, y int = 1
+var x, y int = 1, 2
 func switch_stmts() {
 	switch z:=0; (x+z){
 	case y < 0: "str1"

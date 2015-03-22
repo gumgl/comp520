@@ -1,12 +1,12 @@
 package main
 
-struct person {
+type person struct {
 	name string
 	age int
 }
 
 func main() {
 	// This doesn't type check because the struct person doesn't have a lastname field
-	bob := person{"Bob", 36}
+	var bob person
 	println(bob.lastname)
 }

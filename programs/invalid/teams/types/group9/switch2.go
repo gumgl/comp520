@@ -1,5 +1,4 @@
 package main
-package main
 
 var y int = 1
 func switch_stmts() {

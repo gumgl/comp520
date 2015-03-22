@@ -1,7 +1,7 @@
 package main
 
 func add(a int, b int) float64 {
-	return (float64)(a + b);
+	return float64(a + b);
 }
 
 func main() {	
