@@ -19,7 +19,7 @@ public class Main {
 		}
 
 		try {
-			Compiler.processSource(options);
+			new Compiler(options).processSource();
 		} catch (golite.lexer.LexerException e) {
 			handleSourceCodeError("Lexer", e);
 		} catch (golite.parser.ParserException e) {
