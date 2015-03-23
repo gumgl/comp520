@@ -67,14 +67,14 @@ public class TestProgram {
 		if (executedStage == null && !isValid) {
 			System.err.println("Could not infer type of expected error for "+path);
 			try {
-				Compiler.processSource(path);
+				new Compiler(path).processSource();
 			} catch (LexerException | ParserException | GoLiteWeedingException | GoLiteTypeException e) {
 				return;
 			}
 			fail("Expected a GoLite exception");
 		}
 
-		Compiler.processSource(path, executedStage);
+		new Compiler(path, executedStage).processSource();
 	}
 
 	/**

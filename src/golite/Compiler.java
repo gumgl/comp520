@@ -49,41 +49,51 @@ public class Compiler {
 		public boolean displayAST;
 
 		String path;
+
+		public Options() {
+			// Use default initialization
+		}
+
+		public Options(String path) {
+			this.path = path;
+		}
+
+		public Options(String path, CompilationStage stage) {
+			this.path = path;
+			this.executeStage = stage;
+		}
 	}
 
-	public static void processSource(String path)
-			throws LexerException, IOException, ParserException {
+	private Options options;
+	private String pathBase;
 
-		processSource(path, null);
-	}
-
-	public static void processSource(String path, CompilationStage stage)
-			throws LexerException, IOException, ParserException {
-
-		Options opts = new Options();
-		opts.path = path;
-		opts.executeStage = stage;
-		processSource(opts);
-	}
-
-	public static void processSource(Options options)
-			throws LexerException, IOException, ParserException {
-
-		String pathBase;
+	public Compiler(Options options) {
+		this.options = options;
 
 		if (options.path.endsWith(".go")) {
 			pathBase = options.path.substring(0, options.path.length() - 3);
 		} else {
 			pathBase = options.path;
 		}
+	}
+
+	public Compiler(String path) {
+		this(new Options(path));
+	}
+
+	public Compiler(String path, CompilationStage stage) {
+		this(new Options(path, stage));
+	}
+
+	public void processSource() throws LexerException, IOException, ParserException {
 
 		/* Print HTML representation of tokens */
 		if (options.dumpToks) {
-			tokenPrintHtml(options.path, pathBase+".tokens.html");
+			tokenPrintHtml(pathBase+".tokens.html");
 		}
 
 		/* Build AST */
-		Node ast = getParsedAST(options.path);
+		Node ast = getParsedAST();
 
 		// End of stages: Lexing and parsing
 		// For now, we'll also parse the file, even if the options say to
@@ -114,7 +124,7 @@ public class Compiler {
 		}
 
 		HashMap<Node, Type> types = typeCheck(ast, pathBase+".symtab", positionHelper,
-				getSymbolTableLogger(options.symbolTableLogLevel));
+				getSymbolTableLogger());
 
 		if (options.prettyPrintTyped) {
 			prettyPrint(ast, new TypedPrettyPrinter(types), pathBase+".pptype.go");
@@ -127,8 +137,8 @@ public class Compiler {
 		// TODO: code generation
 	}
 
-	public static Node getParsedAST(String filename) throws ParserException, LexerException, IOException {
-		Lexer lexer = new GoLexer(new PushbackReader(new FileReader(filename), 1024));
+	public Node getParsedAST() throws ParserException, LexerException, IOException {
+		Lexer lexer = new GoLexer(new PushbackReader(new FileReader(options.path), 1024));
 		Parser parser = new Parser(lexer);
 		Node ast = parser.parse();
 
@@ -136,9 +146,9 @@ public class Compiler {
 	}
 
 	/** Generate an HTML token representation */
-	public static void tokenPrintHtml(String inputPath, String path) throws LexerException, IOException {
+	public void tokenPrintHtml(String path) throws LexerException, IOException {
 
-		Lexer lexer = new ConservingGoLexer(new PushbackReader(new FileReader(inputPath), 1024));
+		Lexer lexer = new ConservingGoLexer(new PushbackReader(new FileReader(options.path), 1024));
 		PrintWriter htmlFile = new PrintWriter(new PrintWriter(path), true);
 
 		try {
@@ -177,7 +187,7 @@ public class Compiler {
 	 * @param printer The pretty printer to use
 	 * @param path The path of the file to print to
 	 */
-	public static void prettyPrint(Node ast, PrettyPrinter printer, String path) throws FileNotFoundException {
+	public void prettyPrint(Node ast, PrettyPrinter printer, String path) throws FileNotFoundException {
 		PrintWriter prettyFile = new PrintWriter(new PrintWriter(path), true);
 		try {
 			printer.setOutputWriter(prettyFile);
@@ -188,7 +198,7 @@ public class Compiler {
 	}
 
 	/** Type analysis */
-	public static HashMap<Node, Type> typeCheck(Node ast, String path, PositionHelper positionHelper,
+	public HashMap<Node, Type> typeCheck(Node ast, String path, PositionHelper positionHelper,
 			SymbolTableLogger logger) throws FileNotFoundException {
 
 		TypeChecker checker = new TypeChecker(positionHelper, logger);
@@ -210,10 +220,9 @@ public class Compiler {
 		return checker.types;
 	}
 
-	public static SymbolTableLogger getSymbolTableLogger(
-			Options.SymbolTableLogLevel level) {
+	public SymbolTableLogger getSymbolTableLogger() {
 
-		switch (level) {
+		switch (options.symbolTableLogLevel) {
 		case NOTHING:
 			return null;
 
@@ -224,7 +233,9 @@ public class Compiler {
 			return new SymbolTableLogger(false);
 
 		default:
-			throw new IllegalArgumentException("Bad symbol table logging level "+level);
+			throw new IllegalArgumentException(
+					"Bad symbol table logging level "
+					+ options.symbolTableLogLevel);
 		}
 	}
 }
