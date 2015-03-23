@@ -10,13 +10,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Hashtable;
 
-import golite.Compiler;
-
 public class TestProgramIdentifier extends SimpleFileVisitor<Path> {
 	protected Collection<Object[]> identifiedParams = new ArrayList<Object[]>();
 
-	protected Hashtable<String,Compiler.CompilationStage> stageConfig =
-			new Hashtable<String,Compiler.CompilationStage>();
+	protected Hashtable<String,CompilationStage> stageConfig =
+			new Hashtable<String,CompilationStage>();
 
 	protected Path configFilename = FileSystems.getDefault().getPath("test_configuration.txt");
 
@@ -26,7 +24,7 @@ public class TestProgramIdentifier extends SimpleFileVisitor<Path> {
 	protected boolean isValid = true;
 	protected int validityDeterminingLevel = -1;
 
-	protected Compiler.CompilationStage directoryStage = null;
+	protected CompilationStage directoryStage = null;
 	protected int stageDeterminingLevel = -1;
 
 	public static Collection<Object[]> findPrograms(String pathRoot) throws IOException {
@@ -44,7 +42,7 @@ public class TestProgramIdentifier extends SimpleFileVisitor<Path> {
 		if (lastCheckedDirectory != directoryLevel)
 			checkDirectories(file.getParent());
 
-		Compiler.CompilationStage pathStage = stageConfig.get(file.normalize().toString());
+		CompilationStage pathStage = stageConfig.get(file.normalize().toString());
 
 		if (pathStage == null)
 			pathStage = directoryStage;
@@ -84,7 +82,7 @@ public class TestProgramIdentifier extends SimpleFileVisitor<Path> {
 					continue;
 				}
 
-				Compiler.CompilationStage configStage = getCompilationStage(components[1]);
+				CompilationStage configStage = getCompilationStage(components[1]);
 				if (configStage == null) {
 					System.err.printf("Unrecognized execution stage %s\n", components[1]);
 					continue;
@@ -162,32 +160,32 @@ public class TestProgramIdentifier extends SimpleFileVisitor<Path> {
 		} else if (segment.equals("invalid")) {
 			setValidity(level, dir, false);
 		} else {
-			Compiler.CompilationStage stage = getCompilationStage(segment);
+			CompilationStage stage = getCompilationStage(segment);
 			if (stage != null)
 				setStage(level, dir, stage);
 		}
 	}
 
-	public Compiler.CompilationStage getCompilationStage(String stage) {
+	public CompilationStage getCompilationStage(String stage) {
 		switch (stage) {
 		case "lexer":
 		case "scanner":
-			return Compiler.CompilationStage.LEXING;
+			return CompilationStage.LEXING;
 
 		case "parser":
 		case "syntax":
-			return Compiler.CompilationStage.PARSING;
+			return CompilationStage.PARSING;
 
 		case "weeding":
-			return Compiler.CompilationStage.WEEDING;
+			return CompilationStage.WEEDING;
 
 		case "type":
 		case "types":
-			return Compiler.CompilationStage.TYPE_CHECKING;
+			return CompilationStage.TYPE_CHECKING;
 
 		case "code_gen":
 		case "semantic":
-			return Compiler.CompilationStage.CODE_GEN;
+			return CompilationStage.CODE_GEN;
 		}
 
 		return null;
@@ -202,7 +200,7 @@ public class TestProgramIdentifier extends SimpleFileVisitor<Path> {
 		}
 	}
 
-	protected void setStage(int level, Path dir, Compiler.CompilationStage stage) {
+	protected void setStage(int level, Path dir, CompilationStage stage) {
 		if (stageDeterminingLevel >= 0 && stageDeterminingLevel != level) {
 			System.err.printf("Ignoring duplicate stage indicator at %s\n", dir.toString());
 		} else {
