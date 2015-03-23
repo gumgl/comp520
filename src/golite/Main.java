@@ -2,6 +2,7 @@ package golite;
 
 import golite.lexer.Lexer;
 import golite.lexer.LexerException;
+import golite.node.EOF;
 import golite.node.Node;
 import golite.node.Token;
 import golite.parser.ParserException;
@@ -203,7 +204,7 @@ public class Main {
 				.append(".tok.odd{background-color:LightSalmon}")
 				.append("</style></head><body><pre>");
 
-			while (lexer.peek() != null && count < 2000) {
+			while (!(lexer.peek() instanceof EOF)) {
 				count ++;
 				Token token = lexer.next();
 
