@@ -22,12 +22,12 @@ import golite.parser.ParserException;
 public class TestProgram {
 	private String path;
 	private boolean isValid;
-	private Compiler.CompilationStage executedStage;
+	private CompilationStage executedStage;
 
 	@Rule
     public ExpectedException thrown = ExpectedException.none();
 
-	public TestProgram(String path, boolean isValid, Compiler.CompilationStage stage) {
+	public TestProgram(String path, boolean isValid, CompilationStage stage) {
 		this.path = path;
 		this.isValid = isValid;
 		this.executedStage = stage;
@@ -67,14 +67,38 @@ public class TestProgram {
 		if (executedStage == null && !isValid) {
 			System.err.println("Could not infer type of expected error for "+path);
 			try {
-				new Compiler(path).processSource();
+				compile();
 			} catch (LexerException | ParserException | GoLiteWeedingException | GoLiteTypeException e) {
 				return;
 			}
 			fail("Expected a GoLite exception");
 		}
 
-		new Compiler(path, executedStage).processSource();
+		compile();
+	}
+
+	public void compile() throws ParserException, LexerException, IOException {
+		Compiler compiler = new Compiler(path);
+
+		switch (executedStage != null ? executedStage : CompilationStage.CODE_GEN) {
+		// For now we run these as if they were the same
+		// That's fine, because every passing scanner test
+		// is also syntactically valid
+		case LEXING:
+		case PARSING:
+			compiler.parseSource();
+			break;
+
+		case WEEDING:
+			compiler.validateAST();
+			break;
+
+		// TODO: Add code generation as a separate stage
+		case TYPE_CHECKING:
+		default:
+			compiler.typeCheck();
+			break;
+		}
 	}
 
 	/**
