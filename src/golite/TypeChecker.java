@@ -95,8 +95,9 @@ public class TypeChecker extends DepthFirstAdapter {
 				String funcRep = func.getId() + (func.getArguments().size()>0 ? "(...)" : "()");
 				error(node, funcRep+" used as value");
 			}
+		} else {
+			error(node, "function with no return used as value");
 		}
-		error(node, "function with no return used as value");
 	}
 
 	private void ensureUndeclared(Node node, String id) {
@@ -677,6 +678,10 @@ public class TypeChecker extends DepthFirstAdapter {
 			hasExp = true;
 			PExp valueExp = node.getExp();
 			expType = getType (valueExp);
+
+			if (voidType.isIdentical(expType)) {
+				errorVoidFunctionAsValue(valueExp);
+			}
 		}	
 			//if switch has expr, checks if cases e1, e2, . . . , en have same type as valueExp
 			//else, checks if cases e1, e2, . . . , en are well-typed and have type bool
