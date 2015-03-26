@@ -268,15 +268,17 @@ Productions
 	bare_simple_stm {-> stm?} =
 		  {empty} {-> Null}
 		| {expression} exp {-> New stm.expression(exp)}
-		| {assign} lvalue_list eq exp_list
+		/* Ensure the expressions are lvalues in weeding */
+		| {assign} [lvalue_list]:exp_list eq exp_list
 			{-> New stm.assign([lvalue_list.exp], [exp_list.exp])}
-		| {op_assign} lvalue assign_op exp
-			{-> New stm.op_assign(lvalue.exp, assign_op, exp)}
-		/* Ensure the lvalue expressions are id's in weeding! */
-		| {short_var_dec} lvalue_list colon_eq exp_list
-			{-> New stm.short_variable_dec([lvalue_list.exp], [exp_list.exp])}
-		| {inc_dec} lvalue postfix_op
-			{-> New stm.inc_dec(lvalue.exp, postfix_op)}
+		| {op_assign} primary_exp assign_op exp
+			{-> New stm.op_assign(primary_exp.exp, assign_op, exp)}
+		/* Ensure the expressions are id's in weeding */
+		| {short_var_dec} [id_list]:exp_list colon_eq exp_list
+			{-> New stm.short_variable_dec([id_list.exp], [exp_list.exp])}
+		/* Ensure the expressions are lvalues in weeding */
+		| {inc_dec} primary_exp postfix_op
+			{-> New stm.inc_dec(primary_exp.exp, postfix_op)}
 	;
 
 	if_stm {->stm} =
@@ -402,8 +404,12 @@ Productions
 	primary_exp {-> exp} =
 		  {recurse} paren_l exp paren_r
 			{-> exp}
-		| {lvalue} lvalue
-			{-> lvalue.exp}
+		| {variable} id
+			{-> New exp.variable(id)}
+		| {array_access} primary_exp square_l exp square_r
+			{-> New exp.array_access(primary_exp.exp, exp)}
+		| {field_access} primary_exp dot id
+			{-> New exp.field_access(primary_exp.exp, id)}
 		| {lit_int} lit_int
 			{-> New exp.lit_int(lit_int)}
 		| {lit_float} lit_float
@@ -425,22 +431,6 @@ Productions
 		| {append} append paren_l id comma exp paren_r
 			{-> New exp.append(id, exp)}
 	;
-
-	// Fairly certain the recursive use of lvalue here is okay; see
-	// http://golang.org/ref/spec#Address_operators
-	lvalue {-> exp} =
-		  {variable} id
-			{-> New exp.variable(id)}
-		| {array_access} lvalue square_l exp square_r
-			{-> New exp.array_access(lvalue.exp, exp)}
-		| {field_access} lvalue dot id
-			{-> New exp.field_access(lvalue.exp, id)}
-	;
-
-	lvalue_list {-> exp*} = lvalue lvalue_list_tail*
-		{-> [lvalue.exp, lvalue_list_tail.exp]};
-
-	lvalue_list_tail {-> exp} = comma lvalue {-> lvalue.exp};
 
 Abstract Syntax Tree
 	program = [package_name]:id [declarations]:declaration*;
