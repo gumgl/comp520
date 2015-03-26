@@ -396,9 +396,23 @@ public class TypeChecker extends DepthFirstAdapter {
 	public void outAArrayTypeExp(AArrayTypeExp node)
 	{
 		Type typeOfArray = getType(node.getTypeExp());
+		
 		// FIXME: this is absolutely not what we should be doing here
-		int arraySize = Integer.parseInt(node.getLitInt().getText());
-
+		PInteger integer = node.getInteger();
+		int arraySize;
+		
+		if (integer instanceof ALitIntInteger) {
+			arraySize = Integer.parseInt(((ALitIntInteger) integer).getLitInt().getText());
+		} else if (integer instanceof ALitHexInteger) {
+			String base16Number = ((ALitHexInteger) integer).getLitHex().getText().substring(2);
+			arraySize = Integer.parseInt(base16Number, 16);
+		} else if (integer instanceof ALitOctalInteger) {
+			String base8Number = (((ALitOctalInteger) integer).getLitOctal()).getText().substring(2);
+			arraySize = Integer.parseInt(base8Number, 8);
+		} else {
+			throw new RuntimeException("unrecognized integer type: "+integer.getClass());
+		}
+		
 		ArrayType arrayType = new ArrayType(typeOfArray, arraySize);
 		setType(node, arrayType);
 		defaultOut(node);
@@ -814,7 +828,7 @@ public class TypeChecker extends DepthFirstAdapter {
 		setType(node, field.getType());
 		defaultOut(node);
 	}
-	public void outALitIntExp(ALitIntExp node)
+	public void outAIntegerExp(AIntegerExp node)
 	{
 		setType(node, intType);
 		defaultOut(node);
@@ -822,16 +836,6 @@ public class TypeChecker extends DepthFirstAdapter {
 	public void outALitFloatExp(ALitFloatExp node)
 	{
 		setType(node, floatType);
-		defaultOut(node);
-	}
-	public void outALitHexExp(ALitHexExp node)
-	{
-		setType(node, intType);
-		defaultOut(node);
-	}
-	public void outALitOctalExp(ALitOctalExp node)
-	{
-		setType(node, intType);
 		defaultOut(node);
 	}
 	public void outALitInterpretedExp(ALitInterpretedExp node)

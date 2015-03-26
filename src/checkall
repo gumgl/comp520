@@ -22,7 +22,7 @@ compiled () {
 	extension="${1##*.}"
 	echo "${filename}.bin"
 }
-FILES=../programs/*/*.go
+FILES=../programs/valid/semantic/*.go
 for file in $FILES; do
 
 	# compile the file
