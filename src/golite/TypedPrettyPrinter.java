@@ -32,15 +32,4 @@ public class TypedPrettyPrinter extends PrettyPrinter {
 			printExpType((PExp)node);
 		}
 	}
-
-	public void inAFunctionDeclaration(AFunctionDeclaration node) {
-//		Function signature = (Function)types.get(node);
-		
-		startl();
-		p("/* ");
-		p("This should describe the function I guess?");
-		p(" */");
-		endl();
-		super.inAFunctionDeclaration(node);
-	}
 }
