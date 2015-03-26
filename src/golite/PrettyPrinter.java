@@ -277,9 +277,9 @@ public class PrettyPrinter extends DepthFirstAdapter {
 	{
 		inAArrayTypeExp(node);
 		p("[");
-		if(node.getLitInt() != null)
+		if(node.getInteger() != null)
 		{
-			p(node.getLitInt().getText());
+			node.getInteger().apply(this);
 		}
 		p("]");
 		if(node.getTypeExp() != null)
@@ -846,14 +846,14 @@ public class PrettyPrinter extends DepthFirstAdapter {
 	}
 
 	@Override
-	public void caseALitIntExp(ALitIntExp node)
+	public void caseALitIntInteger(ALitIntInteger node)
 	{
-		inALitIntExp(node);
+		inALitIntInteger(node);
 		if(node.getLitInt() != null)
 		{
 			p(node.getLitInt().getText());
 		}
-		outALitIntExp(node);
+		outALitIntInteger(node);
 	}
 
 	@Override
@@ -868,25 +868,25 @@ public class PrettyPrinter extends DepthFirstAdapter {
 	}
 
 	@Override
-	public void caseALitHexExp(ALitHexExp node)
+	public void caseALitHexInteger(ALitHexInteger node)
 	{
-		inALitHexExp(node);
+		inALitHexInteger(node);
 		if(node.getLitHex() != null)
 		{
 			p(node.getLitHex().getText());
 		}
-		outALitHexExp(node);
+		outALitHexInteger(node);
 	}
 
 	@Override
-	public void caseALitOctalExp(ALitOctalExp node)
+	public void caseALitOctalInteger(ALitOctalInteger node)
 	{
-		inALitOctalExp(node);
+		inALitOctalInteger(node);
 		if(node.getLitOctal() != null)
 		{
 			p(node.getLitOctal().getText());
 		}
-		outALitOctalExp(node);
+		outALitOctalInteger(node);
 	}
 
 	@Override

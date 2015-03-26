@@ -224,8 +224,8 @@ Productions
 			{-> New type_exp.struct([field_dec])}
 		| {slice} square_l square_r type_exp
 			{-> New type_exp.slice(type_exp)}
-		| {array} square_l lit_int square_r type_exp
-			{-> New type_exp.array(lit_int, type_exp)}
+		| {array} square_l integer square_r type_exp
+			{-> New type_exp.array(integer, type_exp)}
 	;
 
 	base_type {-> type_exp} =
@@ -410,14 +410,10 @@ Productions
 			{-> New exp.array_access(primary_exp.exp, exp)}
 		| {field_access} primary_exp dot id
 			{-> New exp.field_access(primary_exp.exp, id)}
-		| {lit_int} lit_int
-			{-> New exp.lit_int(lit_int)}
+		| {integer} integer
+			{-> New exp.integer(integer)}
 		| {lit_float} lit_float
 			{-> New exp.lit_float(lit_float)}
-		| {lit_hex} lit_hex
-			{-> New exp.lit_hex(lit_hex)}
-		| {lit_octal} lit_octal
-			{-> New exp.lit_octal(lit_octal)}
 		| {lit_interpreted} lit_interpreted
 			{-> New exp.lit_interpreted(lit_interpreted)}
 		| {lit_raw} lit_raw
@@ -430,6 +426,12 @@ Productions
 			{-> New exp.base_type_cast(base_type.type_exp, exp)}
 		| {append} append paren_l id comma exp paren_r
 			{-> New exp.append(id, exp)}
+	;
+
+	integer {-> integer} =
+		  {lit_int} lit_int
+		| {lit_hex} lit_hex
+		| {lit_octal} lit_octal
 	;
 
 Abstract Syntax Tree
@@ -459,7 +461,7 @@ Abstract Syntax Tree
 		| {string}
 		| {struct} field_dec*
 		| {slice} type_exp
-		| {array} lit_int type_exp
+		| {array} integer type_exp
 	;
 
 	field_dec = id+ type_exp;
@@ -535,10 +537,8 @@ Abstract Syntax Tree
 		  {variable} id
 		| {array_access} [array]:exp [index]:exp
 		| {field_access} exp id
-		| {lit_int} lit_int
+		| {integer} integer
 		| {lit_float} lit_float
-		| {lit_hex} lit_hex
-		| {lit_octal} lit_octal
 		| {lit_interpreted} lit_interpreted
 		| {lit_raw} lit_raw
 		| {lit_rune} lit_rune
@@ -547,4 +547,10 @@ Abstract Syntax Tree
 		| {append} id exp
 		| {binary} [left]:exp binary_op [right]:exp
 		| {unary} unary_op exp
+	;
+
+	integer =
+		  {lit_int} lit_int
+		| {lit_hex} lit_hex
+		| {lit_octal} lit_octal
 	;
