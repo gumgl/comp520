@@ -1,1 +1,7 @@
 invalid_assignment_1.go weeding
+exp12.go lexer
+exp15.go weeding
+stmt18.go weeding
+stmt2.go weeding
+stmt3.go weeding
+vardec3.go weeding
