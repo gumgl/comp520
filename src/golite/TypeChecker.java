@@ -638,6 +638,13 @@ public class TypeChecker extends DepthFirstAdapter {
 
 		outAIfStm(node);
 	}
+
+	@Override
+	public void inASwitchStm(ASwitchStm node) {
+		defaultIn(node);
+		symbolTable.addScope();
+	}
+
 	public void outASwitchStm(ASwitchStm node)
 	{
 		boolean hasExp = false;
@@ -667,37 +674,34 @@ public class TypeChecker extends DepthFirstAdapter {
 				}
 			}
 		}
-		defaultOut(node);
-	}
-	@Override
-	public void inAForStm(AForStm node)
-	{
-		defaultIn(node);
-		symbolTable.addScope();
-	}	
-	public void outAForStm(AForStm node)
-	{
-		if (node.getExp()==null){
-			//An infinite for loop type checks if its body type checks
-			//The body opens a new scope in the symbol table.
-		} else {
-			PExp valueExp = node.getExp();
-			Type expType = getType(valueExp);
-			if (!isBooleanType(expType)){//expected bool but found expType
-				errorSymbolType(valueExp,expType,boolType);
-			}
-		}
+
 		symbolTable.dropScope();
 		defaultOut(node);
 	}
-	public void outABreakStm(ABreakStm node)//trivially well-typed
+
+	/* Switch clauses: each opens its own scope. Non-default ("conditional")
+	 * switch clauses also enforce other type invariants.
+	 */
+	@Override
+	public void inADefaultSwitchClause(ADefaultSwitchClause node) {
+		defaultIn(node);
+		symbolTable.addScope();
+	}
+
+	@Override
+	public void outADefaultSwitchClause(ADefaultSwitchClause node)
 	{
+		symbolTable.dropScope();
 		defaultOut(node);
 	}
-	public void outAContinueStm(AContinueStm node) //trivially well-typed
-	{
-		defaultOut(node);
+
+	@Override
+	public void inAConditionalSwitchClause(AConditionalSwitchClause node) {
+		defaultIn(node);
+		symbolTable.addScope();
 	}
+
+	@Override
 	public void outAConditionalSwitchClause(AConditionalSwitchClause node)
 	{
 		PExp first = node.getExp().get(0);
@@ -723,21 +727,37 @@ public class TypeChecker extends DepthFirstAdapter {
 		}
 		setType(node,firstType);
 		}
+
+		symbolTable.dropScope();
 		defaultOut(node);
 	}
-	public void outADefaultSwitchClause(ADefaultSwitchClause node)
+
+	@Override
+	public void inAForStm(AForStm node)
+	{
+		defaultIn(node);
+		symbolTable.addScope();
+	}
+	public void outAForStm(AForStm node)
+	{
+		if (node.getExp()==null){
+			//An infinite for loop type checks if its body type checks
+			//The body opens a new scope in the symbol table.
+		} else {
+			PExp valueExp = node.getExp();
+			Type expType = getType(valueExp);
+			if (!isBooleanType(expType)){//expected bool but found expType
+				errorSymbolType(valueExp,expType,boolType);
+			}
+		}
+		symbolTable.dropScope();
+		defaultOut(node);
+	}
+	public void outABreakStm(ABreakStm node)//trivially well-typed
 	{
 		defaultOut(node);
 	}
-	public void outAFallthroughStm(AFallthroughStm node)
-	{
-		defaultOut(node);
-	}
-	public void outASimplePrintOp(ASimplePrintOp node)
-	{
-		defaultOut(node);
-	}
-	public void outALinePrintOp(ALinePrintOp node)
+	public void outAContinueStm(AContinueStm node) //trivially well-typed
 	{
 		defaultOut(node);
 	}
