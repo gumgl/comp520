@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.PriorityQueue;
 
 import golite.node.* ;
 import golite.analysis.* ;
@@ -519,6 +520,8 @@ public class TypeChecker extends DepthFirstAdapter {
 		assert node.getIds().size() == node.getExp().size();
 		boolean hasNewVariable = false;
 
+		PriorityQueue<String> namesSeen = new PriorityQueue<String>();
+
 		// Ids are expressions here, but guaranteed by the weeder to be
 		// variables
 		for (int i=0; i < node.getIds().size(); i++) {
@@ -528,7 +531,13 @@ public class TypeChecker extends DepthFirstAdapter {
 				continue;
 			
 			String id = idExp.getId().getText();
-			
+
+			// Ensure that the id is not a repeat
+			if (namesSeen.contains(id))
+				error(idExp, id+" repeated on left side of :=");
+			namesSeen.add(id);
+
+			// See if the id is previously declared and typecheck accordingly
 			PExp exp = node.getExp().get(i);
 			Symbol symbol = symbolTable.getInScope(id);
 			Type varType;
