@@ -948,14 +948,16 @@ public class TypeChecker extends DepthFirstAdapter {
 		PBinaryOp op = node.getBinaryOp();
 
 		if (op instanceof ALogicalOrBinaryOp || op instanceof ALogicalAndBinaryOp) {
+			// Enforce the type invariants by checking that the left argument
+			// is a boolean and then ensuring that the right argument is of
+			// the same type
 			if (!isBooleanType(leftType))
 				errorSymbolType(left, leftType, "boolean type");
-			if (!isBooleanType(rightType))
-				errorSymbolType(left, rightType, "boolean type");
 			if (!leftType.isIdentical(rightType))
 				errorSymbolType(right, rightType, leftType);
 
-			setType(node, boolType);
+			// Return the specific boolean type of the expression
+			setType(node, leftType);
 
 			operatorFound = true;
 		} else {
