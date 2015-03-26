@@ -24,6 +24,16 @@ public class GoLiteWeeder extends DepthFirstAdapter {
 		throwError(node, "There should be as many variables as expressions");
 	}
 
+	private void ensureIsLvalue(PExp lvalue) {
+		if (lvalue instanceof AArrayAccessExp) {
+			ensureIsLvalue(((AArrayAccessExp)lvalue).getArray());
+		} else if (lvalue instanceof AFieldAccessExp) {
+			ensureIsLvalue(((AFieldAccessExp)lvalue).getExp());
+		} else if (!(lvalue instanceof AVariableExp)) {
+			throwError(lvalue, "Expected an addressable expression");
+		}
+	}
+
 	/* Loop-specific statements */
 	@Override
 	public void inAForStm(AForStm node) {
@@ -188,5 +198,20 @@ public class GoLiteWeeder extends DepthFirstAdapter {
 		if (node.getExp().size() != node.getLvalue().size()) {
 			throwError(node, "There should be as many values as targets");
 		}
+
+		for (PExp lvalue : node.getLvalue()) {
+			ensureIsLvalue(lvalue);
+		}
+	}
+
+	@Override
+	public void inAOpAssignStm(AOpAssignStm node) {
+		ensureIsLvalue(node.getLvalue());
+	}
+
+	/* Increment/decrement statements */
+	@Override
+	public void inAIncDecStm(AIncDecStm node) {
+		ensureIsLvalue(node.getExp());
 	}
 }
