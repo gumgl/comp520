@@ -45,6 +45,9 @@ public class GoLexer extends Lexer {
 	 *  so are omitted.)
 	 */
 	protected boolean requiresSemicolon() {
+		if (state != State.NORMAL)
+			return false;
+
 		if (!(token instanceof TEol || token instanceof EOF))
 			return false;
 
@@ -54,9 +57,9 @@ public class GoLexer extends Lexer {
 			|| lastSignificantToken instanceof TLitFloat
 			|| lastSignificantToken instanceof TLitHex
 			|| lastSignificantToken instanceof TLitOctal
-			|| lastSignificantToken instanceof TLitRaw
-			|| lastSignificantToken instanceof TLitRune
-			|| lastSignificantToken instanceof TLitInterpreted
+			|| lastSignificantToken instanceof TQuoteSingle
+			|| lastSignificantToken instanceof TQuoteDouble
+			|| lastSignificantToken instanceof TQuoteBack
 			// keywords
 			|| lastSignificantToken instanceof TBreak
 			|| lastSignificantToken instanceof TContinue
