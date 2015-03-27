@@ -12,7 +12,6 @@ Helpers
 	eol   = cr | lf | cr lf;
 	not_eol = [all - [cr + lf]];
 	not_star = [all - '*'];
-	not_backslash = [all - '\'];
 	not_backslash_eol = [not_eol - '\'];
 	not_star_slash = [not_star - '/'];
 
@@ -29,117 +28,136 @@ Helpers
 	letter_uc = ['A'..'Z'];
 	letter  = letter_lc | letter_uc | '_';
 
-	/*char_literal = [all - [eol + '\']];*/ /* disallow backslash, then allow appropriate escape sequences */
 	char_escape = '\' ( 'a' | 'b' | 'f' | 'n' | 'r' | 't' | 'v' | '\' );
 	char_escape_sq = '\' ''';
 	char_escape_dq = '\"';
 
+States
+	normal,
+	rune_literal,
+	interpreted_string_literal,
+	raw_string_literal;
+
 Tokens
-	whitespace = (' ' | tab)+;
-	eol = eol;
+	// Rune literals
+	{normal->rune_literal, rune_literal->normal} quote_single = quote_single; // '
+	{rune_literal} regular_rune_character = [not_backslash_eol - quote_single];
+	{rune_literal} char_escape_sq = char_escape_sq;
+
+	// Interpreted string literals
+	{normal->interpreted_string_literal, interpreted_string_literal->normal} quote_double = quote_double;
+	{interpreted_string_literal} interpreted_string_chars = [not_backslash_eol - quote_double]+;
+	{interpreted_string_literal} char_escape_dq = char_escape_dq;
+
+	// Rune or interpreted string literals
+	{rune_literal,interpreted_string_literal} char_escape = char_escape;
+
+	// Raw string literals
+	{normal->raw_string_literal, raw_string_literal->normal} quote_back = quote_back;
+	{raw_string_literal} raw_string_contents = [all - quote_back]*;
+
+	{normal} whitespace = (' ' | tab)+;
+	{normal} eol = eol;
 
 	/* Keywords */
-	import = 'import';
-	package = 'package';
-	chan = 'chan';
-	const = 'const';
-	default = 'default';
-	defer = 'defer';
-	var = 'var';
-	type = 'type';
-	struct = 'struct';
-	interface = 'interface';
-	func = 'func';
-	return = 'return';
-	if = 'if';
-	else = 'else';
-	switch = 'switch';
-	case = 'case';
-	goto = 'goto';
-	for = 'for';
-	break = 'break';
-	continue = 'continue';
-	fallthrough = 'fallthrough';
-	go = 'go';
-	map = 'map';
-	range = 'range';
-	select = 'select';
-	print = 'print';
-	append = 'append';
-	println = 'println';
-	bool = 'bool';
-	int = 'int';
-	float64 = 'float64';
-	rune = 'rune';
-	string = 'string';
+	{normal} import = 'import';
+	{normal} package = 'package';
+	{normal} chan = 'chan';
+	{normal} const = 'const';
+	{normal} default = 'default';
+	{normal} defer = 'defer';
+	{normal} var = 'var';
+	{normal} type = 'type';
+	{normal} struct = 'struct';
+	{normal} interface = 'interface';
+	{normal} func = 'func';
+	{normal} return = 'return';
+	{normal} if = 'if';
+	{normal} else = 'else';
+	{normal} switch = 'switch';
+	{normal} case = 'case';
+	{normal} goto = 'goto';
+	{normal} for = 'for';
+	{normal} break = 'break';
+	{normal} continue = 'continue';
+	{normal} fallthrough = 'fallthrough';
+	{normal} go = 'go';
+	{normal} map = 'map';
+	{normal} range = 'range';
+	{normal} select = 'select';
+	{normal} print = 'print';
+	{normal} append = 'append';
+	{normal} println = 'println';
+	{normal} bool = 'bool';
+	{normal} int = 'int';
+	{normal} float64 = 'float64';
+	{normal} rune = 'rune';
+	{normal} string = 'string';
 
 	/* Operators and Delimiters
 	 * in order from the specs (easier to spot a missing one) */
-	plus = '+';
-	minus = '-';
-	star = '*';
-	slash = '/';
-	percent = '%';
-	amp = '&';
-	pipe = '|';
-	caret = '^';
-	lshift = '<<';
-	rshift = '>>';
-	amp_caret = '&^';
-	plus_eq = '+=';
-	minus_eq = '-=';
-	star_eq = '*=';
-	slash_eq = '/=';
-	percent_eq = '%=';
-	amp_eq = '&=';
-	pipe_eq = '|=';
-	caret_eq = '^=';
-	lshift_eq = '<<=';
-	rshift_eq = '>>=';
-	amp_caret_eq = '&^=';
-	amp_amp = '&&';
-	bar_bar = '||';
-	larrow = '<-';
-	plus_plus = '++';
-	minus_minus = '--';
-	eq_eq = '==';
-	lt = '<';
-	gt = '>';
-	eq = '=';
-	exclamation = '!';
-	not_eq = '!=';
-	lt_eq = '<=';
-	gt_eq = '>=';
-	colon_eq = ':=';
-	elipsis = '...';
-	paren_l = '(';
-	paren_r = ')';
-	square_l = '[';
-	square_r = ']';
-	brace_l = '{';
-	brace_r = '}';
-	comma = ',';
-	dot = '.';
-	semicolon = ';';
-	colon = ':';
+	{normal} plus = '+';
+	{normal} minus = '-';
+	{normal} star = '*';
+	{normal} slash = '/';
+	{normal} percent = '%';
+	{normal} amp = '&';
+	{normal} pipe = '|';
+	{normal} caret = '^';
+	{normal} lshift = '<<';
+	{normal} rshift = '>>';
+	{normal} amp_caret = '&^';
+	{normal} plus_eq = '+=';
+	{normal} minus_eq = '-=';
+	{normal} star_eq = '*=';
+	{normal} slash_eq = '/=';
+	{normal} percent_eq = '%=';
+	{normal} amp_eq = '&=';
+	{normal} pipe_eq = '|=';
+	{normal} caret_eq = '^=';
+	{normal} lshift_eq = '<<=';
+	{normal} rshift_eq = '>>=';
+	{normal} amp_caret_eq = '&^=';
+	{normal} amp_amp = '&&';
+	{normal} bar_bar = '||';
+	{normal} larrow = '<-';
+	{normal} plus_plus = '++';
+	{normal} minus_minus = '--';
+	{normal} eq_eq = '==';
+	{normal} lt = '<';
+	{normal} gt = '>';
+	{normal} eq = '=';
+	{normal} exclamation = '!';
+	{normal} not_eq = '!=';
+	{normal} lt_eq = '<=';
+	{normal} gt_eq = '>=';
+	{normal} colon_eq = ':=';
+	{normal} elipsis = '...';
+	{normal} paren_l = '(';
+	{normal} paren_r = ')';
+	{normal} square_l = '[';
+	{normal} square_r = ']';
+	{normal} brace_l = '{';
+	{normal} brace_r = '}';
+	{normal} comma = ',';
+	{normal} dot = '.';
+	{normal} semicolon = ';';
+	{normal} colon = ':';
 
 	/* Comments
 	 * Single line comments go up to the EOL, but don't include the EOL token
 	 * because it needs to be separate for semicolon insertion */
-	comment = ('//' not_eol*)
+	{normal} comment = ('//' not_eol*)
 				| ('/*' not_star* '*'+ (not_star_slash not_star* '*'+)* '/');
 
 	/* Literals */
-	lit_int  = '0' | digit_nonzero digit_decimal*;
-	lit_octal = '0' digit_octal+; /* + because a single 0 should be tagged as int */
-	lit_hex = '0x' digit_hex+;
-	lit_float = ('0' | digit_nonzero digit_decimal*)? '.' digit_decimal*;
-	lit_rune        = quote_single ([not_backslash_eol - quote_single] | char_escape | char_escape_sq)  quote_single;
-	lit_raw         = quote_back [all - quote_back]*  quote_back;
-	lit_interpreted = quote_double ([not_backslash_eol - quote_double] | char_escape | char_escape_dq)* quote_double;
+	{normal} lit_int  = '0' | digit_nonzero digit_decimal*;
+	{normal} lit_octal = '0' digit_octal+; /* + because a single 0 should be tagged as int */
+	{normal} lit_hex = '0x' digit_hex+;
+	{normal} lit_float = ('0' | digit_nonzero digit_decimal*)? '.' digit_decimal*;
 
 	/* Identifiers*/
-	id = letter (letter | digit_decimal)*;
+	{normal} id = letter (letter | digit_decimal)*;
 
 Ignored Tokens
 	/* Changes here probably also require changes in GoLexer.java */
@@ -414,12 +432,10 @@ Productions
 			{-> New exp.integer(integer)}
 		| {lit_float} lit_float
 			{-> New exp.lit_float(lit_float)}
-		| {lit_interpreted} lit_interpreted
-			{-> New exp.lit_interpreted(lit_interpreted)}
-		| {lit_raw} lit_raw
-			{-> New exp.lit_raw(lit_raw)}
-		| {lit_rune} lit_rune
-			{-> New exp.lit_rune(lit_rune)}
+		| {rune} [l]:quote_single rune_character [r]:quote_single
+			{-> New exp.rune(rune_character)}
+		| {string} string_literal
+			{-> New exp.string(string_literal.string_literal)}
 		| {function_call} primary_exp paren_l exp_list_star paren_r
 			{-> New exp.function_call(primary_exp.exp, [exp_list_star.exp])}
 		| {base_type_cast} base_type paren_l exp paren_r
@@ -432,6 +448,34 @@ Productions
 		  {lit_int} lit_int
 		| {lit_hex} lit_hex
 		| {lit_octal} lit_octal
+	;
+
+	rune_character =
+		  {regular} regular_rune_character
+		| {escape} char_escape
+		| {sq} char_escape_sq
+	;
+
+	string_literal =
+		  {interpreted} [l]:quote_double interpreted_string_parts [r]:quote_double
+			{-> New string_literal.interpreted([interpreted_string_parts.interpreted_string_part])}
+		| {raw} [l]:quote_back raw_string_contents [r]:quote_back
+			{-> New string_literal.raw(raw_string_contents)}
+		| {empty_raw} [l]:quote_back [r]:quote_back
+			{-> New string_literal.raw(Null)}
+	;
+
+	interpreted_string_parts {-> interpreted_string_part*} =
+		  {empty}
+			{-> []}
+		| {non_empty} interpreted_string_part interpreted_string_parts
+			{-> [interpreted_string_part, interpreted_string_parts.interpreted_string_part]}
+	;
+
+	interpreted_string_part =
+		  {regular} interpreted_string_chars
+		| {escape} char_escape
+		| {dq} char_escape_dq
 	;
 
 Abstract Syntax Tree
@@ -539,9 +583,8 @@ Abstract Syntax Tree
 		| {field_access} exp id
 		| {integer} integer
 		| {lit_float} lit_float
-		| {lit_interpreted} lit_interpreted
-		| {lit_raw} lit_raw
-		| {lit_rune} lit_rune
+		| {rune} rune_character
+		| {string} string_literal
 		| {function_call} [functor]:exp exp*
 		| {base_type_cast} type_exp exp
 		| {append} id exp
@@ -553,4 +596,21 @@ Abstract Syntax Tree
 		  {lit_int} lit_int
 		| {lit_hex} lit_hex
 		| {lit_octal} lit_octal
+	;
+
+	rune_character =
+		  {regular} regular_rune_character
+		| {escape} char_escape
+		| {sq} char_escape_sq
+	;
+
+	string_literal =
+		  {interpreted} interpreted_string_part*
+		| {raw} raw_string_contents?
+	;
+
+	interpreted_string_part =
+		  {regular} interpreted_string_chars
+		| {escape} char_escape
+		| {dq} char_escape_dq
 	;

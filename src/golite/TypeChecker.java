@@ -842,29 +842,26 @@ public class TypeChecker extends DepthFirstAdapter {
 		setType(node, field.getType());
 		defaultOut(node);
 	}
+	@Override
 	public void outAIntegerExp(AIntegerExp node)
 	{
 		setType(node, intType);
 		defaultOut(node);
 	}
+	@Override
+	public void outARuneExp(ARuneExp node) {
+		setType(node, runeType);
+		defaultOut(node);
+	}
+	@Override
+	public void outAStringExp(AStringExp node) {
+		setType(node, stringType);
+		defaultOut(node);
+	}
+	@Override
 	public void outALitFloatExp(ALitFloatExp node)
 	{
 		setType(node, floatType);
-		defaultOut(node);
-	}
-	public void outALitInterpretedExp(ALitInterpretedExp node)
-	{
-		setType(node, stringType);
-		defaultOut(node);
-	}
-	public void outALitRawExp(ALitRawExp node)
-	{
-		setType(node, stringType);
-		defaultOut(node);
-	}
-	public void outALitRuneExp(ALitRuneExp node)
-	{
-		setType(node, runeType);
 		defaultOut(node);
 	}
 

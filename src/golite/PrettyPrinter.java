@@ -846,6 +846,36 @@ public class PrettyPrinter extends DepthFirstAdapter {
 	}
 
 	@Override
+	public void inARuneExp(ARuneExp node) {
+		defaultIn(node);
+		p("'");
+	}
+
+	@Override
+	public void outARuneExp(ARuneExp node) {
+		p("'");
+		defaultOut(node);
+	}
+
+	@Override
+	public void outAEscapeRuneCharacter(AEscapeRuneCharacter node) {
+		p(node.getCharEscape().getText());
+		defaultOut(node);
+	}
+
+	@Override
+	public void outARegularRuneCharacter(ARegularRuneCharacter node) {
+		p(node.getRegularRuneCharacter().getText());
+		defaultOut(node);
+	}
+
+	@Override
+	public void outASqRuneCharacter(ASqRuneCharacter node) {
+		p(node.getCharEscapeSq().getText());
+		defaultOut(node);
+	}
+
+	@Override
 	public void caseALitIntInteger(ALitIntInteger node)
 	{
 		inALitIntInteger(node);
@@ -890,36 +920,44 @@ public class PrettyPrinter extends DepthFirstAdapter {
 	}
 
 	@Override
-	public void caseALitInterpretedExp(ALitInterpretedExp node)
-	{
-		inALitInterpretedExp(node);
-		if(node.getLitInterpreted() != null)
-		{
-			p(node.getLitInterpreted().getText());
-		}
-		outALitInterpretedExp(node);
+	public void inAInterpretedStringLiteral(AInterpretedStringLiteral node) {
+		defaultIn(node);
+		p("\"");
 	}
 
 	@Override
-	public void caseALitRawExp(ALitRawExp node)
-	{
-		inALitRawExp(node);
-		if(node.getLitRaw() != null)
-		{
-			p(node.getLitRaw().getText());
-		}
-		outALitRawExp(node);
+	public void outAInterpretedStringLiteral(AInterpretedStringLiteral node) {
+		p("\"");
+		defaultOut(node);
 	}
 
 	@Override
-	public void caseALitRuneExp(ALitRuneExp node)
-	{
-		inALitRuneExp(node);
-		if(node.getLitRune() != null)
-		{
-			p(node.getLitRune().getText());
-		}
-		outALitRuneExp(node);
+	public void outADqInterpretedStringPart(ADqInterpretedStringPart node) {
+		p(node.getCharEscapeDq().getText());
+		defaultOut(node);
+	}
+
+	@Override
+	public void outAEscapeInterpretedStringPart(
+			AEscapeInterpretedStringPart node) {
+		p(node.getCharEscape().getText());
+		defaultOut(node);
+	}
+
+	@Override
+	public void outARegularInterpretedStringPart(
+			ARegularInterpretedStringPart node) {
+		p(node.getInterpretedStringChars().getText());
+		defaultOut(node);
+	}
+
+	@Override
+	public void outARawStringLiteral(ARawStringLiteral node) {
+		p("`");
+		if (node.getRawStringContents() != null)
+			p(node.getRawStringContents().getText());
+		p("`");
+		defaultOut(node);
 	}
 
 	@Override

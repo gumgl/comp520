@@ -4,3 +4,6 @@ hex_wrong_character.go parser
 interpreted_unescaped.go parser
 int_leading_0.go parser
 raw_unescaped.go parser
+rune_too_long.go parser
+rune_too_short.go parser
+rune_unescaped.go parser
