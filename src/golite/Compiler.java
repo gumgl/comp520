@@ -39,6 +39,11 @@ public class Compiler {
 		}
 	}
 
+	public Node getUnvalidatedAST() throws ParserException, LexerException, IOException {
+		parseSource();
+		return ast;
+	}
+
 	protected void initializePositionHelper() throws ParserException, LexerException, IOException {
 		parseSource();
 		if (positionHelper == null)

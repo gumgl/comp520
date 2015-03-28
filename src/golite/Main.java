@@ -163,19 +163,24 @@ public class Main {
 			tokenPrintHtml(options.path, pathBase+".tokens.html");
 		}
 
-		// Build AST and do the weeding
+		// Build AST
 		Compiler compiler = new Compiler(options.path);
-		Node ast = compiler.getValidatedAST();
-
-		// Pretty print the AST
-		if (options.prettyPrint) {
-			prettyPrint(ast, new PrettyPrinter(), pathBase+".pretty.go");
-		}
+		Node ast = compiler.getUnvalidatedAST();
 
 		// Display AST in a JTree
 		if (options.displayAST) {
 			ASTDisplay display = new ASTDisplay();
 			ast.apply(display);
+			while (display.frame != null && display.frame.isDisplayable())
+				try {Thread.sleep(250);} catch (InterruptedException e) {}
+		}
+
+		// Do the weeding
+		compiler.validateAST();
+
+		// Pretty print the AST
+		if (options.prettyPrint) {
+			prettyPrint(ast, new PrettyPrinter(), pathBase+".pretty.go");
 		}
 
 		runLoggedTypeCheck(compiler, pathBase+".symtab", options.symbolTableLogLevel);
