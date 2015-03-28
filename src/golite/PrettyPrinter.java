@@ -1,53 +1,18 @@
 package golite;
+
 import java.io.PrintWriter;
 import java.util.List;
 
-import golite.analysis.DepthFirstAdapter;
 import golite.node.*;
 
 
-public class PrettyPrinter extends DepthFirstAdapter {
-	protected String indent = "\t";
-	protected StringBuilder prepend = new StringBuilder("");
-	protected PrintWriter output;
-
+public class PrettyPrinter extends PrintingASTAdapter {
 	public PrettyPrinter(PrintWriter writer) {
-		output = writer;
+		super(writer);
 	}
 
 	public PrettyPrinter() {
 		this(null);
-	}
-
-	/* Getters and setters */
-	public PrintWriter getOutputWriter() {
-		return output;
-	}
-
-	public void setOutputWriter(PrintWriter printer) {
-		output = printer;
-	}
-
-	/* Output formatting utilities */
-	protected void p(String text) {
-		output.print(text);
-	}
-	protected void pln(String text) {
-		startl();
-		p(text);
-		endl();
-	}
-	protected void shift() {
-		prepend.append(indent);
-	}
-	protected void unshift() {
-		prepend.delete(0, indent.length());
-	}
-	protected void startl() {
-		p(prepend.toString());
-	}
-	protected void endl() {
-		p("\n");
 	}
 
 	private void printConsecutiveLines(List<? extends Node> nodes) {
