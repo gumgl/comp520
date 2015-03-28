@@ -430,8 +430,8 @@ Productions
 			{-> New exp.field_access(primary_exp.exp, id)}
 		| {integer} integer
 			{-> New exp.integer(integer)}
-		| {lit_float} lit_float
-			{-> New exp.lit_float(lit_float)}
+		| {float} lit_float
+			{-> New exp.float(lit_float)}
 		| {rune} [l]:quote_single rune_character [r]:quote_single
 			{-> New exp.rune(rune_character)}
 		| {string} string_literal
@@ -582,7 +582,7 @@ Abstract Syntax Tree
 		| {array_access} [array]:exp [index]:exp
 		| {field_access} exp id
 		| {integer} integer
-		| {lit_float} lit_float
+		| {float} lit_float
 		| {rune} rune_character
 		| {string} string_literal
 		| {function_call} [functor]:exp exp*

@@ -859,7 +859,7 @@ public class TypeChecker extends DepthFirstAdapter {
 		defaultOut(node);
 	}
 	@Override
-	public void outALitFloatExp(ALitFloatExp node)
+	public void outAFloatExp(AFloatExp node)
 	{
 		setType(node, floatType);
 		defaultOut(node);
