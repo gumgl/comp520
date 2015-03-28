@@ -887,14 +887,14 @@ public class PrettyPrinter extends DepthFirstAdapter {
 	}
 
 	@Override
-	public void caseALitFloatExp(ALitFloatExp node)
+	public void caseAFloatExp(AFloatExp node)
 	{
-		inALitFloatExp(node);
+		inAFloatExp(node);
 		if(node.getLitFloat() != null)
 		{
 			p(node.getLitFloat().getText());
 		}
-		outALitFloatExp(node);
+		outAFloatExp(node);
 	}
 
 	@Override
