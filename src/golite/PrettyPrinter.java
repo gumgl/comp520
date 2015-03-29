@@ -15,26 +15,6 @@ public class PrettyPrinter extends PrintingASTAdapter {
 		this(null);
 	}
 
-	private void printConsecutiveLines(List<? extends Node> nodes) {
-		for (Node e : nodes) {
-			startl();
-			e.apply(this);
-			endl();
-		}
-	}
-
-	private void printList(List<? extends Node> nodes) {
-		boolean first = true;
-		for (Node e : nodes) {
-			if (first) {
-				first = false;
-			} else {
-				p(", ");
-			}
-			e.apply(this);
-		}
-	}
-
 	private void printSpecs(List<? extends Node> specs) {
 		if (specs.size() == 1) {
 			specs.get(0).apply(this);
