@@ -180,13 +180,13 @@ public class Main {
 
 		// Pretty print the AST
 		if (options.prettyPrint) {
-			prettyPrint(ast, new PrettyPrinter(), pathBase+".pretty.go");
+			printOutput(ast, new PrettyPrinter(), pathBase+".pretty.go");
 		}
 
 		runLoggedTypeCheck(compiler, pathBase+".symtab", options.symbolTableLogLevel);
 
 		if (options.prettyPrintTyped) {
-			prettyPrint(ast, new TypedPrettyPrinter(compiler.getTypeMap()), pathBase+".pptype.go");
+			printOutput(ast, new TypedPrettyPrinter(compiler.getTypeMap()), pathBase+".pptype.go");
 		}
 
 		// TODO: code generation
@@ -228,13 +228,13 @@ public class Main {
 		}
 	}
 
-	/** Pretty print the program
+	/** Print output for the program
 	 *
 	 * @param ast The root node of the program
-	 * @param printer The pretty printer to use
+	 * @param printer The printer to use
 	 * @param path The path of the file to print to
 	 */
-	public static void prettyPrint(Node ast, PrettyPrinter printer, String path)
+	public static void printOutput(Node ast, PrintingASTAdapter printer, String path)
 			throws FileNotFoundException {
 
 		PrintWriter prettyFile = new PrintWriter(new PrintWriter(path), true);
