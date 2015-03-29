@@ -1,8 +1,10 @@
 package golite;
 
 import java.io.PrintWriter;
+import java.util.List;
 
 import golite.analysis.DepthFirstAdapter;
+import golite.node.Node;
 
 public class PrintingASTAdapter extends DepthFirstAdapter {
 	protected String indent = "\t";
@@ -46,5 +48,25 @@ public class PrintingASTAdapter extends DepthFirstAdapter {
 	}
 	protected void endl() {
 		p("\n");
+	}
+	
+	protected void printConsecutiveLines(List<? extends Node> nodes) {
+		for (Node e : nodes) {
+			startl();
+			e.apply(this);
+			endl();
+		}
+	}
+	
+	protected void printList(List<? extends Node> nodes) {
+		boolean first = true;
+		for (Node e : nodes) {
+			if (first) {
+				first = false;
+			} else {
+				p(", ");
+			}
+			e.apply(this);
+		}
 	}
 }
