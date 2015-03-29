@@ -189,7 +189,7 @@ public class Main {
 			printOutput(ast, new TypedPrettyPrinter(compiler.getTypeMap()), pathBase+".pptype.go");
 		}
 
-		// TODO: code generation
+		printOutput(ast, new JSGenerator(compiler.getTypeMap()), pathBase+".js");
 	}
 
 	/** Generate an HTML token representation */
