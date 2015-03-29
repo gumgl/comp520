@@ -308,11 +308,13 @@ Productions
 			{-> New stm.if(simple_stm.stm, exp, [block.stm], [if_stm.stm])}
 	;
 
-	switch_clause =
-		  {expression} case exp_list colon stm* fallthrough_stm?
-			{-> New switch_clause.conditional([exp_list.exp], [stm], fallthrough_stm)}
-		| {default} default colon stm* fallthrough_stm?
-			{-> New switch_clause.default([stm], fallthrough_stm)}
+	switch_clause = switch_case stm* fallthrough_stm? ;
+
+	switch_case =
+		  {expression} case exp_list colon
+			{-> New switch_case.conditional([exp_list.exp])}
+		| {default} default colon
+			{-> New switch_case.default()}
 	;
 
 	fallthrough_stm = fallthrough semicolon {-> New fallthrough_stm()};
@@ -528,9 +530,11 @@ Abstract Syntax Tree
 		| {continue}
 	;
 
-	switch_clause =
-		  {conditional} exp+ stm* fallthrough_stm?
-		| {default} stm* fallthrough_stm?
+	switch_clause = switch_case stm* fallthrough_stm? ;
+
+	switch_case =
+		  {conditional} exp+
+		| {default}
 	;
 
 	fallthrough_stm = ;

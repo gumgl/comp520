@@ -685,13 +685,13 @@ public class TypeChecker extends DepthFirstAdapter {
 		}	
 			//if switch has expr, checks if cases e1, e2, . . . , en have same type as valueExp
 			//else, checks if cases e1, e2, . . . , en are well-typed and have type bool
-		for (int i=0; i<node.getSwitchClause().size();i++){
-			Node switchClause = node.getSwitchClause().get(i);
+		for (PSwitchClause switchClause : node.getSwitchClause()){
+			PSwitchCase caseStm = ((ASwitchClause) switchClause).getSwitchCase();
 
-			if (switchClause instanceof ADefaultSwitchClause)
+			if (caseStm instanceof ADefaultSwitchCase)
 				continue;
 
-			Type switchType = getType(switchClause);
+			Type switchType = getType(caseStm);
 			if (!hasExp) {
 				if(!isBooleanType(switchType)){ //case type is not boolType
 					errorSymbolType(switchClause,switchType, boolType);
@@ -711,26 +711,20 @@ public class TypeChecker extends DepthFirstAdapter {
 	 * switch clauses also enforce other type invariants.
 	 */
 	@Override
-	public void inADefaultSwitchClause(ADefaultSwitchClause node) {
+	public void inASwitchClause(ASwitchClause node) {
 		defaultIn(node);
 		symbolTable.addScope();
 	}
 
 	@Override
-	public void outADefaultSwitchClause(ADefaultSwitchClause node)
+	public void outASwitchClause(ASwitchClause node)
 	{
 		symbolTable.dropScope();
 		defaultOut(node);
 	}
 
 	@Override
-	public void inAConditionalSwitchClause(AConditionalSwitchClause node) {
-		defaultIn(node);
-		symbolTable.addScope();
-	}
-
-	@Override
-	public void outAConditionalSwitchClause(AConditionalSwitchClause node)
+	public void outAConditionalSwitchCase(AConditionalSwitchCase node)
 	{
 		PExp first = node.getExp().get(0);
 		Type firstType = getType(first);
@@ -756,7 +750,6 @@ public class TypeChecker extends DepthFirstAdapter {
 		setType(node,firstType);
 		}
 
-		symbolTable.dropScope();
 		defaultOut(node);
 	}
 
