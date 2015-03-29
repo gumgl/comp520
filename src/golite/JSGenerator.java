@@ -1,6 +1,7 @@
 package golite;
 
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -49,31 +50,45 @@ public class JSGenerator extends PrintingASTAdapter {
 	 * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/var
 	 */
 	private void printVariableDeclaration(LinkedList<PVariableSpec> specs) {
-		p("var ");
 		int specCount = specs.size();
 
 		if (specCount == 1) {
-			specs.get(0).apply(this);
-		} else {
-			endl();
-			shift();
+			PVariableSpec first = specs.getFirst();
 
-			int specsPrinted = 0;
-			for (PVariableSpec spec : specs) {
-				startl();
+			// If there is a single variable being declared then print it on
+			// a single line
+			if ((first instanceof ATypedVariableSpec
+						&& ((ATypedVariableSpec) first).getId().size() == 1)
+					|| (first instanceof AUntypedVariableSpec
+						&& ((AUntypedVariableSpec) first).getId().size() == 1)) {
 
-				spec.apply(this);
-
-				specsPrinted++;
-				if (specsPrinted != specCount) {
-					p(",");
-					endl();
-				}
+				p("var ");
+				specs.getFirst().apply(this);
+				p(";");
+				return;
 			}
-
-			unshift();
 		}
+
+		// Print one variable declaration per line
+		p("var");
+		endl();
+		shift();
+
+		int specsPrinted = 0;
+		for (PVariableSpec spec : specs) {
+			specsPrinted++;
+
+			startl();
+			spec.apply(this);
+
+			if (specsPrinted != specCount) {
+				p(",");
+				endl();
+			}
+		}
+
 		p(";");
+		unshift();
 	}
 
 	/**
@@ -664,16 +679,37 @@ public class JSGenerator extends PrintingASTAdapter {
 		outAVariableDecStm(node);
 	}
 
-	// TODO
-//	@Override
-//	public void caseAShortVariableDecStm(AShortVariableDecStm node)
-//	{
-//		inAShortVariableDecStm(node);
-//		printList(node.getIds());
-//		p(" := ");
-//		printList(node.getExp());
-//		outAShortVariableDecStm(node);
-//	}
+	@Override
+	public void caseAShortVariableDecStm(AShortVariableDecStm node)
+	{
+		inAShortVariableDecStm(node);
+
+		// Extract a list of ID tokens for the helper method
+		int size = node.getIds().size();
+		List<TId> ids = new ArrayList<TId>(size);
+		for (PExp var : node.getIds()) {
+			ids.add(((AVariableExp) var).getId());
+		}
+
+		// If there is only one variable then print it on a single line
+		if (size == 1) {
+			p("var ");
+		} else {
+			p("var");
+			endl();
+			shift();
+			startl();
+		}
+
+		printInitializedVariables(ids, node.getExp());
+		p(";");
+
+		if (size != 1) {
+			unshift();
+		}
+
+		outAShortVariableDecStm(node);
+	}
 
 	@Override
 	public void caseAOpAssignStm(AOpAssignStm node)
