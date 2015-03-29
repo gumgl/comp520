@@ -26,6 +26,7 @@ public class TypeChecker extends DepthFirstAdapter {
 	final VoidType voidType = new VoidType();
 
 	private Type functionReturnType;
+	private Type switchType;
 
 	public TypeChecker(PositionHelper positionHelper, SymbolTableLogger logger) {
 		this.positionHelper = positionHelper;
@@ -664,47 +665,37 @@ public class TypeChecker extends DepthFirstAdapter {
 	}
 
 	@Override
-	public void inASwitchStm(ASwitchStm node) {
-		defaultIn(node);
+	public void caseASwitchStm(ASwitchStm node) {
+		inASwitchStm(node);
 		symbolTable.addScope();
-	}
 
-	public void outASwitchStm(ASwitchStm node)
-	{
-		boolean hasExp = false;
-		Type expType = null;
-		
-		if (node.getExp()!=null){ //switch has an expr
-			hasExp = true;
-			PExp valueExp = node.getExp();
-			expType = getType (valueExp);
+		if (node.getStm() != null) {
+			node.getStm().apply(this);
+		}
 
-			if (voidType.isIdentical(expType)) {
-				errorVoidFunctionAsValue(valueExp);
-			}
-		}	
-			//if switch has expr, checks if cases e1, e2, . . . , en have same type as valueExp
-			//else, checks if cases e1, e2, . . . , en are well-typed and have type bool
-		for (PSwitchClause switchClause : node.getSwitchClause()){
-			PSwitchCase caseStm = ((ASwitchClause) switchClause).getSwitchCase();
+		// Handle nested switches: hold on to the previous type and
+		// restore it at the end
+		Type oldSwitchType = switchType;
 
-			if (caseStm instanceof ADefaultSwitchCase)
-				continue;
+		Node switchExp = node.getExp();
+		if (switchExp == null) {
+			switchType = boolType;
+		} else {
+			switchExp.apply(this);
+			switchType = getType(switchExp);
 
-			Type switchType = getType(caseStm);
-			if (!hasExp) {
-				if(!isBooleanType(switchType)){ //case type is not boolType
-					errorSymbolType(switchClause,switchType, boolType);
-				}
-			} else { 
-				if(!expType.isIdentical(switchType)){ //case type is not expType
-					errorSymbolType(switchClause,switchType, expType);
-				}
+			if (voidType.isIdentical(switchType)) {
+				errorVoidFunctionAsValue(switchExp);
 			}
 		}
 
+		for (Node clause : node.getSwitchClause()) {
+			clause.apply(this);
+		}
+
+		switchType = oldSwitchType;
 		symbolTable.dropScope();
-		defaultOut(node);
+		outASwitchStm(node);
 	}
 
 	/* Switch clauses: each opens its own scope. Non-default ("conditional")
@@ -726,30 +717,13 @@ public class TypeChecker extends DepthFirstAdapter {
 	@Override
 	public void outAConditionalSwitchCase(AConditionalSwitchCase node)
 	{
-		PExp first = node.getExp().get(0);
-		Type firstType = getType(first);
-		if (isBooleanType(firstType)){
-			//all the rest cases should have boolType			
-			for (int i=1; i<node.getExp().size(); i++){
-				PExp valueExp = node.getExp().get(i);
-				Type expType = getType(valueExp);
-				if (!isBooleanType (expType)){
-					errorSymbolType(valueExp, expType, "boolean type");
-				}
-			}
-		setType(node,boolType);
-		} else { 
-			//check all the rest have the same type as expType
-		for (int i=0; i<node.getExp().size(); i++){
-			PExp valueExp = node.getExp().get(i);
-			Type expType = getType(valueExp);
-			if (!expType.isIdentical(firstType)){
-				errorSymbolType(valueExp, expType, "boolean type");
-			}
-		}
-		setType(node,firstType);
-		}
+		for (PExp caseExp : node.getExp()) {
+			Type caseType = getType(caseExp);
 
+			if (!caseType.isIdentical(switchType)) {
+				errorSymbolType(caseExp, caseType, switchType);
+			}
+		}
 		defaultOut(node);
 	}
 
