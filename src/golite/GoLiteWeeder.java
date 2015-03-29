@@ -1,5 +1,6 @@
 package golite;
 
+import java.util.LinkedList;
 import java.util.List;
 
 import golite.analysis.DepthFirstAdapter;
@@ -8,6 +9,7 @@ import golite.node.*;
 public class GoLiteWeeder extends DepthFirstAdapter {
 	protected int loopNestingLevel = 0;
 	protected int switchNestingLevel = 0;
+	protected LinkedList<Boolean> switchDefaultEncountered = new LinkedList<Boolean>();
 	protected PositionHelper positionHelper;
 
 	public static void weed(Node node, PositionHelper positionHelper) {
@@ -99,67 +101,47 @@ public class GoLiteWeeder extends DepthFirstAdapter {
 		List<PSwitchClause> clauses = node.getSwitchClause();
 		boolean defaultFound = false;
 		
-		for (PSwitchClause clause : clauses) {
-			if (clause instanceof AConditionalSwitchClause) {
-				AConditionalSwitchClause condClause =
-						(AConditionalSwitchClause)clause;
-				
-				if (condClause.getFallthroughStm() == null)
-					ensureStatementBlockReturns(condClause, condClause.getStm());
-			}
+		for (PSwitchClause clauseProduction : clauses) {
+			ASwitchClause clause = (ASwitchClause)clauseProduction;
+			if (clause.getFallthroughStm() == null)
+				ensureStatementBlockReturns(clause, clause.getStm());
 
-			else if (clause instanceof ADefaultSwitchClause) {
+			if (clause.getSwitchCase() instanceof ADefaultSwitchCase) {
 				defaultFound = true;
-				
-				ADefaultSwitchClause defClause =
-						(ADefaultSwitchClause)clause;
-				
-				if (defClause.getFallthroughStm() == null)
-					ensureStatementBlockReturns(defClause, defClause.getStm());
 			}
 		}
 		
 		if (!defaultFound)
-			throwError(node, "Switch statement does not return on all branches");
+			throwError(node, "Switch statement has no default, but it needs to always return");
 	}
 
 	/* Switch statements */
 	@Override
 	public void inASwitchStm(ASwitchStm node) {
-		boolean defaultEncountered = false;
+		switchDefaultEncountered.push(false);
+		switchNestingLevel++;
 
-		if (node.getSwitchClause().isEmpty()) {
-			return;
-		}
-
-		Node last = node.getSwitchClause().getLast();
-		PFallthroughStm lastFallthrough = null;
-
-		if (last instanceof ADefaultSwitchClause) {
-			lastFallthrough = ((ADefaultSwitchClause) last).getFallthroughStm();
-		} else if (last instanceof AConditionalSwitchClause) {
-			lastFallthrough = ((AConditionalSwitchClause) last).getFallthroughStm();
-		}
-
-		if (lastFallthrough != null) {
-			throwError(lastFallthrough, "Cannot end switch statement with fallthrough");
-		}
-
-		for (Node switchClause : node.getSwitchClause()) {
-			if (switchClause instanceof ADefaultSwitchClause) {
-				if (defaultEncountered) {
-					throwError(switchClause, "Second default clause in switch statement");
-				}
-				defaultEncountered = true;
+		if (!node.getSwitchClause().isEmpty()) {
+			ASwitchClause last = (ASwitchClause)node.getSwitchClause().getLast();
+			if (last.getFallthroughStm() != null) {
+				throwError(last.getFallthroughStm(), "Cannot end switch statement with fallthrough");
 			}
 		}
-
-		switchNestingLevel++;
 	}
 
 	@Override
 	public void outASwitchStm(ASwitchStm node) {
+		switchDefaultEncountered.pop();
 		switchNestingLevel--;
+	}
+
+	@Override
+	public void outADefaultSwitchCase(ADefaultSwitchCase node) {
+		if (switchDefaultEncountered.peek()) {
+			throwError(node, "Second default clause in switch statement");
+		}
+		switchDefaultEncountered.set(0, true);
+		super.outADefaultSwitchCase(node);
 	}
 
 	/* Short variable declarations */

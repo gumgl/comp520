@@ -491,43 +491,36 @@ public class PrettyPrinter extends PrintingASTAdapter {
 	}
 
 	@Override
-	public void caseAConditionalSwitchClause(AConditionalSwitchClause node)
+	public void caseASwitchClause(ASwitchClause node) {
+		inASwitchClause(node);
+		node.getSwitchCase().apply(this);
+		shift();
+		printConsecutiveLines(node.getStm());
+		if (node.getFallthroughStm() != null) {
+			node.getFallthroughStm().apply(this);
+		}
+		unshift();
+		outASwitchClause(node);
+	}
+
+	@Override
+	public void caseAConditionalSwitchCase(AConditionalSwitchCase node)
 	{
-		inAConditionalSwitchClause(node);
+		inAConditionalSwitchCase(node);
 		startl();
 		p("case ");
 		printList(node.getExp());
 		p(":");
 		endl();
-		shift();
-		printConsecutiveLines(node.getStm());
-		if(node.getFallthroughStm() != null)
-		{
-			startl();
-			node.getFallthroughStm().apply(this);
-			endl();
-		}
-		unshift();
-		outAConditionalSwitchClause(node);
+		outAConditionalSwitchCase(node);
 	}
 
 	@Override
-	public void caseADefaultSwitchClause(ADefaultSwitchClause node)
+	public void caseADefaultSwitchCase(ADefaultSwitchCase node)
 	{
-		inADefaultSwitchClause(node);
-		startl();
-		p("default:");
-		endl();
-		shift();
-		printConsecutiveLines(node.getStm());
-		if(node.getFallthroughStm() != null)
-		{
-			startl();
-			node.getFallthroughStm().apply(this);
-			endl();
-		}
-		unshift();
-		outADefaultSwitchClause(node);
+		inADefaultSwitchCase(node);
+		pln("default:");
+		outADefaultSwitchCase(node);
 	}
 
 	@Override
