@@ -35,6 +35,11 @@ public class GoLiteWeeder extends DepthFirstAdapter {
 			throwError(lvalue, "Expected an addressable expression");
 		}
 	}
+	
+	private void ensureNotBlank(TId variable) {
+		if (variable.getText().equals("_"))
+			throwError(variable, "Cannot use _ as value");
+	}
 
 	/* Loop-specific statements */
 	@Override
@@ -68,8 +73,18 @@ public class GoLiteWeeder extends DepthFirstAdapter {
 	/* Function declarations */
 	@Override
 	public void inAFunctionDeclaration(AFunctionDeclaration node) {
+		ensureNotBlank(node.getId());
+		
 		if (node.getReturnType() != null) {
 			ensureStatementBlockReturns(node, node.getStm());
+		}
+	}
+	
+	@Override
+	public void inAFuncParam(AFuncParam node)
+	{
+		for (TId id : node.getId()) {
+			ensureNotBlank(id);
 		}
 	}
 
@@ -195,5 +210,22 @@ public class GoLiteWeeder extends DepthFirstAdapter {
 	@Override
 	public void inAIncDecStm(AIncDecStm node) {
 		ensureIsLvalue(node.getExp());
+	}
+	
+	@Override
+	public void inAProgram(AProgram node)
+	{
+		ensureNotBlank(node.getPackageName());
+	}
+	
+	@Override
+	public void inAVariableExp(AVariableExp node) {
+		ensureNotBlank(node.getId());
+	}
+	
+	@Override
+	public void inAAppendExp(AAppendExp node)
+	{
+		ensureNotBlank(node.getId());
 	}
 }
