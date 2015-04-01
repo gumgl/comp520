@@ -1,10 +1,11 @@
 package main
 
-// Using Go, this runs in about 20 seconds on my laptop
+// Using the Go compiler, this runs in about 50-90
+// seconds depending on the machine
 
-type stack struct{
-	store []int;
-	index, allocated int;
+type stack struct {
+	store            []int
+	index, allocated int
 }
 
 func push(s stack, value int) stack {
@@ -22,29 +23,33 @@ func push(s stack, value int) stack {
 }
 
 func ackermann(m, n int) int {
-    var s stack
+	var s stack
 
-    s = push(s, m)
-    s = push(s, n)
+	s = push(s, m)
+	s = push(s, n)
 
-    for s.index > 1 {
+	// Continue applying the function until the stack
+	// is reduced to the return value
+	for s.index > 1 {
+		// Pop the top values from the stack
 		var m, n = s.store[s.index-2], s.store[s.index-1]
 		s.index -= 2
 
+		// ackermann(m, 0) -> ackermann(m-1, 1)
 		if m > 0 && n == 0 {
 			m--
 			n = 1
 		}
 
 		if m == 0 {
-			s = push(s, n + 1)
-			continue
+			// ackermann(0, n) -> n + 1
+			s = push(s, n+1)
+		} else {
+			// ackermann(m-1, ackermann(m, n-1))
+			s = push(s, m-1)
+			s = push(s, m)
+			s = push(s, n-1)
 		}
-
-		// ackermann(m-1, ackermann(m, n-1))
-		s = push(s, m-1)
-		s = push(s, m)
-		s = push(s, n-1)
 	}
 
 	return s.store[0]
