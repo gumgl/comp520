@@ -4,8 +4,8 @@ var seed int = 123456789;
 
 func rand() int {
 	//seed = (a * seed + c) % m;
-	seed = (16807 * seed + 12345) % 1024;
-	return seed;
+	seed = (69069 * seed + 1) % 4294967296
+	return seed
 }
 
 func bubblesort(a []int, length int) {
