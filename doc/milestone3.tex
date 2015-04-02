@@ -1,0 +1,24 @@
+\documentclass[oneside]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{mathpazo,graphicx,hyperref}
+
+\hypersetup{
+  colorlinks   = true, %Colours links instead of ugly boxes
+  urlcolor     = blue, %Colour for external hyperlinks
+  linkcolor    = blue, %Colour of internal links
+  citecolor   = red %Colour of citations
+}
+
+\begin{document}
+\title{Milestone 3: Code generation status report}
+\author{Guillaume Labranche \and William Bain \and Si Mei Zhang}
+\maketitle
+
+We have opted to output JavaScript. TODO
+
+We have complete implementations of append expressions, function calls, type casts, and most operations. We have also implemented variable declarations, type declarations, and all simple statements and we have stopgap implementations of all control constructs except switch statements. These will be complete when our scoping solution is fully implemented.
+
+We also have proof of concept implementations for all types of variable, although the solution for structs has not been fully integrated with the rest of our code base.
+
+\end{document}
