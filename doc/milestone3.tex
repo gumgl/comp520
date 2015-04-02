@@ -15,7 +15,7 @@
 \author{Guillaume Labranche \and William Bain \and Si Mei Zhang}
 \maketitle
 
-We have opted to output JavaScript. TODO
+We have opted to output JavaScript, and have worked out code generation strategies for the language features which don't translate directly. These include Go's scoping rules, the emulation of pass-by-value semantics for structs and arrays, and zero-value initialization for structs, arrays, and slices.
 
 We have complete implementations of append expressions, function calls, type casts, and most operations. We have also implemented variable declarations, type declarations, and all simple statements and we have stopgap implementations of all control constructs except switch statements. These will be complete when our scoping solution is fully implemented.
 
