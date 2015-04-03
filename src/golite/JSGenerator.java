@@ -246,8 +246,8 @@ public class JSGenerator extends PrintingASTAdapter {
 	private void printShims() {
 		startl();
 		p("var golite$printbuffer='';");
-		p("function golite$print(){var a=arguments,b=[],i=0,o;for(o=a[0];i<a.length;o=a[++i]){b.push(o)};golite$printbuffer+=b.join(' ')}");
-		p("function golite$println(){golite$print.apply(null,arguments);console.log(golite$printbuffer);golite$printbuffer=''}");
+		p("function golite$print(a){golite$printbuffer+=a.join(' ')}");
+		p("function golite$println(a){golite$print(a);console.log(golite$printbuffer);golite$printbuffer=''}");
 
 		for (Entry<StructType,Integer> entry : structInitializerHelperFunctions.entrySet()) {
 			p("function golite$initializeStruct");
@@ -748,9 +748,9 @@ public class JSGenerator extends PrintingASTAdapter {
 			p("golite$print");
 		}
 
-		p("(");
+		p("([");
 		printList(node.getExp());
-		p(");");
+		p("]);");
 		outAPrintStm(node);
 	}
 
