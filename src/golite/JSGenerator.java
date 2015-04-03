@@ -137,7 +137,6 @@ public class JSGenerator extends PrintingASTAdapter {
 			switch (type.getRepresentation()) {
 			case "int":
 			case "rune":
-				// FIXME: what is the best thing to do with runes?
 				p("0");
 				break;
 			case "float64":
@@ -789,7 +788,6 @@ public class JSGenerator extends PrintingASTAdapter {
 	{
 		inAFunctionCallExp(node);
 
-		// FIXME
 		Type functorType = types.get(node.getFunctor());
 
 		if (functorType instanceof Type) {
