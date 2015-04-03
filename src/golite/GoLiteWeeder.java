@@ -159,9 +159,11 @@ public class GoLiteWeeder extends DepthFirstAdapter {
 		super.outADefaultSwitchCase(node);
 	}
 
-	/* Short variable declarations */
+	/* Short variable declarations: Override the case method to stop it
+	 * from recursing on the Id expressions, which have special weeding
+	 * rules here */
 	@Override
-	public void inAShortVariableDecStm(AShortVariableDecStm node) {
+	public void caseAShortVariableDecStm(AShortVariableDecStm node) {
 		for (Node id : node.getIds()) {
 			if (!(id instanceof AVariableExp)) {
 				throwError(id, "Expected id");
@@ -170,6 +172,10 @@ public class GoLiteWeeder extends DepthFirstAdapter {
 
 		if (node.getIds().size() != node.getExp().size()) {
 			throwVariableLengthError(node);
+		}
+
+		for (PExp e : node.getExp()) {
+			e.apply(this);
 		}
 	}
 
