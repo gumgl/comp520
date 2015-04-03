@@ -5,3 +5,14 @@ stmt18.go weeding
 stmt2.go weeding
 stmt3.go weeding
 vardec3.go weeding
+blankid1.go weeding
+blankid2.go weeding
+blankid3.go weeding
+blankid4.go weeding
+blankid5.go weeding
+blankid7.go weeding
+blankid8.go weeding
+blankid9.go weeding
+blank_id_error.go weeding
+blank_id_error2.go weeding
+stmt13.go weeding
