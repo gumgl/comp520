@@ -5,7 +5,6 @@ package golite;
  */
 
 import golite.lexer.IPushbackReader;
-import golite.node.TSemicolon;
 import golite.node.Token;
 
 import java.io.PushbackReader;
@@ -13,16 +12,14 @@ import java.util.LinkedList;
 
 
 public class ConservingGoLexer extends GoLexer {
-	LinkedList<Token> pendingTokens;
+	LinkedList<Token> pendingTokens = new LinkedList<Token>();
 
 	public ConservingGoLexer(PushbackReader in) {
 		super(in);
-		pendingTokens = new LinkedList<Token>();
 	}
 
 	public ConservingGoLexer(IPushbackReader in) {
 		super(in);
-		pendingTokens = new LinkedList<Token>();
 	}
 
 	protected void filter() {
