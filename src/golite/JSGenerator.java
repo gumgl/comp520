@@ -378,7 +378,12 @@ public class JSGenerator extends PrintingASTAdapter {
 		}
 	}
 
-
+	@Override
+	public void caseATypeDeclaration(ATypeDeclaration node) {
+		inATypeDeclaration(node);
+		// Don't recurse
+		outATypeDeclaration(node);
+	}
 
 	/* --------------------- Function declarations --------------------- */
 	@Override
@@ -713,6 +718,13 @@ public class JSGenerator extends PrintingASTAdapter {
 		node.getExp().apply(this);
 		p(";");
 		outAOpAssignStm(node);
+	}
+
+	@Override
+	public void caseATypeDecStm(ATypeDecStm node) {
+		inATypeDecStm(node);
+		// Don't recurse
+		outATypeDecStm(node);
 	}
 
 	@Override
