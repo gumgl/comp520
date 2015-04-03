@@ -3,3 +3,4 @@ invalid_cast8.go parser
 invalid_vardecl2.go parser
 var_decl_count_mismatch.go weeding
 invalid_arr_size.go parser
+var_decl_underscore_rvalue.go weeding
