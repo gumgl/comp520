@@ -26,6 +26,10 @@ public class GoLiteWeeder extends DepthFirstAdapter {
 		throwError(node, "There should be as many variables as expressions");
 	}
 
+	private void throwNoReturnError(Node node) {
+		throwError(node, "Missing return at end of function");
+	}
+
 	private void ensureIsLvalue(PExp lvalue) {
 		if (lvalue instanceof AArrayAccessExp) {
 			ensureIsLvalue(((AArrayAccessExp)lvalue).getArray());
@@ -89,29 +93,38 @@ public class GoLiteWeeder extends DepthFirstAdapter {
 	}
 
 	protected void ensureStatementBlockReturns(Node parent, List<PStm> statements) {
-		PStm lastStm = null;
-		
-		if (statements != null && statements.size() > 0)
-			lastStm = statements.get(statements.size()-1);
-		
+		if (statements == null || statements.size() == 0)
+			throwNoReturnError(parent);
+			
+		PStm lastStm = statements.get(statements.size()-1);
+
 		if (lastStm instanceof AReturnStm)
 			return;
-		
-		if (lastStm instanceof AIfStm) {
+
+		if (lastStm instanceof AForStm) {
+			ensureBranchesReturn((AForStm)lastStm);
+		} else if (lastStm instanceof AIfStm) {
 			ensureBranchesReturn((AIfStm)lastStm);
 		} else if (lastStm instanceof ASwitchStm) {
 			ensureBranchesReturn((ASwitchStm)lastStm);
+		} else if (lastStm instanceof ABlockStm) {
+			ensureStatementBlockReturns(lastStm, ((ABlockStm) lastStm).getStm());
 		} else {
-			throwError(lastStm == null ? parent : lastStm,
-					"Function with return type does not end with return statement");
+			throwNoReturnError(lastStm);
 		}
 	}
-	
+
+	protected void ensureBranchesReturn(AForStm node) {
+		if (node.getExp() != null || BreakStatementLocator.containsBreak(node)) {
+			throwNoReturnError(node);
+		}
+	}
+
 	protected void ensureBranchesReturn(AIfStm node) {
 		ensureStatementBlockReturns(node, node.getIfBlock());
 		ensureStatementBlockReturns(node, node.getElseBlock());
 	}
-	
+
 	protected void ensureBranchesReturn(ASwitchStm node) {
 		List<PSwitchClause> clauses = node.getSwitchClause();
 		boolean defaultFound = false;
@@ -127,7 +140,34 @@ public class GoLiteWeeder extends DepthFirstAdapter {
 		}
 		
 		if (!defaultFound)
-			throwError(node, "Switch statement has no default, but it needs to always return");
+			throwNoReturnError(node);
+	}
+
+	protected static class BreakStatementLocator extends DepthFirstAdapter {
+		private static BreakStatementLocator breakLocator = new BreakStatementLocator();
+
+		@SuppressWarnings("serial")
+		private class FoundBreak extends RuntimeException {
+		}
+
+		public static boolean containsBreak(Node node) {
+			try {
+				node.apply(breakLocator);
+			} catch (FoundBreak a) {
+				return true;
+			}
+
+			return false;
+		}
+
+		private BreakStatementLocator() {
+			super();
+		}
+
+		@Override
+		public void inABreakStm(ABreakStm node) {
+			throw new FoundBreak();
+		}
 	}
 
 	/* Switch statements */
