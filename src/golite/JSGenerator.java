@@ -235,8 +235,8 @@ public class JSGenerator extends PrintingASTAdapter {
 		printConsecutiveLines(node.getDeclarations());
 
 		printShims();
-		pln("main();");
-		pln("if(golite$printbuffer.length>0)console.log(golite$printbuffer);");
+		pln("try main();");
+		pln("finally{if(golite$printbuffer.length>0)console.log(golite$printbuffer);}");
 		unshift();
 
 		pln("})();");
