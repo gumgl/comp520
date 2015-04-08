@@ -25,17 +25,23 @@ STAGES = [
     'lexer',
     'parser',
     'weeding',
-    'type'
+    'type',
+    'code_gen'
 ]
 
-ALL_STAGES = len(STAGES)
-UNDETECTED_STAGE = ALL_STAGES + 1
+LEXER_STAGE = 0
+PARSER_STAGE = 1
+WEEDING_STAGE = 2
+TYPE_STAGE = 3
+CODE_GEN_STAGE = 4
+
+UNDETECTED_STAGE = len(STAGES)
 
 STAGE_ALIASES = {
-    'scanner': STAGES.index('lexer'),
-    'syntax': STAGES.index('parser'),
-    'types': STAGES.index('type'),
-    'semantic': ALL_STAGES
+    'scanner': LEXER_STAGE,
+    'syntax': PARSER_STAGE,
+    'types': TYPE_STAGE,
+    'semantic': CODE_GEN_STAGE
 }
 
 # --- Command-line interface ---
@@ -279,11 +285,7 @@ class TestRunner:
             # If the stage the test case targets could not be detected, give a
             # warning but succeed if the test case was expected to fail. If it
             # was expected to succeed, give a warning and also fail.
-            #
-            # Give a warning for either UNDETECTED_STAGE or ALL_STAGES if a
-            # failure was expected, since for failures they basically mean the
-            # same thing
-            if (expect_success and test_stage == UNDETECTED_STAGE) or (not expect_success and test_stage >= ALL_STAGES):
+            if test_stage == UNDETECTED_STAGE:
                 logger.warn('cannot validate error raised by %s\n'
                     '   The expected error type was not detected', filename)
 
