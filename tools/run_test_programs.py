@@ -100,11 +100,11 @@ def main(targets, exclude, input_file=None, interactive=False):
         targets.extend(read_test_targets(sys.stdin))
 
     if interactive:
-        runner = InteractiveTestRunner(exclude)
+        runner = InteractiveTestRunner(targets, exclude)
     else:
-        runner = TestRunner(exclude)
+        runner = TestRunner(targets, exclude)
 
-    runner.testall(targets)
+    runner.test_all()
     runner.print_results()
 
     if runner.status == PROGRAM_ERROR:
@@ -119,11 +119,17 @@ def read_test_targets(f):
             yield line
 
 class TestRunner:
-    def __init__(self, exclude=None, cmd=None):
+    def __init__(self, targets=None, exclude=None, cmd=None):
         if exclude is None:
             self.exclude = []
         else:
             self.exclude = [os.path.normpath(x) for x in exclude]
+
+        if targets is None:
+            self.unprocessed = []
+        else:
+            self.unprocessed = list(targets)
+
         self.status = TESTS_GOOD
         self.cmd = cmd or ('golite' if sys.platform == 'win32' else './golite')
 
@@ -132,7 +138,6 @@ class TestRunner:
 
         self.config = {}
 
-        self.unprocessed = []
         self.queue = []
 
     def print_results(self):
@@ -159,13 +164,11 @@ class TestRunner:
         if status > self.status:
             self.status = status
 
-    def testall(self, targets):
-        self.unprocessed.extend(targets)
-
+    def test_all(self):
         while self.unprocessed:
-            self.test(self.unprocessed.pop(0))
+            self.test_target(self.unprocessed.pop(0))
 
-    def test(self, target):
+    def test_target(self, target):
         if os.path.isdir(target):
             self.enqueue_dir(target)
 
@@ -179,7 +182,7 @@ class TestRunner:
             return
 
         while self.queue:
-            self.testfile(self.queue.pop(0))
+            self.test_file(self.queue.pop(0))
 
     def enqueue_dir(self, target):
         for (directory, subdirs, files) in os.walk(target, topdown=True):
@@ -225,7 +228,7 @@ class TestRunner:
                 continue
             self.config[key] = stage
 
-    def testfile(self, target):
+    def test_file(self, target):
         target = os.path.normpath(target)
         dirs = list(all_directories(os.path.dirname(target)))
 
