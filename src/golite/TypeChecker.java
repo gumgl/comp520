@@ -1,6 +1,6 @@
 package golite;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -37,18 +37,20 @@ public class TypeChecker extends DepthFirstAdapter {
 		this(positionHelper, null);
 	}
 
-	static private String collectionToString(Collection<?> collection, String separator, String finalWord) {
+	static private String getSimpleNames(
+			Collection<Class<? extends Symbol>> symbolClasses, String separator,
+			String finalWord) {
 		StringBuilder sb = new StringBuilder();
 
 		int i = 1;
-		int size = collection.size();
-		for (Object obj : collection) {
+		int size = symbolClasses.size();
+		for (Class<? extends Symbol> cls : symbolClasses) {
 			if (i > 1)
 				if (size > 1 && i == size)
 					sb.append(finalWord);
 				else
 					sb.append(separator);
-			sb.append(obj.toString());
+			sb.append(cls.getSimpleName());
 
 			i++;
 		}
@@ -67,12 +69,17 @@ public class TypeChecker extends DepthFirstAdapter {
 		error(node, "Symbol \"" + id + "\" not found");
 	}
 	// e.g. When we expect the symbol to be a function instead of a variable
-	private void errorSymbolClass(Node node, Symbol found, Class<? extends Symbol> expected) {
-		error(node, "Expected " + found.getId() + " to be a " + expected.getSimpleName());
-	}
-	// e.g. When we expect the symbol to be a function instead of a variable
-	private void errorSymbolClasses(Node node, Symbol found, Collection<Class<? extends Symbol> > expected) {
-		error (node, "Expected " + found.getId() + " to be a " + collectionToString(expected, ",", "or"));
+	@SafeVarargs
+	final private void errorSymbolClass(Node node, Symbol found,
+			Class<? extends Symbol>... expected) {
+		String expectedString;
+
+		if (expected.length == 1)
+			expectedString = expected[0].getSimpleName();
+		else
+			expectedString = getSimpleNames(Arrays.asList(expected), ", ", " or ");
+
+		error(node, "Expected " + found.getId() + " to be a " + expectedString);
 	}
 	// When we expect the symbol to be a certain type
 	private void errorSymbolType(Node node, Type found, Type expected) {
@@ -895,11 +902,8 @@ public class TypeChecker extends DepthFirstAdapter {
 		} else {
 			if (exps.size() != 1)
 				errorSymbolClass(node, functorSymbol, Function.class);
-
-			Collection<Class<? extends Symbol>> expected = new ArrayList<Class<? extends Symbol>>();
-			expected.add(Function.class);
-			expected.add(AliasType.class);
-			errorSymbolClasses(node, functorSymbol, expected);
+			else
+				errorSymbolClass(node, functorSymbol, Function.class, AliasType.class);
 		}
 		defaultOut(node);
 	}
