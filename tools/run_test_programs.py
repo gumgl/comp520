@@ -167,7 +167,10 @@ class TestRunner:
             if err_msg:
                 fail_msg.extend(('   > '+line) for line in err_msg.split('\n'))
 
-        logger.log(LOG_TEST_FAILURE if status == TESTS_FAILED else logging.ERROR, '\n'.join(fail_msg))
+        self.fail_with_message(filename, '\n'.join(fail_msg), status)
+
+    def fail_with_message(self, filename, msg, status):
+        logger.log(LOG_TEST_FAILURE if status == TESTS_FAILED else logging.ERROR, msg)
         self._update(status)
 
     def _update(self, status):
@@ -335,8 +338,9 @@ class TestRunner:
             try:
                 expected_output = check_err_output('go run "'+filename+'"', universal_newlines=True)
             except CalledProcessError:
-                logger.error('could not run %s with GoLite', expected_output_filename)
-                self._update(PROGRAM_ERROR)
+                self.fail_with_message(filename,
+                    'could not run {} with Go'.format(expected_output_filename),
+                    PROGRAM_ERROR)
                 return
 
             with open(expected_output_filename, 'w') as output_file:
@@ -347,22 +351,23 @@ class TestRunner:
         try:
             actual_output = check_output('node "'+js_filename+'"', universal_newlines=True)
         except CalledProcessError:
-            logger.error('could not run %s with Node.js', js_filename)
-            self._update(PROGRAM_ERROR)
+            self.fail_with_message(filename,
+                'could not run {} with Node.js'.format(js_filename),
+                PROGRAM_ERROR)
             return
 
         if expected_output == actual_output:
             self.succeed(filename, 'output matches expectation')
             logger.debug('Expected output:\n%s', expected_output)
         else:
-            logger.log(LOG_TEST_FAILURE, 'Output for %s was not what was expected:\n%s', filename,
-                       '\n'.join(Differ().compare(expected_output.split('\n'), actual_output.split('\n'))))
-            self._update(TESTS_FAILED)
+            msg = 'Output for {} was not what was expected:\n'.format(filename)
+            msg += '\n'.join(Differ().compare(expected_output.split('\n'), actual_output.split('\n')))
+            self.fail_with_message(filename, msg, TESTS_FAILED)
 
 
 class InteractiveTestRunner (TestRunner):
-    def fail(self, filename, *args, **kwargs):
-        super().fail(filename, *args, **kwargs)
+    def fail_with_message(self, filename, *args, **kwargs):
+        super().fail_with_message(filename, *args, **kwargs)
 
         print()
         InteractiveCmd(self, filename).cmdloop()
