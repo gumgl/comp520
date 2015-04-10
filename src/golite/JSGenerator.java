@@ -852,9 +852,6 @@ public class JSGenerator extends PrintingASTAdapter {
 
 	/* --------------------- Literals --------------------- */
 
-	// Runes: I think printing these as numbers makes most sense, but
-	// I'm not positive
-
 	@Override
 	public void outARegularRuneCharacter(ARegularRuneCharacter node) {
 		p(((int)node.getRegularRuneCharacter().getText().charAt(0))+"");
