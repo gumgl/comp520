@@ -65,7 +65,6 @@ public class JSGenerator extends PrintingASTAdapter {
 
 				p("var ");
 				specs.getFirst().apply(this);
-				p(";");
 				return;
 			}
 		}
@@ -87,8 +86,6 @@ public class JSGenerator extends PrintingASTAdapter {
 				endl();
 			}
 		}
-
-		p(";");
 		unshift();
 	}
 
@@ -222,6 +219,25 @@ public class JSGenerator extends PrintingASTAdapter {
 		exp.apply(this);
 	}
 
+	private void printStatements(List<PStm> statements) {
+		for (PStm stm : statements) {
+			if (stm instanceof ATypeDecStm) {
+				continue;
+			}
+
+			startl();
+			stm.apply(this);
+
+			if (!(stm instanceof AIfStm))
+			if (!(stm instanceof AForStm))
+			if (!(stm instanceof ASwitchStm))
+			if (!(stm instanceof ABlockStm))
+				p(";");
+
+			endl();
+		}
+	}
+
 	/* --------------------- Toplevel declarations --------------------- */
 
 	@Override
@@ -318,6 +334,7 @@ public class JSGenerator extends PrintingASTAdapter {
 	{
 		inAVariableDeclaration(node);
 		printVariableDeclaration(node.getVariableSpec());
+		p(";");
 		outAVariableDeclaration(node);
 	}
 
@@ -401,7 +418,8 @@ public class JSGenerator extends PrintingASTAdapter {
 		endl();
 
 		shift();
-		printConsecutiveLines(node.getStm());
+		printStatements(node.getStm());
+
 		unshift();
 		startl();
 		p("}");
@@ -441,7 +459,7 @@ public class JSGenerator extends PrintingASTAdapter {
 	public void caseABlockStm(ABlockStm node) {
 		inABlockStm(node);
 		openBlock();
-		printConsecutiveLines(node.getStm());
+		printStatements(node.getStm());
 		closeBlock();
 		outABlockStm(node);
 	}
@@ -465,7 +483,7 @@ public class JSGenerator extends PrintingASTAdapter {
 		endl();
 		shift();
 
-		printConsecutiveLines(node.getIfBlock());
+		printStatements(node.getIfBlock());
 
 		unshift();
 		startl();
@@ -483,7 +501,7 @@ public class JSGenerator extends PrintingASTAdapter {
 				p("{");
 				endl();
 				shift();
-				printConsecutiveLines(elseBlock);
+				printStatements(elseBlock);
 				unshift();
 				startl();
 				p("}");
@@ -522,7 +540,7 @@ public class JSGenerator extends PrintingASTAdapter {
 		endl();
 
 		shift();
-		printConsecutiveLines(node.getStm());
+		printStatements(node.getStm());
 		unshift();
 
 		startl();
@@ -555,7 +573,6 @@ public class JSGenerator extends PrintingASTAdapter {
 			p(" ");
 			node.getExp().apply(this);
 		}
-		p(";");
 		outAReturnStm(node);
 	}
 
@@ -634,7 +651,6 @@ public class JSGenerator extends PrintingASTAdapter {
 	{
 		inAExpressionStm(node);
 		node.getExp().apply(this);
-		p(";");
 		outAExpressionStm(node);
 	}
 
@@ -655,9 +671,10 @@ public class JSGenerator extends PrintingASTAdapter {
 			variable.apply(this);
 			p(" = ");
 			printNewCopy(value);
-			p(";");
 
 			if (valueIterator.hasNext()) {
+				// Only print the semicolon if this is internal to the assignment list
+				p(";");
 				endl();
 				startl();
 			}
@@ -697,7 +714,6 @@ public class JSGenerator extends PrintingASTAdapter {
 		}
 
 		printInitializedVariables(ids, node.getExp());
-		p(";");
 
 		if (size != 1) {
 			unshift();
@@ -715,7 +731,6 @@ public class JSGenerator extends PrintingASTAdapter {
 		node.getAssignOp().apply(this);
 		p(" ");
 		node.getExp().apply(this);
-		p(";");
 		outAOpAssignStm(node);
 	}
 
@@ -732,7 +747,6 @@ public class JSGenerator extends PrintingASTAdapter {
 		inAIncDecStm(node);
 		node.getExp().apply(this);
 		node.getPostfixOp().apply(this);
-		p(";");
 		outAIncDecStm(node);
 	}
 
@@ -750,7 +764,7 @@ public class JSGenerator extends PrintingASTAdapter {
 
 		p("([");
 		printList(node.getExp());
-		p("]);");
+		p("])");
 		outAPrintStm(node);
 	}
 
