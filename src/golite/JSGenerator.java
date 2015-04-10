@@ -123,7 +123,7 @@ public class JSGenerator extends PrintingASTAdapter {
 	}
 
 	/** Convenience variant */
-	private void printNewCopy(PExp value) {
+	private void printFreshCopy(PExp value) {
 		printFreshCopy(value, types.get(value));
 	}
 
@@ -384,7 +384,7 @@ public class JSGenerator extends PrintingASTAdapter {
 			PExp value = valueIterator.next();
 			p(variable.getText());
 			p(" = ");
-			printNewCopy(value);
+			printFreshCopy(value);
 
 			if (valueIterator.hasNext()) {
 				p(",");
@@ -670,7 +670,7 @@ public class JSGenerator extends PrintingASTAdapter {
 
 			variable.apply(this);
 			p(" = ");
-			printNewCopy(value);
+			printFreshCopy(value);
 
 			if (valueIterator.hasNext()) {
 				// Only print the semicolon if this is internal to the assignment list
@@ -817,7 +817,7 @@ public class JSGenerator extends PrintingASTAdapter {
 				} else {
 					p(", ");
 				}
-				printNewCopy(exp);
+				printFreshCopy(exp);
 			}
 
 			p(")");
