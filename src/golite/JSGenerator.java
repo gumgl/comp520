@@ -747,7 +747,7 @@ public class JSGenerator extends PrintingASTAdapter {
 
 		Type functorType = types.get(node.getFunctor());
 
-		if (functorType instanceof Type) {
+		if (functorType != null) {
 			printTypeCoerced(node.getExp().get(0), functorType);
 		} else {
 			node.getFunctor().apply(this);
