@@ -1,16 +1,15 @@
 package golite.typechecker;
 
 import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Deque;
+import java.util.Map;
 
 public class SymbolTable {
-
-	Deque<List<Symbol>> scopes = new ArrayDeque<List<Symbol>>();
+	Deque<Map<String, Symbol>> scopes = new ArrayDeque<Map<String, Symbol>>();
 	protected SymbolTableLogger logger;
-	
+
 	public SymbolTable(SymbolTableLogger logger) {
 		// We don't need to log the opening of the zeroth scope; it should never close
 		addScope();
@@ -26,21 +25,24 @@ public class SymbolTable {
 	}
 
 	public void addSymbol(Symbol symbol) {
-		scopes.peek().add(symbol);
+		scopes.peek().put(symbol.getId(), symbol);
 	}
 
 	public void addSymbols(Collection<? extends Symbol> symbols) {
-		scopes.peek().addAll(symbols);
+		Map<String, Symbol> scope = scopes.peek();
+		for (Symbol s : symbols) {
+			scope.put(s.getId(), s);
+		}
 	}
-	
-	public List<Symbol> getSymbols() {
-		return scopes.peek();
+
+	public Collection<Symbol> getSymbols() {
+		return scopes.peek().values();
 	}
 
 	public void addScope() {
 		if (logger != null)
 			logger.logScopeEntry();
-		scopes.push(new ArrayList<Symbol>());
+		scopes.push(new HashMap<String, Symbol>());
 	}
 
 	public void dropScope() {
@@ -48,15 +50,15 @@ public class SymbolTable {
 			logger.logScopeExit();
 		scopes.pop();
 	}
-	
+
 	public Symbol getLastSymbol() {
-		List<Symbol> scope = scopes.peek();
-		return scope.get(scope.size()-1);
+		Map<String, Symbol> scope = scopes.peek();
+		return scope.values().iterator().next();
 	}
 
 	// Used when an identifier is referenced
 	public Symbol get(String id) {
-		for (List<Symbol> scope : scopes) {
+		for (Map<String, Symbol> scope : scopes) {
 			Symbol found = getInScope(scope, id);
 
 			if (found != null)
@@ -69,12 +71,8 @@ public class SymbolTable {
 	public Symbol getInScope(String id) {
 		return getInScope(scopes.peek(), id);
 	}
-	
-	public Symbol getInScope(List<Symbol> scope, String id) {
-		for (Symbol symbol : scope) // Search in current scope
-			if (symbol.getId().equals(id))
-				return symbol;
-		
-		return null; // Not found
+
+	public Symbol getInScope(Map<String, Symbol> scope, String id) {
+		return scope.get(id);
 	}
 }
