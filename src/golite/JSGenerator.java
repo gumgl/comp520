@@ -596,19 +596,39 @@ public class JSGenerator extends PrintingASTAdapter {
 
 		assert variables.size() == values.size();
 
-		Iterator<PExp> valueIterator = values.iterator();
-		for (PExp variable : variables) {
-			PExp value = valueIterator.next();
-
-			variable.apply(this);
+		/* If there is one variable just print it. Otherwise,
+		 * write each value to a temporary variable before doing
+		 * assignments. */
+		if (variables.size() == 1) {
+			variables.get(0).apply(this);
 			p(" = ");
-			printFreshCopy(value);
+			printFreshCopy(values.get(0));
+		} else {
+			p("var ");
 
-			if (valueIterator.hasNext()) {
-				// Only print the semicolon if this is internal to the assignment list
+			int i = 0;
+			boolean first = true;
+
+			for (PExp value : values) {
+				if (first)
+					first = false;
+				else
+					p(", ");
+
+				p("$tmp"+i+" = ");
+				printFreshCopy(value);
+				i++;
+			}
+
+			i = 0;
+			for (PExp variable : variables) {
 				p(";");
 				endl();
 				startl();
+
+				variable.apply(this);
+				p(" = $tmp"+i);
+				i++;
 			}
 		}
 
