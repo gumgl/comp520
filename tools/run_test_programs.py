@@ -1,8 +1,9 @@
 #!/usr/bin/python3
 
 import sys, os, logging, argparse, cmd, posixpath
-from subprocess import Popen, PIPE, check_call
+from subprocess import Popen, PIPE, check_call, check_output, CalledProcessError
 from collections import OrderedDict
+from difflib import Differ
 
 # --- Logging configuration ---
 logger = logging.getLogger(__file__)
@@ -41,7 +42,8 @@ STAGE_ALIASES = {
     'scanner': LEXER_STAGE,
     'syntax': PARSER_STAGE,
     'types': TYPE_STAGE,
-    'semantic': CODE_GEN_STAGE
+    'semantic': CODE_GEN_STAGE,
+    'benchmark': CODE_GEN_STAGE
 }
 
 # --- Command-line interface ---
@@ -65,7 +67,7 @@ def initialize_config(args):
     elif ns.verbose >= 2:
         logger.setLevel(logging.DEBUG)
 
-    return ns.targets, ns.exclude, ns.input, ns.interactive
+    return ns.targets, ns.exclude, ns.input, ns.interactive, ns.run
 
 def get_cli_parser():
     parser = argparse.ArgumentParser(description='Run test programs and validate errors')
@@ -84,12 +86,13 @@ error it gives) is determined automagically from the path.
     parser.add_argument('--no-warn', action='store_false', dest='warn', help='Suppress warnings')
     parser.add_argument('-v', '--verbose', action='count', default=0, help='Increase output verbosity')
     parser.add_argument('-x', '--exclude', action='append', help='Exclude files found on this path')
+    parser.add_argument('-r', '--run', action='store_true', help='Run valid programs against the Go output')
 
     return parser
 
 # --- Test runner ---
 
-def main(targets, exclude, input_file=None, interactive=False):
+def main(targets, exclude, input_file=None, interactive=False, run_programs=False):
     if targets is None:
         targets = []
 
@@ -106,9 +109,9 @@ def main(targets, exclude, input_file=None, interactive=False):
         targets.extend(read_test_targets(sys.stdin))
 
     if interactive:
-        runner = InteractiveTestRunner(targets, exclude)
+        runner = InteractiveTestRunner(targets, exclude, run_programs=run_programs)
     else:
-        runner = TestRunner(targets, exclude)
+        runner = TestRunner(targets, exclude, run_programs=run_programs)
 
     runner.test_all()
     runner.print_results()
@@ -125,7 +128,7 @@ def read_test_targets(f):
             yield line
 
 class TestRunner:
-    def __init__(self, targets=None, exclude=None, cmd=None):
+    def __init__(self, targets=None, exclude=None, cmd=None, run_programs=False):
         if exclude is None:
             self.exclude = []
         else:
@@ -136,6 +139,8 @@ class TestRunner:
         else:
             self.unprocessed = list(targets)
 
+        self.run_programs = run_programs
+
         self.status = TESTS_GOOD
         self.cmd = cmd or ('golite' if sys.platform == 'win32' else './golite')
 
@@ -145,6 +150,7 @@ class TestRunner:
         self.config = {}
 
         self.queue = []
+        self.captured_output = None
 
     def print_results(self):
         print('Runs: {}. Failed: {}. Raised error: {}.'.format(sum(self.counts), *self.counts[1:]))
@@ -260,7 +266,10 @@ class TestRunner:
     def evaluate_test(self, filename, expect_success, test_stage, returncode, err_msg):
         if returncode == 0:
             if expect_success:
-                self.succeed(filename, 'no errors')
+                if test_stage == CODE_GEN_STAGE and self.run_programs:
+                    self.evaluate_run(filename)
+                else:
+                    self.succeed(filename, 'no errors')
                 return
 
             self.fail(filename, describe_for_stage('error', test_stage), 'the test passed all stages')
@@ -314,6 +323,42 @@ class TestRunner:
         # Any other return code means an internal error
         expected = describe_for_stage('to pass' if expect_success else 'error', test_stage)
         self.fail(filename, expected, 'got internal error', err_msg, status=TEST_ERROR)
+
+    def evaluate_run(self, filename):
+        expected_output_filename = get_expected_output_file(filename)
+
+        if os.path.exists(expected_output_filename):
+            with open(expected_output_filename) as expected_output_file:
+                expected_output = expected_output_file.read()
+
+        else:
+            try:
+                expected_output = check_err_output('go run "'+filename+'"', universal_newlines=True)
+            except CalledProcessError:
+                logger.error('could not run %s with GoLite', expected_output_filename)
+                self._update(PROGRAM_ERROR)
+                return
+
+            with open(expected_output_filename, 'w') as output_file:
+                output_file.write(expected_output)
+
+        js_filename = os.path.splitext(filename)[0]+'.js'
+
+        try:
+            actual_output = check_output('node "'+js_filename+'"', universal_newlines=True)
+        except CalledProcessError:
+            logger.error('could not run %s with Node.js', js_filename)
+            self._update(PROGRAM_ERROR)
+            return
+
+        if expected_output == actual_output:
+            self.succeed(filename, 'output matches expectation')
+            logger.debug('Expected output:\n%s', expected_output)
+        else:
+            self.fail(filename, expected_output, actual_output)
+            logger.log(LOG_TEST_FAILURE, 'Diff for %s:\n%s', filename,
+                       '\n'.join(Differ().compare(expected_output.split('\n'), actual_output.split('\n'))))
+
 
 class InteractiveTestRunner (TestRunner):
     def fail(self, filename, *args, **kwargs):
@@ -399,6 +444,32 @@ class InteractiveCmd (cmd.Cmd):
 
         check_call('vim "'+posix_name+'"')
 
+    def do_edit_expected(self, arg):
+        """Open the expected output in a shell editor
+        """
+        posix_name = get_expected_output_file(self.filename)
+        if os.path != posixpath:
+            posix_name = posixpath.join(*posix_name.split(os.path.sep))
+
+        check_call('vim "'+posix_name+'"')
+
+    def do_ee(self, arg):
+        return self.do_edit_expected(arg)
+
+    def do_set_expected(self, arg):
+        """Set the expected output to the actual output
+        """
+
+        if self.runner.captured_output is None:
+            print('no captured output')
+            return
+
+        with open(get_expected_output_file(self.filename), 'w') as expected:
+            expected.write(self.runner.captured_output)
+
+    def do_se(self, arg):
+        return self.do_set_expected(arg)
+
     def do_rerun(self, arg):
         """Run this test again
         """
@@ -480,6 +551,31 @@ class ConfigFile:
         for (key, stage) in self._mapping.items():
             file_obj.write('{} {}\n'.format(key, STAGES[stage]))
 
+# --- Utility functions ---
+
+def check_err_output(*popenargs, timeout=None, **kwargs):
+    r"""Run command with arguments and return its stderr output.
+
+    Clone of check_output in subprocess.
+    """
+    if 'stderr' in kwargs:
+        raise ValueError('stderrargument not allowed, it will be overridden.')
+    with Popen(*popenargs, stderr=PIPE, **kwargs) as process:
+        try:
+            unused_out, output = process.communicate(timeout=timeout)
+        except TimeoutExpired:
+            process.kill()
+            unused_out, output = process.communicate()
+            raise TimeoutExpired(process.args, timeout, output=output)
+        except:
+            process.kill()
+            process.wait()
+            raise
+        retcode = process.poll()
+        if retcode:
+            raise CalledProcessError(retcode, process.args, output=output)
+    return output
+
 def autodetect_stage(dirs):
     stage = None
 
@@ -503,6 +599,9 @@ def autodetect_stage(dirs):
 
     return stage
 
+def get_expected_output_file(filename):
+    return os.path.splitext(filename)[0]+'.expected_output.txt'
+
 def parse_stage(error):
     error = error.lower()
     for (i, stage_name) in enumerate(STAGES):
@@ -524,8 +623,8 @@ def all_directories(path):
 
 if __name__ == '__main__':
     try:
-        targets, exclude, input_file, interactive = initialize_config(sys.argv[1:])
-        sys.exit(main(targets, exclude, input_file, interactive))
+        targets, exclude, input_file, interactive, run_programs = initialize_config(sys.argv[1:])
+        sys.exit(main(targets, exclude, input_file, interactive, run_programs))
     except KeyboardInterrupt as e:
         logger.debug('Execution interrupted', exc_info=e)
         sys.exit(USER_INTERRUPT)
