@@ -2,20 +2,26 @@ package golite;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import golite.node.* ;
 import golite.typechecker.*;
 
 public class JSGenerator extends PrintingASTAdapter {
 	protected Map<Node, Type> types;
-	protected Map<Type,Integer> copyHelperFunctions = new HashMap<Type,Integer>();
-	protected Map<StructType,Integer> structInitializerHelperFunctions = new HashMap<StructType,Integer>();
+
+	private StructInitializerHelperFunctionManager structInitHelpers =
+			new StructInitializerHelperFunctionManager("golite$initializeStruct", this);
+
+	private StructCopyHelperFunctionManager structCopyHelpers =
+			new StructCopyHelperFunctionManager("golite$copyStruct", this);
+
+	private ArrayCopyHelperFunctionManager arrayCopyHelpers =
+			new ArrayCopyHelperFunctionManager("golite$copyArray", this);
+
 
 	public JSGenerator(PrintWriter writer, Map<Node, Type> types) {
 		super(writer);
@@ -92,7 +98,7 @@ public class JSGenerator extends PrintingASTAdapter {
 	/**
 	 * Print an expression that reflects GoLite's pass by reference semantics
 	 */
-	private void printFreshCopy(PExp value, Type valueType) {
+	protected void printFreshCopy(PExp value, Type valueType) {
 		valueType = valueType.getUnderlying();
 
 		// Builtin types are already value type in JavaScript; slice types are
@@ -107,13 +113,13 @@ public class JSGenerator extends PrintingASTAdapter {
 				value.apply(this);
 				p(".slice()");
 			} else {
-				p(getCopyHelperFunction(valueType));
+				p(arrayCopyHelpers.getFunctionName((ArrayType) valueType));
 				p("(");
 				value.apply(this);
 				p(")");
 			}
 		} else if (valueType instanceof StructType) {
-			p(getCopyHelperFunction(valueType));
+			p(structCopyHelpers.getFunctionName((StructType) valueType));
 			p("(");
 			value.apply(this);
 			p(")");
@@ -123,11 +129,11 @@ public class JSGenerator extends PrintingASTAdapter {
 	}
 
 	/** Convenience variant */
-	private void printFreshCopy(PExp value) {
+	protected void printFreshCopy(PExp value) {
 		printFreshCopy(value, types.get(value));
 	}
 
-	private void printDefaultValue(Type type) {
+	protected void printDefaultValue(Type type) {
 		type = type.getUnderlying();
 
 		if (type instanceof BuiltInType) {
@@ -166,33 +172,11 @@ public class JSGenerator extends PrintingASTAdapter {
 			}
 			p("]");
 		} else if (type instanceof StructType) {
-			p(getStructInitializerHelperFunction((StructType) type));
+			p(structInitHelpers.getFunctionName((StructType) type));
 			p("()");
 		} else {
 			throw new IllegalArgumentException("unexpected type: "+type);
 		}
-	}
-
-	private String getStructInitializerHelperFunction(StructType type) {
-		Integer helperIndex = structInitializerHelperFunctions.get(type);
-
-		if (helperIndex == null) {
-			helperIndex = structInitializerHelperFunctions.size();
-			structInitializerHelperFunctions.put(type, helperIndex);
-		}
-
-		return "golite$initializeStruct"+helperIndex;
-	}
-
-	protected String getCopyHelperFunction(Type t) {
-		Integer helperIndex = copyHelperFunctions.get(t);
-
-		if (helperIndex == null) {
-			helperIndex = copyHelperFunctions.size();
-			copyHelperFunctions.put(t, helperIndex);
-		}
-
-		return "golite$copy"+helperIndex;
 	}
 
 	private void printTypeCoerced(PExp exp, Type targetType) {
@@ -250,6 +234,9 @@ public class JSGenerator extends PrintingASTAdapter {
 
 		printConsecutiveLines(node.getDeclarations());
 
+		structInitHelpers.printFunctions();
+		structCopyHelpers.printFunctions();
+		arrayCopyHelpers.printFunctions();
 		printShims();
 		pln("try main();");
 		pln("finally{if(golite$printbuffer.length>0)console.log(golite$printbuffer);}");
@@ -264,69 +251,6 @@ public class JSGenerator extends PrintingASTAdapter {
 		p("var golite$printbuffer='';");
 		p("function golite$print(a){golite$printbuffer+=a.join(' ')}");
 		p("function golite$println(a){golite$print(a);console.log(golite$printbuffer);golite$printbuffer=''}");
-
-		for (Entry<StructType,Integer> entry : structInitializerHelperFunctions.entrySet()) {
-			p("function golite$initializeStruct");
-			p(entry.getValue().toString());
-			p("(a){return{");
-
-			boolean first = true;
-			for (Variable field : entry.getKey().getFields()) {
-				if (first) {
-					first = false;
-				} else {
-					p(",");
-				}
-
-				p(field.getId());
-				p(":");
-				printDefaultValue(field.getType());
-			}
-
-			p("}}");
-		}
-
-		// Initialize helper expressions for code generation
-		PExp arrayAccessExp =
-				new AArrayAccessExp(new AVariableExp(new TId("a")), new AVariableExp(new TId("i")));
-		AFieldAccessExp fieldAccessExp =
-				new AFieldAccessExp(new AVariableExp(new TId("a")), null);
-
-		for (Entry<Type,Integer> entry : copyHelperFunctions.entrySet()) {
-			p("function golite$copy");
-			p(entry.getValue().toString());
-			p("(a)");
-
-			Type entryType = entry.getKey();
-			if (entryType instanceof ArrayType) {
-				p("{var i,o=[];for(i=0;i<a.length;i++)o.push(");
-				printFreshCopy(arrayAccessExp, ((ArrayType) entryType).getType());
-				p(");return o}");
-			} else if (entryType instanceof StructType) {
-				p("{return{");
-
-				boolean first = true;
-				for (Variable field : ((StructType) entryType).getFields()) {
-					if (first) {
-						first = false;
-					} else {
-						p(",");
-					}
-
-					p(field.getId());
-					p(":");
-
-					// Access the field in the original and copy it
-					fieldAccessExp.setId(new TId(field.getId()));
-					printFreshCopy(fieldAccessExp, field.getType());
-				}
-				p("}}");
-			} else {
-				throw new IllegalArgumentException("unexpected type to copy: "+entryType.getClass());
-			}
-		}
-
-		endl();
 	}
 
 	@Override
