@@ -843,11 +843,11 @@ public class TypeChecker extends DepthFirstAdapter {
 		defaultOut(node);
 	}
 
-	/* Override the function case to prevent it from checking the
-	 * functor; since the functor is a variable expression, the
-	 * normal check tests whether it references a regular
-	 * variable, but here of course it should be either a
-	 * function or a type alias */
+	/* Override the function case to prevent it from checking the functor; since
+	 * the functor is a variable expression, the normal check tests whether it
+	 * references a regular variable, but here of course it should be either a
+	 * function or a type alias. The check is performed in outAFunctionCallExp.
+	 */
 	public void caseAFunctionCallExp(AFunctionCallExp node) {
 		inAFunctionCallExp(node);
 		for (PExp argument : node.getExp()) {
@@ -883,6 +883,7 @@ public class TypeChecker extends DepthFirstAdapter {
 
 			processTypeCast(node, (Type)functorSymbol, exps.get(0));
 			setType(node, (Type)functorSymbol);
+			setType(node.getFunctor(), (Type)functorSymbol);
 		} else if (functorSymbol instanceof Function) {
 			// Second case: this is a function call
 			// Invariants: the number of arguments should match the function
