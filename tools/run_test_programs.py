@@ -355,9 +355,9 @@ class TestRunner:
             self.succeed(filename, 'output matches expectation')
             logger.debug('Expected output:\n%s', expected_output)
         else:
-            self.fail(filename, expected_output, actual_output)
-            logger.log(LOG_TEST_FAILURE, 'Diff for %s:\n%s', filename,
+            logger.log(LOG_TEST_FAILURE, 'Output for %s was not what was expected:\n%s', filename,
                        '\n'.join(Differ().compare(expected_output.split('\n'), actual_output.split('\n'))))
+            self._update(TESTS_FAILED)
 
 
 class InteractiveTestRunner (TestRunner):
