@@ -228,7 +228,7 @@ public class JSGenerator extends PrintingASTAdapter {
 	public void caseAProgram(AProgram node) {
 		inAProgram(node);
 		pln("/* Generated from GoLite source, package "+node.getPackageName().getText()+" */");
-		pln("(function () {");
+		pln("(function ($console) {");
 		shift();
 		pln("'use strict';");
 
@@ -238,19 +238,38 @@ public class JSGenerator extends PrintingASTAdapter {
 		structCopyHelpers.printFunctions();
 		arrayCopyHelpers.printFunctions();
 		printShims();
-		pln("try main();");
-		pln("finally{if(golite$printbuffer.length>0)console.log(golite$printbuffer);}");
-		unshift();
 
-		pln("})();");
+		// Invoke the main function
+		if (node.getPackageName().getText().equals("main")) {
+			printMain();
+		}
+
+		unshift();
+		pln("})(console);");
 		outAProgram(node);
 	}
 
 	private void printShims() {
-		startl();
-		p("var golite$printbuffer='';");
-		p("function golite$print(a){golite$printbuffer+=a.join(' ')}");
-		p("function golite$println(a){golite$print(a);console.log(golite$printbuffer);golite$printbuffer=''}");
+		pln("var golite$printbuffer = '';");
+		pln("function golite$print(a) {");
+		pln("  golite$printbuffer += a.join('')");
+		pln("}");
+		pln("function golite$println(a) {");
+		pln("  golite$printbuffer += a.join(' ');");
+		pln("  $console.log(golite$printbuffer);");
+		pln("  golite$printbuffer = '';");
+		pln("}");
+	}
+
+	private void printMain() {
+		pln("if (typeof main === 'function') {");
+		pln("  try {");
+		pln("    main()");
+		pln("  } finally {");
+		pln("    if (golite$printbuffer.length > 0)");
+		pln("      $console.log(golite$printbuffer);");
+		pln("  }");
+		pln("}");
 	}
 
 	@Override
