@@ -330,7 +330,7 @@ class TestRunner:
     def evaluate_run(self, filename):
         expected_output_filename = get_expected_output_file(filename)
 
-        if os.path.exists(expected_output_filename):
+        if os.path.exists(expected_output_filename) and os.stat(expected_output_filename).st_mtime > os.stat(filename).st_mtime:
             with open(expected_output_filename) as expected_output_file:
                 expected_output = expected_output_file.read()
 
