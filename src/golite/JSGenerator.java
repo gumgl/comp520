@@ -495,7 +495,7 @@ public class JSGenerator extends PrintingASTAdapter {
 	public void caseABreakStm(ABreakStm node)
 	{
 		inABreakStm(node);
-		p("break;");
+		p("break");
 		outABreakStm(node);
 	}
 
@@ -503,7 +503,7 @@ public class JSGenerator extends PrintingASTAdapter {
 	public void caseAContinueStm(AContinueStm node)
 	{
 		inAContinueStm(node);
-		p("continue;");
+		p("continue");
 		outAContinueStm(node);
 	}
 
