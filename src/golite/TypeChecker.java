@@ -122,12 +122,16 @@ public class TypeChecker extends DepthFirstAdapter {
 		Type t = types.get(node);
 
 		if (t == null) {
-			throw new IllegalArgumentException(node.getClass().getSimpleName()+" with no type at "+positionHelper.lineAndPos(node));
+			throw new RuntimeException(node.getClass().getSimpleName()
+					+ " with no type at " + positionHelper.lineAndPos(node));
 		}
 
 		return t;
 	}
+
 	private void setType(Node node, Type type) {
+		assert node instanceof PExp || node instanceof PFuncParam
+			|| node instanceof PTypeExp || node instanceof AOpAssignStm;
 		types.put(node, type);
 	}
 
