@@ -165,7 +165,7 @@ class TestRunner:
         self._update(status)
 
     def _update(self, status):
-        self.counts[status] += 1
+        self.counts[status if status != PROGRAM_ERROR else TEST_ERROR] += 1
 
         if status > self.status:
             self.status = status
