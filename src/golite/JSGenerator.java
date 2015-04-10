@@ -492,6 +492,64 @@ public class JSGenerator extends PrintingASTAdapter {
 	}
 
 	@Override
+	public void caseASwitchStm(ASwitchStm node) {
+		inASwitchStm(node);
+
+		if(node.getStm() != null) {
+			node.getStm().apply(this);
+			p(";");
+		}
+
+		p("switch (");
+
+		if (node.getExp() != null) {
+			node.getExp().apply(this);
+		} else {
+			p("true");
+		}
+
+		p(") {");
+		endl();
+
+		for (PSwitchClause clauseProduction : node.getSwitchClause()) {
+			ASwitchClause clause = (ASwitchClause) clauseProduction;
+			clause.getSwitchCase().apply(this);
+
+			shift();
+			printStatements(clause.getStm());
+			if (clause.getFallthroughStm() == null)
+				pln("break;");
+			unshift();
+		}
+
+		startl();
+		p("}");
+		outASwitchStm(node);
+	}
+
+	@Override
+	public void caseAConditionalSwitchCase(AConditionalSwitchCase node) {
+		inAConditionalSwitchCase(node);
+		if (node.getExp() != null) {
+			for (PExp e : node.getExp()) {
+				startl();
+				p("case ");
+				e.apply(this);
+				p(":");
+				endl();
+			}
+		}
+		outAConditionalSwitchCase(node);
+	}
+
+	@Override
+	public void caseADefaultSwitchCase(ADefaultSwitchCase node) {
+		inADefaultSwitchCase(node);
+		pln("default:");
+		outADefaultSwitchCase(node);
+	}
+
+	@Override
 	public void caseABreakStm(ABreakStm node)
 	{
 		inABreakStm(node);
@@ -518,75 +576,6 @@ public class JSGenerator extends PrintingASTAdapter {
 		}
 		outAReturnStm(node);
 	}
-
-	//TODO
-//	@Override
-//	public void caseASwitchStm(ASwitchStm node)
-//	{
-//		inASwitchStm(node);
-//		p("switch ");
-//		if(node.getStm() != null)
-//		{
-//			node.getStm().apply(this);
-//			p("; ");
-//		}
-//		if(node.getExp() != null)
-//		{
-//			node.getExp().apply(this);
-//			p(" ");
-//		}
-//		p("{");
-//		endl();
-//		{
-//			for(PSwitchClause e : node.getSwitchClause())
-//			{
-//				e.apply(this);
-//			}
-//		}
-//		startl();
-//		p("}");
-//		outASwitchStm(node);
-//	}
-//
-//	@Override
-//	public void caseAConditionalSwitchClause(AConditionalSwitchClause node)
-//	{
-//		inAConditionalSwitchClause(node);
-//		startl();
-//		p("case ");
-//		printList(node.getExp());
-//		p(":");
-//		endl();
-//		shift();
-//		printConsecutiveLines(node.getStm());
-//		if(node.getFallthroughStm() != null)
-//		{
-//			startl();
-//			node.getFallthroughStm().apply(this);
-//			endl();
-//		}
-//		unshift();
-//		outAConditionalSwitchClause(node);
-//	}
-//
-//	@Override
-//	public void caseADefaultSwitchClause(ADefaultSwitchClause node)
-//	{
-//		inADefaultSwitchClause(node);
-//		startl();
-//		p("default:");
-//		endl();
-//		shift();
-//		printConsecutiveLines(node.getStm());
-//		if(node.getFallthroughStm() != null)
-//		{
-//			startl();
-//			node.getFallthroughStm().apply(this);
-//			endl();
-//		}
-//		unshift();
-//		outADefaultSwitchClause(node);
-//	}
 
 	/* --------------------- Statements --------------------- */
 	@Override
