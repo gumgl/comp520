@@ -336,7 +336,7 @@ class TestRunner:
 
         else:
             try:
-                expected_output = check_err_output('go run "'+filename+'"', universal_newlines=True)
+                expected_output = _output('go run "'+filename+'"', universal_newlines=True)
             except CalledProcessError:
                 self.fail_with_message(filename,
                     'could not run {} with Go'.format(expected_output_filename),
@@ -559,7 +559,7 @@ class ConfigFile:
 # --- Utility functions ---
 
 def check_err_output(*popenargs, timeout=None, **kwargs):
-    """Run command with arguments and return its stderr output.
+    r"""Run command with arguments and return its stderr output.
 
     Clone of check_output in subprocess.
     """
