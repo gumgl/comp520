@@ -311,11 +311,16 @@ public class JSGenerator extends PrintingASTAdapter {
 
 		printConsecutiveLines(node.getDeclarations());
 
-		structInitHelpers.printFunctions();
-		structCopyHelpers.printFunctions();
-		structEqualsHelpers.printFunctions();
-		arrayCopyHelpers.printFunctions();
-		arrayEqualsHelpers.printFunctions();
+		do {
+			structInitHelpers.printFunctions();
+			structCopyHelpers.printFunctions();
+			structEqualsHelpers.printFunctions();
+			arrayCopyHelpers.printFunctions();
+			arrayEqualsHelpers.printFunctions();
+		} while (structInitHelpers.moreToPrint() || structCopyHelpers.moreToPrint()
+				|| structEqualsHelpers.moreToPrint() || arrayCopyHelpers.moreToPrint()
+				|| arrayEqualsHelpers.moreToPrint());
+
 		printShims();
 
 		// Invoke the main function

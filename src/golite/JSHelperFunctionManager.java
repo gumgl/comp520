@@ -1,5 +1,7 @@
 package golite;
 
+import java.util.ArrayList;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -18,7 +20,8 @@ public abstract class JSHelperFunctionManager<T extends Type> {
 
 	/** Store an example of a type for which the helper function whose ID is
 	 * the index is appropriate */
-	protected List<T> exampleType = new LinkedList<T>();
+	protected List<T> exampleType = new ArrayList<T>();
+	private Deque<Integer> printQueue;
 
 
 	public JSHelperFunctionManager(String prefix, int arity, JSGenerator out) {
@@ -55,6 +58,9 @@ public abstract class JSHelperFunctionManager<T extends Type> {
 
 		functionId.put(type, i);
 		exampleType.add(type);
+		if (printQueue != null) {
+			printQueue.push(i);
+		}
 
 		return i;
 	}
@@ -66,8 +72,6 @@ public abstract class JSHelperFunctionManager<T extends Type> {
 	}
 
 	public void printFunctions() {
-		int i = 0;
-
 		StringBuilder sb = new StringBuilder();
 		boolean first = true;
 		for (char c='a'; c < 'a'+arity; c++) {
@@ -79,15 +83,25 @@ public abstract class JSHelperFunctionManager<T extends Type> {
 		}
 		String arguments = sb.toString();
 
-		for (T type : exampleType) {
+		printQueue = new LinkedList<Integer>();
+		for (int i = 0; i < exampleType.size(); i++) {
+			printQueue.push(i);
+		}
+
+		while (!printQueue.isEmpty()) {
+			int i = printQueue.pop();
+			T type = exampleType.get(i);
+
 			out.pln("function "+functionNamePrefix+i+"("+arguments+") {");
 			out.shift();
 			printFunction(type);
 			out.unshift();
 			out.pln("}");
-
-			i++;
 		}
+	}
+
+	public boolean moreToPrint() {
+		return printQueue == null || !printQueue.isEmpty();
 	}
 
 	/** Write the helper function for the given type */
