@@ -104,6 +104,7 @@ public class Main {
 				break;
 			case "-h":
 				options.displayHelp = true;
+				break;
 			case "-v":
 				options.displayVersion = true;
 				break;
