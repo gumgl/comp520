@@ -13,7 +13,12 @@ import golite.typechecker.*;
 
 public class TypeChecker extends DepthFirstAdapter {
 
-	public HashMap<Node,Type> types = new HashMap<Node,Type>(); // Mapping a Type for every Node
+	/** Map types for expression nodes, etc. */
+	public HashMap<Node, Type> types = new HashMap<Node, Type>();
+
+	/** Map variables to the number of nested nodes */
+	public HashMap<TId, Integer> occurrenceCounts = new HashMap<TId, Integer>();
+
 	public SymbolTable symbolTable;
 	PositionHelper positionHelper;
 
@@ -35,6 +40,23 @@ public class TypeChecker extends DepthFirstAdapter {
 
 	public TypeChecker(PositionHelper positionHelper) {
 		this(positionHelper, null);
+	}
+
+	private Variable getVariable(TId id) {
+		Symbol symbol = symbolTable.get(id.getText());
+
+		if (symbol == null)
+			errorSymbolNotFound(id, id.getText());
+		else if (!(symbol instanceof Variable))
+			errorSymbolClass(id, symbol, Variable.class);
+
+		occurrenceCounts.put(id, symbolTable.countShadows(id.getText()));
+		return (Variable) symbol;
+	}
+
+	private void addVariable(TId id, Type type) {
+		symbolTable.addSymbol(new Variable(id.getText(), type));
+		occurrenceCounts.put(id, symbolTable.countShadows(id.getText()));
 	}
 
 	static private String getSimpleNames(
@@ -244,6 +266,7 @@ public class TypeChecker extends DepthFirstAdapter {
 
 		// Add the symbol before checking the function body to support recursion
 		symbolTable.addSymbol(funcSignature);
+		occurrenceCounts.put(id, symbolTable.countShadows(id.getText()));
 
 		symbolTable.addScope();
 		for (PFuncParam param : node.getFuncParam()) {
@@ -288,7 +311,7 @@ public class TypeChecker extends DepthFirstAdapter {
 					errorSymbolType(value, getType(value), type);
 			}
 
-			symbolTable.addSymbol(new Variable(id.getText(), type));
+			addVariable(id, type);
 		}
 
 
@@ -311,7 +334,7 @@ public class TypeChecker extends DepthFirstAdapter {
 				errorVoidFunctionAsValue(value);
 
 			ensureUndeclared(id);
-			symbolTable.addSymbol(new Variable(id.getText(), type));
+			addVariable(id, type);
 		}
 		defaultOut(node);
 	}
@@ -332,7 +355,7 @@ public class TypeChecker extends DepthFirstAdapter {
 
 		for (TId id : node.getId()) {
 			ensureUndeclared(id);
-			symbolTable.addSymbol(new Variable(id.getText(), type));
+			addVariable(id, type);
 		}
 
 		setType(node, type);
@@ -562,7 +585,7 @@ public class TypeChecker extends DepthFirstAdapter {
 				if (varType.isIdentical(voidType))
 					errorVoidFunctionAsValue(exp);
 
-				symbolTable.addSymbol(new Variable(id, varType));
+				addVariable(idExp.getId(), varType);
 			} else {
 				if (!(symbol instanceof Variable))
 					errorSymbolClass(node.getIds().get(i), symbol, Variable.class);
@@ -771,15 +794,8 @@ public class TypeChecker extends DepthFirstAdapter {
 	/* ******************** Expressions ******************** */
 	public void outAVariableExp(AVariableExp node)
 	{
-		TId id = node.getId();
-		Symbol symbol = symbolTable.get(id.getText());
-
-		if (symbol == null)
-			errorSymbolNotFound(id, id.getText());
-		else if ( ! (symbol instanceof Variable))
-			errorSymbolClass(id, symbol, Variable.class);
-		else
-			setType(node, ((Variable)symbol).getType());
+		Variable var = getVariable(node.getId());
+		setType(node, var.getType());
 		defaultOut(node);
 	}
 	public void outAArrayAccessExp(AArrayAccessExp node)
@@ -870,6 +886,8 @@ public class TypeChecker extends DepthFirstAdapter {
 		if (functorSymbol == null)
 			errorSymbolNotFound(functorId, identifier);
 
+		occurrenceCounts.put(functorId, symbolTable.countShadows(identifier));
+
 		List<PExp> exps = node.getExp();
 
 		if (functorSymbol instanceof Type) {
@@ -929,15 +947,9 @@ public class TypeChecker extends DepthFirstAdapter {
 
 	public void outAAppendExp(AAppendExp node)
 	{
-		Symbol slice = symbolTable.get(node.getId().getText());
+		Variable slice = getVariable(node.getId());
 
-		if (slice == null)
-			errorSymbolNotFound(node.getId(), node.getId().getText());
-
-		if (!(slice instanceof Variable))
-			errorSymbolClass(node.getId(), slice, Variable.class);
-
-		Type sliceType = ((Variable)slice).getType();
+		Type sliceType = slice.getType();
 		Type underlyingSliceType = sliceType.getUnderlying();
 		Type expType = getType(node.getExp());
 
