@@ -1211,11 +1211,6 @@ public class JSGenerator extends PrintingASTAdapter {
 		p(">>=");
 	}
 
-	public void caseAAmpCaretAssignOp(AAmpCaretAssignOp node)
-	{
-		p("&^=");
-	}
-
 	//binary_op
 	@Override
 	public void caseAMinusBinaryOp(AMinusBinaryOp node)
