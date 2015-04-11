@@ -527,6 +527,8 @@ public class JSGenerator extends PrintingASTAdapter {
 		if(node.getStm() != null) {
 			node.getStm().apply(this);
 			p(";");
+			endl();
+			startl();
 		}
 
 		p("switch (");
