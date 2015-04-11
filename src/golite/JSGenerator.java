@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
 
 import golite.node.* ;
 import golite.typechecker.*;
@@ -1033,9 +1034,17 @@ public class JSGenerator extends PrintingASTAdapter {
 	@Override
 	public void outARawStringLiteral(ARawStringLiteral node) {
 		p("'");
+
 		if (node.getRawStringContents() != null) {
-			// TODO
+			String contents = node.getRawStringContents().getText();
+			contents = contents
+					.replaceAll("\\\\", Matcher.quoteReplacement("\\\\"))
+					.replaceAll("'", Matcher.quoteReplacement("\\'"))
+					.replaceAll("\n", Matcher.quoteReplacement("\\n"))
+					.replaceAll("\r", Matcher.quoteReplacement("\\r"));
+			p(contents);
 		}
+
 		p("'");
 		defaultOut(node);
 	}
