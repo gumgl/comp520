@@ -208,6 +208,42 @@ public class JSGenerator extends PrintingASTAdapter {
 		}
 	}
 
+	/** Get an LValue that (1) can be safely referenced more than once and (2)
+	 * has its bounds checked (if applicable).
+	 * @param exp
+	 * @return
+	 */
+	public PExp getLvalue(PExp exp) {
+		if (exp instanceof AArrayAccessExp) {
+			AArrayAccessExp acc = (AArrayAccessExp) exp;
+
+			p("var $tmpArrayIndex =");
+			acc.getIndex().apply(this);
+			p(", $tmpArray =");
+			acc.getArray().apply(this);
+			p(";");
+			endl();
+
+			pln("golite$getIndex($tmpArrayIndex, $tmpArray)");
+
+			startl();
+			return new AArrayAccessExp(new AVariableExp(new TId("$tmpArray")),
+					new AVariableExp(new TId("$tmpArrayIndex")));
+		} else if (exp instanceof AFieldAccessExp) {
+			AFieldAccessExp acc = (AFieldAccessExp) exp;
+
+			p("var $tmpStruct =");
+			acc.getExp().apply(this);
+			p(";");
+			endl();
+
+			startl();
+			return new AFieldAccessExp(new AVariableExp(new TId("$tmpStruct")), acc.getId());
+		} else {
+			return exp;
+		}
+	}
+	
 	public void printEqualityTest(Type type, PExp left, PExp right) {
 		type = type.getUnderlying();
 		if (type instanceof BuiltInType) {
@@ -676,7 +712,7 @@ public class JSGenerator extends PrintingASTAdapter {
 		 * write each value to a temporary variable before doing
 		 * assignments. */
 		if (variables.size() == 1) {
-			variables.get(0).apply(this);
+			getLvalue(variables.get(0)).apply(this);
 			p(" = ");
 			printFreshCopy(values.get(0));
 		} else {
@@ -702,7 +738,7 @@ public class JSGenerator extends PrintingASTAdapter {
 				endl();
 				startl();
 
-				variable.apply(this);
+				getLvalue(variable).apply(this);
 				p(" = $tmp"+i);
 				i++;
 			}
@@ -754,11 +790,21 @@ public class JSGenerator extends PrintingASTAdapter {
 	public void caseAOpAssignStm(AOpAssignStm node)
 	{
 		inAOpAssignStm(node);
-		node.getLvalue().apply(this);
+		PExp lvalue = getLvalue(node.getLvalue());
+
+		lvalue.apply(this);
 		p(" ");
 		node.getAssignOp().apply(this);
 		p(" ");
 		node.getExp().apply(this);
+
+		if (node.getAssignOp() instanceof ASlashAssignOp
+				&& !((BuiltInType) types.get(node.getExp()).getUnderlying()).getId().equals("float64")) {
+			endl();
+			lvalue.apply(this);
+			p(" |= 0");
+		}
+
 		outAOpAssignStm(node);
 	}
 
