@@ -139,8 +139,8 @@ public class Main {
 	public static void printUsage() {
 		System.err.println(
 				"Usage:\n"
-				+ "    golite [options] inputFile\n\n"
-				+ "    golite [-h | -v]"
+				+ "    golite [options] inputFile\n"
+				+ "    golite [-h | -v]\n\n"
 				+ "Options:\n"
 				+ "    Where [filename] is the base component of inputFile...\n"
 				+ "    -pprint: Write a pretty printed file to [filename].pretty.go\n"
