@@ -4,6 +4,8 @@ package main
 // and for each individual case
 func main() {
 	x := 1
+	y := 2
+
 	switch x := true; x {
 	case true:
 		y := "true"
@@ -15,5 +17,5 @@ func main() {
 		y := "this is actually impossible"
 		println(y)
 	}
-	println("meanwhile, x =", x)
+	println("meanwhile, x =", x, "and y =", y)
 }
