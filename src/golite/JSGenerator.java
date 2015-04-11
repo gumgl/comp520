@@ -478,29 +478,10 @@ public class JSGenerator extends PrintingASTAdapter {
 
 	/* ------------------- Scoping and control structure ------------------- */
 
-	/**
-	 * Open a block scope. Since JS doesn't actually have those, use a
-	 * self-executing function
-	 */
-	protected void openBlock() {
-		p("(function () {");
-		endl();
-		shift();
-	}
-
-	/** Close a block scope */
-	protected void closeBlock() {
-		unshift();
-		startl();
-		p("})();");
-	}
-
 	@Override
 	public void caseABlockStm(ABlockStm node) {
 		inABlockStm(node);
-		openBlock();
 		printStatements(node.getStm());
-		closeBlock();
 		outABlockStm(node);
 	}
 
@@ -511,10 +492,10 @@ public class JSGenerator extends PrintingASTAdapter {
 
 		PStm initStm = node.getStm();
 		if (initStm != null) {
-			openBlock();
-			startl();
 			initStm.apply(this);
+			p(";");
 			endl();
+			startl();
 		}
 
 		p("if (");
@@ -546,10 +527,6 @@ public class JSGenerator extends PrintingASTAdapter {
 				startl();
 				p("}");
 			}
-		}
-
-		if (initStm != null) {
-			closeBlock();
 		}
 
 		outAIfStm(node);
