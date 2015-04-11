@@ -51,6 +51,16 @@ public class Main {
 			System.exit(EXIT_INTERNAL_ERROR);
 		}
 
+		if (options.displayHelp) {
+			printUsage();
+			System.exit(0);
+		}
+
+		if (options.displayVersion) {
+			printVersion();
+			System.exit(0);
+		}
+
 		try {
 			processSource(options);
 		} catch (golite.lexer.LexerException e) {
@@ -104,10 +114,10 @@ public class Main {
 				break;
 			case "-h":
 				options.displayHelp = true;
-				break;
+				return options;
 			case "-v":
 				options.displayVersion = true;
-				break;
+				return options;
 			default:
 				throw new IllegalArgumentException("Unexpected option "+args[i]);
 			}
@@ -130,6 +140,7 @@ public class Main {
 		System.err.println(
 				"Usage:\n"
 				+ "    golite [options] inputFile\n\n"
+				+ "    golite [-h | -v]"
 				+ "Options:\n"
 				+ "    Where [filename] is the base component of inputFile...\n"
 				+ "    -pprint: Write a pretty printed file to [filename].pretty.go\n"
@@ -162,16 +173,6 @@ public class Main {
 	public static void processSource(Options options)
 			throws LexerException, IOException, ParserException {
 
-		if (options.displayHelp) {
-			printUsage();
-			return;
-		}
-
-		if (options.displayVersion) {
-			printVersion();
-			return;
-		}
-		
 		String pathBase;
 
 		if (options.path.endsWith(".go")) {
