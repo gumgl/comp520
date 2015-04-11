@@ -1225,7 +1225,7 @@ public class JSGenerator extends PrintingASTAdapter {
 
 	public void caseAAmpCaretBinaryOp(AAmpCaretBinaryOp node)
 	{
-		p("&^");
+		p("& ~");
 	}
 
 	//unary_op
@@ -1246,6 +1246,6 @@ public class JSGenerator extends PrintingASTAdapter {
 
 	public void caseACaretUnaryOp(ACaretUnaryOp node)
 	{
-		p("^");
+		p("~");
 	}
 }
