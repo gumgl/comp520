@@ -12,7 +12,7 @@ public class ArrayCopyHelperFunctionManager extends ArrayHelperFunctionManager {
 			new AArrayAccessExp(new AVariableExp(new TId("a")), new AVariableExp(new TId("i")));
 
 	public ArrayCopyHelperFunctionManager(String prefix, JSGenerator out) {
-		super(prefix, 2, out);
+		super(prefix, 1, out);
 	}
 
 	@Override
