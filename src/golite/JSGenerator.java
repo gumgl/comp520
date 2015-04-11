@@ -792,17 +792,27 @@ public class JSGenerator extends PrintingASTAdapter {
 		inAOpAssignStm(node);
 		PExp lvalue = getLvalue(node.getLvalue());
 
-		lvalue.apply(this);
-		p(" ");
-		node.getAssignOp().apply(this);
-		p(" ");
-		node.getExp().apply(this);
-
-		if (node.getAssignOp() instanceof ASlashAssignOp
-				&& !((BuiltInType) types.get(node.getExp()).getUnderlying()).getId().equals("float64")) {
-			endl();
+		if (node.getAssignOp() instanceof AAmpCaretAssignOp) {
 			lvalue.apply(this);
-			p(" |= 0");
+			p(" = ");
+			lvalue.apply(this);
+			p(" & ~ ");
+			node.getExp().apply(this);
+		} else {
+			lvalue.apply(this);
+			p(" ");
+			node.getAssignOp().apply(this);
+			p(" ");
+			node.getExp().apply(this);
+
+			if (node.getAssignOp() instanceof ASlashAssignOp) {
+				Type underlying = types.get(node.getExp()).getUnderlying();
+				if (!(underlying instanceof BuiltInType && ((BuiltInType) underlying).getId().equals("float64"))) {
+					endl();
+					lvalue.apply(this);
+					p(" |= 0");
+				}
+			}
 		}
 
 		outAOpAssignStm(node);
