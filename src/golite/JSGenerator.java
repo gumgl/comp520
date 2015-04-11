@@ -338,6 +338,10 @@ public class JSGenerator extends PrintingASTAdapter {
 		pln("  $console.log(golite$printbuffer);");
 		pln("  golite$printbuffer = '';");
 		pln("}");
+		pln("function golite$getIndex(a, i) {");
+		pln("  if (i < 0 || i >= a.length) throw new Error('index out of bounds');");
+		pln("  return a[i];");
+		pln("}");
 	}
 
 	private void printMain() {
@@ -822,10 +826,11 @@ public class JSGenerator extends PrintingASTAdapter {
 	public void caseAArrayAccessExp(AArrayAccessExp node)
 	{
 		inAArrayAccessExp(node);
+		p("golite$getIndex(");
 		node.getArray().apply(this);
-		p("[");
+		p(", ");
 		node.getIndex().apply(this);
-		p("]");
+		p(")");
 		outAArrayAccessExp(node);
 	}
 
