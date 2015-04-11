@@ -20,8 +20,14 @@ public class JSGenerator extends PrintingASTAdapter {
 	private StructCopyHelperFunctionManager structCopyHelpers =
 			new StructCopyHelperFunctionManager("golite$copyStruct", this);
 
+	private StructEqualityHelperFunctionManager structEqualsHelpers =
+			new StructEqualityHelperFunctionManager("golite$structEquals", this);
+
 	private ArrayCopyHelperFunctionManager arrayCopyHelpers =
 			new ArrayCopyHelperFunctionManager("golite$copyArray", this);
+
+	private ArrayEqualityHelperFunctionManager arrayEqualsHelpers =
+			new ArrayEqualityHelperFunctionManager("golite$arrayEquals", this);
 
 
 	public JSGenerator(PrintWriter writer, Map<Node, Type> types, Map<TId, Integer> occurrenceCounts) {
@@ -105,7 +111,9 @@ public class JSGenerator extends PrintingASTAdapter {
 		Integer count = occurrenceCounts.get(id);
 
 		if (count == null) {
-			throw new RuntimeException("Uncounted ID at "+id.getLine()+","+id.getPos());
+			// Helper functions sometimes add their own variables
+			count = 1;
+//			throw new RuntimeException("Uncounted ID at "+id.getLine()+","+id.getPos());
 		}
 
 		if (count == 1) {
@@ -199,6 +207,54 @@ public class JSGenerator extends PrintingASTAdapter {
 		}
 	}
 
+	public void printEqualityTest(Type type, PExp left, PExp right) {
+		type = type.getUnderlying();
+		if (type instanceof BuiltInType) {
+			printBinaryArgument(left);
+			p(" === ");
+			printBinaryArgument(right);
+		} else if (type instanceof ArrayType) {
+			p(arrayEqualsHelpers.getFunctionName((ArrayType) type));
+			p("(");
+			left.apply(this);
+			p(", ");
+			right.apply(this);
+			p(")");
+		} else if (type instanceof StructType) {
+			p(structEqualsHelpers.getFunctionName((StructType) type));
+			p("(");
+			left.apply(this);
+			p(", ");
+			right.apply(this);
+			p(")");
+		} else {
+			throw new RuntimeException("unexpected type for binary expression: "+type.getClass());
+		}
+	}
+
+	public void printInequalityTest(Type type, PExp left, PExp right) {
+		type = type.getUnderlying();
+		if (type instanceof BuiltInType) {
+			printBinaryArgument(left);
+			p(" !== ");
+			printBinaryArgument(right);
+		} else {
+			p("(!");
+			printEqualityTest(type, left, right);
+			p(")");
+		}
+	}
+
+	private void printBinaryArgument(PExp node) {
+		if (node instanceof ABinaryExp) {
+			p("(");
+			node.apply(this);
+			p(")");
+		} else {
+			node.apply(this);
+		}
+	}
+
 	private void printTypeCoerced(PExp exp, Type targetType) {
 		Type sourceType = types.get(exp).getUnderlying();
 		targetType = targetType.getUnderlying();
@@ -256,7 +312,9 @@ public class JSGenerator extends PrintingASTAdapter {
 
 		structInitHelpers.printFunctions();
 		structCopyHelpers.printFunctions();
+		structEqualsHelpers.printFunctions();
 		arrayCopyHelpers.printFunctions();
+		arrayEqualsHelpers.printFunctions();
 		printShims();
 
 		// Invoke the main function
@@ -854,24 +912,16 @@ public class JSGenerator extends PrintingASTAdapter {
 	{
 		inABinaryExp(node);
 
-		if (node.getLeft() instanceof ABinaryExp) {
-			p("(");
-			node.getLeft().apply(this);
-			p(")");
+		if (node.getBinaryOp() instanceof AEqBinaryOp) {
+			printEqualityTest(types.get(node.getLeft()), node.getLeft(), node.getRight());
+		} else if (node.getBinaryOp() instanceof ANotEqBinaryOp) {
+			printInequalityTest(types.get(node.getLeft()), node.getLeft(), node.getRight());
 		} else {
-			node.getLeft().apply(this);
-		}
-
-		p(" ");
-		node.getBinaryOp().apply(this);
-		p(" ");
-
-		if (node.getRight() instanceof ABinaryExp) {
-			p("(");
-			node.getRight().apply(this);
-			p(")");
-		} else {
-			node.getRight().apply(this);
+			printBinaryArgument(node.getLeft());
+			p(" ");
+			node.getBinaryOp().apply(this);
+			p(" ");
+			printBinaryArgument(node.getRight());
 		}
 
 		outABinaryExp(node);
@@ -1092,12 +1142,6 @@ public class JSGenerator extends PrintingASTAdapter {
 
 	//binary_op
 	@Override
-	public void caseANotEqBinaryOp(ANotEqBinaryOp node)
-	{
-		p("!=");
-	}
-
-	@Override
 	public void caseAMinusBinaryOp(AMinusBinaryOp node)
 	{
 		p("-");
@@ -1111,11 +1155,6 @@ public class JSGenerator extends PrintingASTAdapter {
 	public void caseALogicalAndBinaryOp(ALogicalAndBinaryOp node)
 	{
 		p("&&");
-	}
-
-	public void caseAEqBinaryOp(AEqBinaryOp node)
-	{
-		p("==");
 	}
 
 	public void caseAGtBinaryOp(AGtBinaryOp node)
