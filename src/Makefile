@@ -18,7 +18,7 @@ main: ../golite.jar ../golite
 ../golite.jar: $(java_class) $(sablecc_generated)
 	jar cfe ../golite.jar golite.Main $(java_class) $(jar_resource)
 
-$(java_class): $(java_source) $(sablecc_generated)
+golite/Main.class: $(java_source) $(sablecc_generated)
 	javac $(java_source)
 
 # to generate the compiler code
