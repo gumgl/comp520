@@ -213,18 +213,19 @@ public class JSGenerator extends PrintingASTAdapter {
 	 * @param exp
 	 * @return
 	 */
-	public PExp getLvalue(PExp exp) {
+	public PExp getSafeLvalue(PExp exp) {
 		if (exp instanceof AArrayAccessExp) {
 			AArrayAccessExp acc = (AArrayAccessExp) exp;
 
-			p("var $tmpArrayIndex =");
+			p("var $tmpArrayIndex = ");
 			acc.getIndex().apply(this);
-			p(", $tmpArray =");
+			p(", $tmpArray = ");
 			acc.getArray().apply(this);
 			p(";");
 			endl();
 
-			pln("golite$getIndex($tmpArrayIndex, $tmpArray)");
+			pln("if ($tmpArrayIndex < 0 || $tmpArray === null || $tmpArrayIndex >= $tmpArray.length)");
+			pln("  throw new Error('index out of bounds');");
 
 			startl();
 			return new AArrayAccessExp(new AVariableExp(new TId("$tmpArray")),
@@ -232,7 +233,12 @@ public class JSGenerator extends PrintingASTAdapter {
 		} else if (exp instanceof AFieldAccessExp) {
 			AFieldAccessExp acc = (AFieldAccessExp) exp;
 
-			p("var $tmpStruct =");
+			// This is one very common case where writing to a temp is not necessary
+			if (acc.getExp() instanceof AVariableExp) {
+				return exp;
+			}
+			
+			p("var $tmpStruct = ");
 			acc.getExp().apply(this);
 			p(";");
 			endl();
@@ -241,6 +247,17 @@ public class JSGenerator extends PrintingASTAdapter {
 			return new AFieldAccessExp(new AVariableExp(new TId("$tmpStruct")), acc.getId());
 		} else {
 			return exp;
+		}
+	}
+
+	public void printSafeLvalue(PExp exp) {
+		if (exp instanceof AArrayAccessExp) {
+			((AArrayAccessExp) exp).getArray().apply(this);
+			p("[");
+			((AArrayAccessExp) exp).getIndex().apply(this);
+			p("]");
+		} else {
+			exp.apply(this);
 		}
 	}
 	
@@ -380,7 +397,7 @@ public class JSGenerator extends PrintingASTAdapter {
 		pln("  golite$printbuffer = '';");
 		pln("}");
 		pln("function golite$getIndex(a, i) {");
-		pln("  if (i < 0 || i >= a.length) throw new Error('index out of bounds');");
+		pln("  if (i < 0 || a === null || i >= a.length) throw new Error('index out of bounds');");
 		pln("  return a[i];");
 		pln("}");
 	}
@@ -712,7 +729,7 @@ public class JSGenerator extends PrintingASTAdapter {
 		 * write each value to a temporary variable before doing
 		 * assignments. */
 		if (variables.size() == 1) {
-			getLvalue(variables.get(0)).apply(this);
+			printSafeLvalue(getSafeLvalue(variables.get(0)));
 			p(" = ");
 			printFreshCopy(values.get(0));
 		} else {
@@ -738,7 +755,7 @@ public class JSGenerator extends PrintingASTAdapter {
 				endl();
 				startl();
 
-				getLvalue(variable).apply(this);
+				printSafeLvalue(getSafeLvalue(variable));
 				p(" = $tmp"+i);
 				i++;
 			}
@@ -790,16 +807,16 @@ public class JSGenerator extends PrintingASTAdapter {
 	public void caseAOpAssignStm(AOpAssignStm node)
 	{
 		inAOpAssignStm(node);
-		PExp lvalue = getLvalue(node.getLvalue());
+		PExp lvalue = getSafeLvalue(node.getLvalue());
 
 		if (node.getAssignOp() instanceof AAmpCaretAssignOp) {
-			lvalue.apply(this);
+			printSafeLvalue(lvalue);
 			p(" = ");
-			lvalue.apply(this);
+			printSafeLvalue(lvalue);
 			p(" & ~ ");
 			node.getExp().apply(this);
 		} else {
-			lvalue.apply(this);
+			printSafeLvalue(lvalue);
 			p(" ");
 			node.getAssignOp().apply(this);
 			p(" ");
@@ -829,7 +846,7 @@ public class JSGenerator extends PrintingASTAdapter {
 	public void caseAIncDecStm(AIncDecStm node)
 	{
 		inAIncDecStm(node);
-		node.getExp().apply(this);
+		printSafeLvalue(getSafeLvalue(node.getExp()));
 		node.getPostfixOp().apply(this);
 		outAIncDecStm(node);
 	}
