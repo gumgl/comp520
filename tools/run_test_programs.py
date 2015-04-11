@@ -559,7 +559,7 @@ class ConfigFile:
 # --- Utility functions ---
 
 def check_err_output(*popenargs, timeout=None, **kwargs):
-    r"""Run command with arguments and return its stderr output.
+    """Run command with arguments and return its stderr output.
 
     Clone of check_output in subprocess.
     """
