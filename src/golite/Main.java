@@ -26,6 +26,8 @@ public class Main {
 
 		public SymbolTableLogLevel symbolTableLogLevel = SymbolTableLogLevel.NOTHING;
 
+		public boolean displayHelp;
+		public boolean displayVersion;
 		public boolean prettyPrint;
 		public boolean prettyPrintTyped;
 		public boolean dumpToks;
@@ -100,6 +102,11 @@ public class Main {
 			case "-displayast":
 				options.displayAST = true;
 				break;
+			case "-h":
+				options.displayHelp = true;
+			case "-v":
+				options.displayVersion = true;
+				break;
 			default:
 				throw new IllegalArgumentException("Unexpected option "+args[i]);
 			}
@@ -136,6 +143,10 @@ public class Main {
 		);
 	}
 
+	private static void printVersion() {
+		System.out.println("GoLite compiler version 1.0.0");
+	}
+
 	public static void handleSourceCodeError(String errorType, Exception e) {
 		System.err.println(errorType+" error at "+e.getMessage());
 		System.exit(EXIT_INVALID_SOURCE);
@@ -150,6 +161,16 @@ public class Main {
 	public static void processSource(Options options)
 			throws LexerException, IOException, ParserException {
 
+		if (options.displayHelp) {
+			printUsage();
+			return;
+		}
+
+		if (options.displayVersion) {
+			printVersion();
+			return;
+		}
+		
 		String pathBase;
 
 		if (options.path.endsWith(".go")) {
