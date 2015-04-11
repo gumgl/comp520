@@ -961,7 +961,7 @@ public class JSGenerator extends PrintingASTAdapter {
 			// GitHub Issue #11
 			if (node.getBinaryOp() instanceof ASlashBinaryOp
 					&& underlying instanceof BuiltInType
-					&& (underlying.getRepresentation() == "int" || underlying.getRepresentation() == "rune"))
+					&& (underlying.getRepresentation().equals("int") || underlying.getRepresentation().equals("rune")))
 				p(" | 0"); // GitHub Issue #11
 		}
 
