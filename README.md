@@ -33,3 +33,7 @@ Cygwin on a Windows machine, it also creates a Batch utility file named
 
 [Build](#building) the code as described above. From the root directory, run
 `golite [-dumpsymtab] [-dumpsymtaball] [-pptype] inputFile`.
+
+## Milestone 4
+Build the code, then run
+`golite inputFile.go`. This will generate a JavaScript file which can be run with `node inputFile.js`.
