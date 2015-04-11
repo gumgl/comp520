@@ -13,7 +13,7 @@ public class ArrayCopyHelperFunctionManager extends JSHelperFunctionManager<Arra
 			new AArrayAccessExp(new AVariableExp(new TId("a")), new AVariableExp(new TId("i")));
 
 	public ArrayCopyHelperFunctionManager(String prefix, JSGenerator out) {
-		super(prefix, out);
+		super(prefix, 2, out);
 	}
 
 	protected boolean areEquivalentContainedTypes(Type t1, Type t2) {

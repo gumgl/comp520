@@ -6,7 +6,7 @@ import golite.typechecker.Variable;
 public class StructInitializerHelperFunctionManager extends JSHelperFunctionManager<StructType> {
 
 	public StructInitializerHelperFunctionManager(String prefix, JSGenerator out) {
-		super(prefix, out);
+		super(prefix, 0, out);
 	}
 
 	@Override

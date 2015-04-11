@@ -12,7 +12,7 @@ public class StructCopyHelperFunctionManager extends JSHelperFunctionManager<Str
 			new AFieldAccessExp(new AVariableExp(new TId("a")), null);
 
 	public StructCopyHelperFunctionManager(String prefix, JSGenerator out) {
-		super(prefix, out);
+		super(prefix, 0, out);
 	}
 
 	@Override
