@@ -1046,12 +1046,12 @@ public class JSGenerator extends PrintingASTAdapter {
 
 	public void caseALshiftAssignOp(ALshiftAssignOp node)
 	{
-		p("<<=");
+		p("<<");
 	}
 
 	public void caseARshiftAssignOp(ARshiftAssignOp node)
 	{
-		p(">>=");
+		p(">>");
 	}
 
 	public void caseAAmpCaretAssignOp(AAmpCaretAssignOp node)
@@ -1159,7 +1159,7 @@ public class JSGenerator extends PrintingASTAdapter {
 
 	public void caseAAmpCaretBinaryOp(AAmpCaretBinaryOp node)
 	{
-		p("&^");
+		p("~");
 	}
 
 	//unary_op
