@@ -75,4 +75,15 @@ public class SymbolTable {
 	public Symbol getInScope(Map<String, Symbol> scope, String id) {
 		return scope.get(id);
 	}
+
+	/** Return number of current scopes in which the variable is declared */
+	public int countShadows(String id) {
+		int count = 0;
+		for (Map<String, Symbol> scope : scopes) {
+			if (scope.containsKey(id)) {
+				count++;
+			}
+		}
+		return count;
+	}
 }

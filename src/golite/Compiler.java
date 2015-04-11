@@ -3,6 +3,7 @@ package golite;
 import golite.lexer.Lexer;
 import golite.lexer.LexerException;
 import golite.node.Node;
+import golite.node.TId;
 import golite.parser.Parser;
 import golite.parser.ParserException;
 import golite.typechecker.SymbolTableLogger;
@@ -26,6 +27,7 @@ public class Compiler {
 
 	private boolean weeded = false;
 	HashMap<Node, Type> types;
+	HashMap<TId, Integer> occurrenceCounts;
 
 	public Compiler(String path) {
 		this.sourcePath = path;
@@ -79,6 +81,7 @@ public class Compiler {
 			TypeChecker checker = new TypeChecker(positionHelper, logger);
 			ast.apply(checker);
 			types = checker.types;
+			occurrenceCounts = checker.occurrenceCounts;
 		}
 	}
 
@@ -89,5 +92,10 @@ public class Compiler {
 	public HashMap<Node, Type> getTypeMap() throws ParserException, LexerException, IOException {
 		typeCheck();
 		return types;
+	}
+
+	public HashMap<TId, Integer> getOccurrenceCounts() throws ParserException, LexerException, IOException {
+		typeCheck();
+		return occurrenceCounts;
 	}
 }

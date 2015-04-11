@@ -12,6 +12,7 @@ import golite.typechecker.*;
 
 public class JSGenerator extends PrintingASTAdapter {
 	protected Map<Node, Type> types;
+	protected Map<TId, Integer> occurrenceCounts;
 
 	private StructInitializerHelperFunctionManager structInitHelpers =
 			new StructInitializerHelperFunctionManager("golite$initializeStruct", this);
@@ -23,14 +24,15 @@ public class JSGenerator extends PrintingASTAdapter {
 			new ArrayCopyHelperFunctionManager("golite$copyArray", this);
 
 
-	public JSGenerator(PrintWriter writer, Map<Node, Type> types) {
+	public JSGenerator(PrintWriter writer, Map<Node, Type> types, Map<TId, Integer> occurrenceCounts) {
 		super(writer);
 		this.types = types;
+		this.occurrenceCounts = occurrenceCounts;
 		this.indent = "  ";
 	}
 
-	public JSGenerator(Map<Node, Type> types) {
-		this(null, types);
+	public JSGenerator(Map<Node, Type> types, Map<TId, Integer> occurrenceCounts) {
+		this(null, types, occurrenceCounts);
 	}
 
 	/* ------------------- Value initialization helpers ------------------- */
@@ -93,6 +95,24 @@ public class JSGenerator extends PrintingASTAdapter {
 			}
 		}
 		unshift();
+	}
+
+	private void printVariable(TId id) {
+		p(getVariableName(id));
+	}
+
+	private String getVariableName(TId id) {
+		Integer count = occurrenceCounts.get(id);
+
+		if (count == null) {
+			throw new RuntimeException("Uncounted ID at "+id.getLine()+","+id.getPos());
+		}
+
+		if (count == 1) {
+			return id.getText();
+		}
+
+		return id.getText()+"$"+count;
 	}
 
 	/**
@@ -307,7 +327,7 @@ public class JSGenerator extends PrintingASTAdapter {
 		Iterator<TId> variableIterator = variables.iterator();
 		while (variableIterator.hasNext()) {
 			TId variable = variableIterator.next();
-			p(variable.getText());
+			printVariable(variable);
 			p(" = ");
 			printDefaultValue(varType);
 
@@ -325,7 +345,7 @@ public class JSGenerator extends PrintingASTAdapter {
 		Iterator<PExp> valueIterator = values.iterator();
 		for (TId variable : variables) {
 			PExp value = valueIterator.next();
-			p(variable.getText());
+			printVariable(variable);
 			p(" = ");
 			printFreshCopy(value);
 
@@ -350,8 +370,7 @@ public class JSGenerator extends PrintingASTAdapter {
 	{
 		inAFunctionDeclaration(node);
 		p("function ");
-		p(node.getId().getText());
-
+		printVariable(node.getId());
 		p("(");
 		printList(node.getFuncParam());
 		p(")");
@@ -373,7 +392,17 @@ public class JSGenerator extends PrintingASTAdapter {
 	public void caseAFuncParam(AFuncParam node)
 	{
 		inAFuncParam(node);
-		printList(node.getId());
+
+		boolean first = true;
+
+		for (TId id : node.getId()) {
+			if (first)
+				first = false;
+			else
+				p(", ");
+
+			printVariable(id);
+		}
 
 		// Ignore the function type
 		outAFuncParam(node);
@@ -724,7 +753,7 @@ public class JSGenerator extends PrintingASTAdapter {
 	public void caseAVariableExp(AVariableExp node)
 	{
 		inAVariableExp(node);
-		p(node.getId().getText());
+		printVariable(node.getId());
 		outAVariableExp(node);
 	}
 
@@ -801,7 +830,7 @@ public class JSGenerator extends PrintingASTAdapter {
 	{
 		inAAppendExp(node);
 
-		String variableId = node.getId().getText();
+		String variableId = getVariableName(node.getId());
 
 		p("(");
 		p(variableId);
