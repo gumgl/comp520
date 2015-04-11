@@ -10,7 +10,8 @@ import golite.typechecker.Type;
 
 public abstract class JSHelperFunctionManager<T extends Type> {
 	protected String functionNamePrefix;
-	JSGenerator out;
+	protected int arity;
+	protected JSGenerator out;
 
 	/** Map the type to the helper function ID */
 	protected Map<T, Integer> functionId = new HashMap<T, Integer>();
@@ -20,8 +21,9 @@ public abstract class JSHelperFunctionManager<T extends Type> {
 	protected List<T> exampleType = new LinkedList<T>();
 
 
-	public JSHelperFunctionManager(String prefix, JSGenerator out) {
+	public JSHelperFunctionManager(String prefix, int arity, JSGenerator out) {
 		this.functionNamePrefix = prefix;
+		this.arity = arity;
 		this.out = out;
 	}
 
@@ -65,8 +67,20 @@ public abstract class JSHelperFunctionManager<T extends Type> {
 
 	public void printFunctions() {
 		int i = 0;
+
+		StringBuilder sb = new StringBuilder();
+		boolean first = true;
+		for (char c='a'; c < 'a'+arity; c++) {
+			if (first)
+				first = false;
+			else
+				sb.append(", ");
+			sb.append(c);
+		}
+		String arguments = sb.toString();
+
 		for (T type : exampleType) {
-			out.pln("function "+functionNamePrefix+i+"(a) {");
+			out.pln("function "+functionNamePrefix+i+"("+arguments+") {");
 			out.shift();
 			printFunction(type);
 			out.unshift();
