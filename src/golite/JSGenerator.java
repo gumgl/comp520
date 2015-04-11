@@ -953,7 +953,6 @@ public class JSGenerator extends PrintingASTAdapter {
 	public void outARawStringLiteral(ARawStringLiteral node) {
 		p("String.raw`");
 		if (node.getRawStringContents() != null) {
-			// TODO
 			TRawStringContents raw = node.getRawStringContents();
 			String y = raw.getText();
 			p(y);
