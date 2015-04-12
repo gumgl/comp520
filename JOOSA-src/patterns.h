@@ -141,13 +141,48 @@ int simplify_putfield(CODE **c) {
   return 0;
 }
 
+/* Optimize positive increments where the number is loaded from a different
+ * store
+ *
+ * We specify x != y because positive_increment is the better optimization
+ * if it's available.
+ *
+ * iload x                   ldc k (0 <= k <= 127)
+ * ldc k (0 <= k <= 127)     iload x
+ * iadd                      iadd
+ * istore y                  istore y
+ * -------->                 -------->
+ * iload x                   iload x
+ * istore y                  istore y
+ * iinc y k                  iinc y k
+ */
+int positive_increment_different_target(CODE **c) {
+  int x,y,k;
+  if (is_iload(*c,&x) &&
+      is_ldc_int(next(*c),&k) &&
+      is_iadd(next(next(*c))) &&
+      is_istore(next(next(next(*c))),&y) &&
+      x!=y && 0<=k && k<=127) {
 
-#define OPTS 6
+    return replace(c,4,makeCODEiload(x,makeCODEistore(y,makeCODEiinc(y,k,NULL))));
+  } else if (is_ldc_int(*c,&k) &&
+      is_iload(next(*c),&x) &&
+      is_iadd(next(next(*c))) &&
+      is_istore(next(next(next(*c))),&y) &&
+      x!=y && 0<=k && k<=127) {
+
+    return replace(c,4,makeCODEiload(x,makeCODEistore(y,makeCODEiinc(y,k,NULL))));
+  }
+  return 0;
+}
+
+#define OPTS 7
 
 OPTI optimization[OPTS] = {
   simplify_multiplication_right,
   simplify_astore,
   positive_increment,
+  positive_increment_different_target,
   simplify_goto_goto,
   simplify_istore,
   simplify_putfield
