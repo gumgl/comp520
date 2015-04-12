@@ -93,9 +93,32 @@ int simplify_goto_goto(CODE **c)
   return 0;
 }
 
-#define OPTS 4
+
+/* WAB - new optimizations */
+
+/* By the same rationale as simplify_astore above. The dup is unnecessary
+ * since the extra value will just be popped.
+ *
+ * dup
+ * istore x
+ * pop
+ * -------->
+ * istore x
+ */
+int simplify_istore(CODE **c) {
+  int x;
+  if (is_dup(*c) &&
+      is_istore(next(*c),&x) &&
+      is_pop(next(next(*c)))) {
+     return replace(c,3,makeCODEistore(x,NULL));
+  }
+  return 0;
+}
+
+#define OPTS 5
 
 OPTI optimization[OPTS] = {simplify_multiplication_right,
                            simplify_astore,
                            positive_increment,
-                           simplify_goto_goto};
+                           simplify_goto_goto,
+                           simplify_istore};
