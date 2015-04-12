@@ -115,12 +115,40 @@ int simplify_istore(CODE **c) {
   return 0;
 }
 
-#define OPTS 5
+/* By the same rationale as simplify_astore above. The dup is unnecessary
+ * since the extra value will just be popped.
+ *
+ * dup
+ * aload n
+ * swap
+ * putfield ...
+ * pop
+ * -------->
+ * aload n
+ * swap
+ * putfield ...
+ */
+int simplify_putfield(CODE **c) {
+  int x;
+  char *a;
+  if (is_dup(*c) &&
+      is_aload(next(*c),&x) &&
+      is_swap(next(next(*c))) &&
+      is_putfield(next(next(next(*c))),&a) &&
+      is_pop(next(next(next(next(*c)))))) {
+     return replace(c,5,makeCODEaload(x,makeCODEswap(makeCODEputfield(a,NULL))));
+  }
+  return 0;
+}
+
+
+#define OPTS 6
 
 OPTI optimization[OPTS] = {
   simplify_multiplication_right,
   simplify_astore,
   positive_increment,
   simplify_goto_goto,
-  simplify_istore
+  simplify_istore,
+  simplify_putfield
 };
