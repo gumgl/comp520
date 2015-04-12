@@ -25,7 +25,7 @@ class Comparer:
         base = os.path.relpath(tofile, 'peepholebenchmarks')
         fromfile = os.path.join('unopt', base)
 
-        with open(fromfile) as fromf, open(tofile) as tof:
+        with open(fromfile, errors='ignore') as fromf, open(tofile, errors='ignore') as tof:
             fromlines, tolines = list(fromf), list(tof)
 
         if self.verbose:
