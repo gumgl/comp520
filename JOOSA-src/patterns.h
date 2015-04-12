@@ -176,7 +176,49 @@ int positive_increment_different_target(CODE **c) {
   return 0;
 }
 
-#define OPTS 7
+/* Eliminate a swap bytecode in places where it's easy to see what should happen***
+ *
+ * We specify x != y because positive_increment is the better optimization
+ * if it's available.
+ *
+ * iload x         ldc ...         aload x
+ * aload y         aload y         aload y
+ * swap            swap            swap
+ * putfield ...    istore y        istore y
+ * -------->       -------->       -------->
+ * aload y         aload y         aload y
+ * iload x         ldc ...         aload x
+ * putfield ...    putfield ...    putfield ...
+ */
+int simplify_swap_putfield(CODE **c) {
+  int x,y,k;
+  char *a, *b;
+  if (is_aload(next(*c),&y) &&
+      is_swap(next(next(*c))) &&
+      is_putfield(next(next(next(*c))),&a)) {
+
+    if (is_iload(*c,&x)) {
+      return replace(c,4,makeCODEaload(y,makeCODEiload(x,makeCODEputfield(a,NULL))));
+    }
+
+    else if (is_aload(*c,&x)) {
+      return replace(c,4,makeCODEaload(y,makeCODEaload(x,makeCODEputfield(a,NULL))));
+    }
+
+    else if (is_ldc_int(*c,&k)) {
+      return replace(c,4,makeCODEaload(y,makeCODEldc_int(k,makeCODEputfield(a,NULL))));
+    }
+
+    else if (is_ldc_string(*c,&b)) {
+      return replace(c,4,makeCODEaload(y,makeCODEldc_string(b,makeCODEputfield(a,NULL))));
+    }
+  }
+
+  return 0;
+}
+
+
+#define OPTS 8
 
 OPTI optimization[OPTS] = {
   simplify_multiplication_right,
@@ -185,5 +227,6 @@ OPTI optimization[OPTS] = {
   positive_increment_different_target,
   simplify_goto_goto,
   simplify_istore,
-  simplify_putfield
+  simplify_putfield,
+  simplify_swap_putfield
 };
