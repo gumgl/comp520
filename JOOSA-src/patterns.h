@@ -117,8 +117,10 @@ int simplify_istore(CODE **c) {
 
 #define OPTS 5
 
-OPTI optimization[OPTS] = {simplify_multiplication_right,
-                           simplify_astore,
-                           positive_increment,
-                           simplify_goto_goto,
-                           simplify_istore};
+OPTI optimization[OPTS] = {
+  simplify_multiplication_right,
+  simplify_astore,
+  positive_increment,
+  simplify_goto_goto,
+  simplify_istore
+};
