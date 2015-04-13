@@ -1,4 +1,14 @@
 /*
+ * COMP 520, group 5, Winter 2015
+ *
+ * Group members:
+ *
+ *     Guillaume Labranche . 260585371
+ *     William Bain. . . . . 260509251
+ *     Si Mei Zhang. . . . . 260400183
+ */
+
+/*
  * JOOS is Copyright (C) 1997 Laurie Hendren & Michael I. Schwartzbach
  *
  * Reproduction of all or part of this software is permitted for
