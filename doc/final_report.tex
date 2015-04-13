@@ -25,7 +25,32 @@ We decided to use SableCC 3 because it made it easy to implement a full scanner/
 
 TODO target language choice
 
-\section{Lexing and parsing}
+\section{Lexing}
+
+\subsection{Tokens}
+We had 6 categories of tokens.
+\begin{enumerate}
+\item Text literals: runes, raw strings, interpreted strings.
+\item Numeric literals: integers of different forms and floats.
+\item Keywords: simply all the words that cannot be identifiers.
+\item Operators and delimiters: simply a list of all of them.
+\item Identifiers: letter, underscore and digits, with the latter not allowed as first character.
+\item Comments: single line and multi-line.
+\end{enumerate}
+
+\subsection{Testing}
+In order to test the correctness of our scanning, we needed a way to display the tokenization on top of the source without altering its layout. A simple solution was to generate HTML from the stream of tokens, adding the token's name as a \verb|title| attribute, and alternating colors to clearly see the break up of characters. This test is available with the \verb|-dumptoks| flag.
+
+TODO: insert graphic of highlighted source
+
+\subsection{Semicolon insertion}
+The fact that semicolons are optional makes it harder to construct our CST (TODO: Will, expand on that?). Therefore we must add semicolons to the tokenization following simple rules.\footnote{See \url{https://golang.org/doc/effective_go.html\#semicolons}.} To do this with SableCC, we subclassed \verb|Lexer| as \verb|GoLexer| and implemented the \verb|filter| method.
+
+\section{Parsing}
+
+TODO
+
+\section{Weeding}
 
 TODO
 
