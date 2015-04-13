@@ -104,7 +104,7 @@ int simplify_goto_goto(CODE **c)
 }
 
 
-/* WAB - new optimizations */
+/* New optimizations */
 
 /* By the same rationale as simplify_astore above. The dup is unnecessary
  * since the extra value will just be popped.
@@ -186,7 +186,8 @@ int positive_increment_different_target(CODE **c) {
   return 0;
 }
 
-/* Eliminate a swap bytecode in places where it's easy to see what should happen***
+/* Eliminate a swap bytecode before putfield operations were the value which
+ * is swapped has just been loaded.
  *
  * We specify x != y because positive_increment is the better optimization
  * if it's available.
