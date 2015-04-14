@@ -38,7 +38,9 @@ We had 6 categories of tokens.
 \item Comments: single line and multi-line.
 \end{enumerate}
 
-\subsection{Testing}
+Initially we scanned text literals entirely in the lexer, creating tokens which obscured the internal structure of the literals---in particular, the presence of escape characters. This was fine while we were doing the parsing and type checking, but we resolved to improve on it before turning to code generation. We opted to introduce new scanning modes which preserved whitespace and read escape sequences as separate tokens, and then implemented the literals as a whole in the parser, so that their structures were preserved in the AST.
+
+\subsection{Visualizing tokenization}
 In order to test the correctness of our scanning, we needed a way to display the tokenization on top of the source without altering its layout. A simple solution was to generate HTML from the stream of tokens, adding the token's name as a \verb|title| attribute, and alternating colors to clearly see the break up of characters. This test is available with the \verb|-dumptoks| flag.
 
 TODO: insert graphic of highlighted source
