@@ -248,8 +248,82 @@ int simplify_swap_putfield(CODE **c) {
   return 0;
 }
 
+/* When we coerce an object to string, we check if it's null as a special case.
+ * But if the object is a string that was just loaded, the check is unneccessary.
+ *
+ * ldc string
+ * dup
+ * ifnull L1
+ * ...
+ * L1:
+ * -------->
+ * ldc string
+ * ...
+ * L1:     (reference count reduced by 1)
+ */
+int remove_null_check_string_const(CODE **c) {
+  char *a;
+  int l1;
+  if (is_ldc_string(*c,&a) &&
+      is_dup(next(*c)) &&
+      is_ifnull(next(next(*c)),&l1)) {
+    droplabel(l1);
+    return replace(c,3,makeCODEldc_string(a,NULL));
+  }
+  return 0;
+}
 
-#define OPTS 9
+int dealloc_dead_code(CODE *d) {
+  int l1;
+  int i = 0;
+  while (d != NULL && !is_label(d,&l1)) {
+    if (uses_label(d,&l1)) {
+      droplabel(l1);
+    }
+
+    i++;
+    d = next(d);
+  }
+  return i;
+}
+
+/* ...
+ *
+ * goto L1    goto L1
+ * L2:        L2:
+ * ...        ...
+ * L3:
+ * ------>    ------->
+ * goto L1    goto L1
+ * L3:
+ */
+int remove_goto_dead_label(CODE **c) {
+  int l1,l2;
+  if (is_goto(*c,&l1) &&
+      is_label(next(*c),&l2) && deadlabel(l2)) {
+    return replace(c, dealloc_dead_code(next(next(*c)))+2, makeCODEgoto(l1,NULL));
+  }
+  return 0;
+}
+
+/* Remove a goto when its label follows immediately after. If the label becomes dead,
+ * remove it to.
+ */
+int simplify_goto_label(CODE **c) {
+  int l1,l2;
+  if (is_goto(*c,&l1) &&
+      is_label(next(*c),&l2) &&
+      l1 == l2) {
+    droplabel(l1);
+    if (deadlabel(l1)) {
+      return replace(c,2,NULL);
+    }
+    return replace(c,1,NULL);
+  }
+  return 0;
+}
+
+#define OPTS 12
 
 OPTI optimization[OPTS] = {
   simplify_multiplication_right,
@@ -260,5 +334,8 @@ OPTI optimization[OPTS] = {
   simplify_goto_goto,
   simplify_istore,
   simplify_putfield,
-  simplify_swap_putfield
+  simplify_swap_putfield,
+  remove_null_check_string_const,
+  remove_goto_dead_label,
+  simplify_goto_label
 };
