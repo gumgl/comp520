@@ -273,10 +273,13 @@ int remove_null_check_string_const(CODE **c) {
   return 0;
 }
 
+/* Iterate over the code starting at d until we encounter a label which is
+ * not dead. For every instruction which references a label, deallocate the
+ * appropriate reference. Return the number of instructions encountered. */
 int dealloc_dead_code(CODE *d) {
   int l1;
   int i = 0;
-  while (d != NULL && !is_label(d,&l1)) {
+  while (d != NULL && ((!is_label(d,&l1)) || deadlabel(l1))) {
     if (uses_label(d,&l1)) {
       droplabel(l1);
     }
@@ -287,27 +290,54 @@ int dealloc_dead_code(CODE *d) {
   return i;
 }
 
-/* ...
- *
- * goto L1    goto L1
- * L2:        L2:
- * ...        ...
- * L3:
- * ------>    ------->
- * goto L1    goto L1
- * L3:
+/* Given a goto, remove all unreachable instructions which follow
+ * (i.e. everything up to the next non-dead label).
  */
-int remove_goto_dead_label(CODE **c) {
-  int l1,l2;
-  if (is_goto(*c,&l1) &&
-      is_label(next(*c),&l2) && deadlabel(l2)) {
-    return replace(c, dealloc_dead_code(next(next(*c)))+2, makeCODEgoto(l1,NULL));
+int remove_goto_dead_code(CODE **c) {
+  int l1;
+  int unreachable_ops;
+
+  if (is_goto(*c,&l1)) {
+    unreachable_ops = dealloc_dead_code(next(*c));
+
+    if (unreachable_ops == 0) {
+      return 0;
+    }
+
+    return replace(c, unreachable_ops+1, makeCODEgoto(l1,NULL));
   }
   return 0;
 }
 
+/* Given a return, remove all unreachable instructions which follow
+ * (i.e. everything up to the next non-dead-label).
+ */
+int remove_return_dead_code(CODE **c) {
+  int l1;
+  int unreachable_ops;
+
+  CODE *r;
+  if (is_return(*c)) {
+    r = makeCODEreturn(NULL);
+  } else if (is_areturn(*c)) {
+    r = makeCODEareturn(NULL);
+  } else if (is_ireturn(*c)) {
+    r = makeCODEireturn(NULL);
+  } else {
+    return 0;
+  }
+
+  unreachable_ops = dealloc_dead_code(next(*c));
+
+  if (unreachable_ops == 0) {
+    return 0;
+  }
+
+  return replace(c, unreachable_ops+1, r);
+}
+
 /* Remove a goto when its label follows immediately after. If the label becomes dead,
- * remove it to.
+ * remove it too.
  */
 int simplify_goto_label(CODE **c) {
   int l1,l2;
@@ -323,7 +353,7 @@ int simplify_goto_label(CODE **c) {
   return 0;
 }
 
-#define OPTS 12
+#define OPTS 13
 
 OPTI optimization[OPTS] = {
   simplify_multiplication_right,
@@ -336,6 +366,7 @@ OPTI optimization[OPTS] = {
   simplify_putfield,
   simplify_swap_putfield,
   remove_null_check_string_const,
-  remove_goto_dead_label,
+  remove_goto_dead_code,
+  remove_return_dead_code,
   simplify_goto_label
 };
