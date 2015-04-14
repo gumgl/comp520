@@ -10,7 +10,7 @@
 if ( { $PEEPDIR/joos $* } )  then
   foreach f ( $* )
     if ( $f != "-O" && $f:e != "joos" ) then
-      java -jar `cygpath -w $PEEPDIR/jasmin.jar` $f:r.j 
+      java -jar jasmin.jar $f:r.j 
     endif
   end
 endif

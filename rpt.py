@@ -22,7 +22,7 @@ class Comparer:
     def diff_file(self, target):
         tofile = target
 
-        base = os.path.relpath(tofile, 'peepholebenchmarks')
+        base = os.path.relpath(tofile, 'PeepholeBenchmarks')
         fromfile = os.path.join('unopt', base)
 
         with open(fromfile, errors='ignore') as fromf, open(tofile, errors='ignore') as tof:
@@ -82,9 +82,9 @@ if __name__ == '__main__':
 
     args = cli.parse_args()
 
-    targets = [os.path.join('peepholebenchmarks', f) for f in args.files]
+    targets = [os.path.join('PeepholeBenchmarks', f) for f in args.files]
 
     if not targets:
-        targets.append('peepholebenchmarks')
+        targets.append('PeepholeBenchmarks')
 
     main(targets, args.summary, args.batch)
