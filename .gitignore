@@ -1,6 +1,9 @@
 # Jasmin files
 *.j
 
+lex.yy.c
+JOOSA-src/joos
+
 # Github Java gitignore:
 *.class
 
