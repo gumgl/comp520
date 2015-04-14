@@ -189,9 +189,6 @@ int positive_increment_different_target(CODE **c) {
 /* Eliminate a swap bytecode before putfield operations were the value which
  * is swapped has just been loaded.
  *
- * We specify x != y because positive_increment is the better optimization
- * if it's available.
- *
  * iload x         ldc ...         aload x
  * aload y         aload y         aload y
  * swap            swap            swap
