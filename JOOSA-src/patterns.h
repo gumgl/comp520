@@ -186,6 +186,29 @@ int positive_increment_different_target(CODE **c) {
   return 0;
 }
 
+/* By the same rationale as positive_increment. We replace a subtraction by a constant with an
+ * incrementation by the negative of the constant.
+ *
+ * iload x
+ * ldc k   (0<=k<=127)
+ * isub
+ * istore x
+ * --------->
+ * iinc x -k
+ */
+int simplify_subtraction(CODE **c) {
+  int x,y,k;
+  if (is_iload(*c,&x) &&
+      is_ldc_int(next(*c),&k) &&
+      is_isub(next(next(*c))) &&
+      is_istore(next(next(next(*c))),&y) &&
+      x==y && 0<=k && k<=127) {
+     return replace(c,4,makeCODEiinc(x,-k,NULL));
+  }
+  return 0;
+}
+
+
 /* Eliminate a swap bytecode before putfield operations were the value which
  * is swapped has just been loaded.
  *
@@ -226,13 +249,14 @@ int simplify_swap_putfield(CODE **c) {
 }
 
 
-#define OPTS 8
+#define OPTS 9
 
 OPTI optimization[OPTS] = {
   simplify_multiplication_right,
   simplify_astore,
   positive_increment,
   positive_increment_different_target,
+  simplify_subtraction,
   simplify_goto_goto,
   simplify_istore,
   simplify_putfield,
