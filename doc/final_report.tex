@@ -19,9 +19,9 @@
 
 \section{Introduction}
 
-We initially considered C, Java, and Python as potential implementation languages, based on our shared familiarity with them. We decided not to use C because of the extra development costs incurred by using a language without features like memory safety. We opted for Java over Python because we judged there to be more resources for compiler development available.
+We initially considered C, Java, and Python as potential implementation languages, based on our shared familiarity with them. We decided not to use C because of the extra development costs incurred by using a language without features like memory safety. We opted for Java over Python because we judged that there would be more resources on compiler development available.
 
-We decided to use SableCC 3 because it made it easy to implement a full scanner/parser toolchain with utilities for AST traversal, and because there was in-class support for it. This was very useful, for instance, in the case of semicolon insertion.
+We decided to use SableCC 3 because it made it easy to implement a full scanner/parser toolchain with utilities for AST traversal, and because there was in-class support for it. This was very useful, for instance, in the case of semicolon insertion (see \ref{subsec:semicolons}).
 
 TODO target language choice
 
@@ -45,7 +45,7 @@ In order to test the correctness of our scanning, we needed a way to display the
 
 TODO: insert graphic of highlighted source
 
-\subsection{Semicolon insertion}
+\subsection{Semicolon insertion}\label{subsec:semicolons}
 The fact that semicolons are optional makes it harder to construct our CST (TODO: Will, expand on that?). Therefore we must add semicolons to the tokenization following simple rules.\footnote{See \url{https://golang.org/doc/effective_go.html\#semicolons}.} To do this with SableCC, we subclassed \verb|Lexer| as \verb|GoLexer| and implemented the \verb|filter| method.
 
 \section{Parsing}
@@ -101,6 +101,8 @@ Second, we made \texttt{Symbol} an interface which is implemented by the \texttt
 A final decision worth noting is our use of the \texttt{VoidType} class. Since unfortunately Java does not make it possible to statically forbid null pointers, it is easy to introduce them accidentally. To help catch such cases, we use \texttt{VoidType} instead of \texttt{null} to represent the return type of a function that does not return a value.
 
 \section{Pretty printers}
+
+TODO
 
 We extended the \verb|PrettyPrinter| class we implemented in Milestone 1 to have it print extra type information. By overriding the \verb|defaultOut| method, it was simple to have it look up and output the type of any node which is an instance of the \verb|PExp| (expression production) class as an inline comment.
 
