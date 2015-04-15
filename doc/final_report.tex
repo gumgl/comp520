@@ -21,7 +21,7 @@
 
 We initially considered C, Java, and Python as potential implementation languages, based on our shared familiarity with them. We decided not to use C because of the extra development costs incurred by using a language without features like memory safety. We opted for Java over Python because we judged that there would be more resources on compiler development available.
 
-We decided to use SableCC 3 because it made it easy to implement a full scanner/parser toolchain with utilities for AST traversal, and because there was in-class support for it. This was very useful, for instance, in the case of semicolon insertion (see \ref{subsec:semicolons}).
+We decided to use SableCC 3 because it made it easy to implement a full scanner/parser toolchain with utilities for AST traversal, and because there was in-class support for it. This was very useful, for instance, in the case of semicolon insertion (see section \ref{subsec:semicolons}).
 
 TODO target language choice
 
@@ -72,6 +72,8 @@ In each of these special cases we overrode the \verb|case| method which controls
 
 A further implementation detail that is worth noting is our implementation of struct type declarations. To prevent code duplication, we treat struct fields as if they were variable declarations: we open a scope in the symbol table upon entering the struct and enter each field as if it were a variable. Then we pop the scope and use it to build the struct class.
 
+In addition to the typechecking operations, our typechecker class builds a mapping from ID token nodes to the count of current scopes in which a variable with the identifier is declared to help with the code generation (see \ref{subsec:gentech}).
+
 \subsection{Symbol table}
 
 Initially the symbol table was simply a scope with a reference to the parent scope. Traversing up and down the scopes meant overwriting the variable used to reference the scope, so we decided to make \texttt{SymbolTable} be what its name suggests, and take care of scoping up and down. It holds a double-ended queue (Java's \texttt{ArrayDeque}) to store the scopes. We have methods for different use cases: searching for an identifier through all scope levels, and searching only in the current scope.
@@ -101,22 +103,22 @@ Second, we made \texttt{Symbol} an interface which is implemented by the \texttt
 A final decision worth noting is our use of the \texttt{VoidType} class. Since unfortunately Java does not make it possible to statically forbid null pointers, it is easy to introduce them accidentally. To help catch such cases, we use \texttt{VoidType} instead of \texttt{null} to represent the return type of a function that does not return a value.
 
 \section{Pretty printers}
+The class we used to implement pretty printing ended up providing the basis for our JavaScript code generation, implementing generic tools for outputting indented text.
+
 TODO
 
-We extended the \verb|PrettyPrinter| class we implemented in Milestone 1 to have it print extra type information. By overriding the \verb|defaultOut| method, it was simple to have it look up and output the type of any node which is an instance of the \verb|PExp| (expression production) class as an inline comment.
+To support typed pretty printing we made a subclass the \verb|PrettyPrinter| class we implemented in Milestone 1 and had it print extra type information. By overriding the \verb|defaultOut| method, it was simple to have it look up and output the type of any node which is an instance of the \verb|PExp| (expression production) class as an inline comment.
 
 \section{Code generation}
 \subsection{Output considerations: JavaScript}
 Transpiling to a higher level language like JavaScript entails different considerations than compiling to a lower-level language like C, or to bytecode or assembly language. Because JavaScript does not have static typing, it is possible to implement more flexible patterns, like functions which abstract over values of different types. But this flexibility comes at a cost, both in ensuring program correctness and in maintaining adequate performance. Short of syntax errors, flaws in the generated code will only ever be revealed when the code is run, rather than by the target-language compiler or a bytecode verifier. Similarly, unless performance is maintained as an explicit goal of code generation, it is very easy to generate output that is woefully inefficient---for instance, by delegating checks that could be done at compile time to runtime functions.
 
-The strict mode introduced by the ECMAScript 5 standard helps somewhat to alleviate the correctness problem.\footnote{TODO cite} Code which requests strict mode opts in, in a backwards-compatible way, to slightly more stringent correctness checks. For instance, without strict mode assigning a value to an undeclared variable writes it to the global scope; with strict mode, this is an error. To move beyond what this could offer, we ran a suite of test programs through our compiler and compared the output to the Go source.
+The strict mode introduced by the ECMAScript 5 standard helps somewhat to alleviate the correctness problem.\footnote{See \url{http://www.ecma-international.org/ecma-262/5.1/\#sec-C}.} Code which begins with the strict mode declaration opts in, in a backwards-compatible way, to slightly more stringent correctness checks. For instance, without strict mode assigning a value to an undeclared variable writes it to the global scope; with strict mode, this is an error. To move beyond what this could offer, we ran a suite of test programs through our compiler and compared the output to the Go source.
 
-\subsection{Generation techniques}
-Where possible, we made the ``obvious'' translation from GoLite to JavaScript. For many statements and expressions this was trivial. The control statements, for instance, were easily translated into JavaScript. However, we ran into a number of corner cases where the languages' semantics diverged. For instance, JavaScript does not do any kind of bounds checking for arrays***
+\subsection{Generation techniques}\label{subsec:gentech}
+Where possible, we made the ``obvious'' translation from GoLite to JavaScript. For many statements and expressions this was trivial. The control statements, for instance, were easily translated into JavaScript. However, we ran into a number of corner cases where the languages' semantics diverged. For instance, JavaScript does not raise an exception if an array index is out of bounds (instead, it gives the supremely unhelpful \texttt{undefined} object), so it was necessary to delegate to a function which tests the array bounds and raises an exception if the index is out of bounds.
 
-TODO lvalues
-
-We used JavaScript's objects---essentially mappings from strings to arbitrary values\footnote{We did not make any use of JavaScript's prototype system}---to implement structs. For both arrays and slices we used JavaScript's arrays, which are resizable and not inherently typed. JavaScript does not have pointers but instead implements both of these types as garbage-collected, pass-by-reference objects. This made them well suited to GoLite slices, but it was necessary to manually copy GoLite structs and arrays whenever they were reassigned to another value or passed to a function. ***
+We used JavaScript's objects---essentially mappings from strings to arbitrary values\footnote{We did not make any use of JavaScript's prototype system.}---to implement structs. For both arrays and slices we used JavaScript's arrays, which are resizable and not inherently typed. JavaScript does not have pointers but instead implements both of these types as garbage-collected, pass-by-reference objects. This made them well suited to GoLite slices, but it was necessary to manually copy GoLite structs and arrays whenever they were reassigned to another value or passed to a function. ***
 
 TODO call-site monomorphism
 
