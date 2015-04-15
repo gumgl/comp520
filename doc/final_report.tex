@@ -23,7 +23,7 @@ We initially considered C, Java, and Python as potential implementation language
 
 We decided to use SableCC 3 because it made it easy to implement a full scanner/parser toolchain with utilities for AST traversal, and because there was in-class support for it. This was very useful, for instance, in the case of semicolon insertion (see section \ref{subsec:semicolons}).
 
-TODO target language choice
+We made the choice of JavaScript as the output language because we liked the idea of being able to port programs to the web. JavaScript can be run from any device that has a web browser.
 
 \section{Lexing}
 
@@ -41,9 +41,14 @@ We had 6 categories of tokens.
 Initially we scanned text literals entirely in the lexer, creating tokens which obscured the internal structure of the literals---in particular, the presence of escape characters. This was fine while we were doing the parsing and type checking, but we resolved to improve on it before turning to code generation. We opted to introduce new scanning modes which preserved whitespace and read escape sequences as separate tokens, and then implemented the literals as a whole in the parser, so that their structures were preserved in the AST.
 
 \subsection{Visualizing tokenization}
-In order to test the correctness of our scanning, we needed a way to display the tokenization on top of the source without altering its layout. A simple solution was to generate HTML from the stream of tokens, adding the token's name as a \verb|title| attribute, and alternating colors to clearly see the break up of characters. This test is available with the \verb|-dumptoks| flag.
+In order to test the correctness of our scanning, we needed a way to display the tokenization on top of the source without altering its layout. A simple solution was to generate HTML from the stream of tokens, adding the token's name as a \verb|title| attribute, and alternating colors to clearly see the break up of characters (see Figure \ref{fig:screen_dumptoks}). This test is available with the \verb|-dumptoks| flag.
 
-TODO: insert graphic of highlighted source
+\begin{figure}
+	\centering
+    \includegraphics[width=0.6\textwidth]{screen_dumptoks}
+    \caption{Output of the \texttt{-dumptoks} flag.}
+    \label{fig:screen_dumptoks}
+\end{figure}
 
 \subsection{Semicolon insertion}\label{subsec:semicolons}
 The fact that semicolons are optional made it harder to construct our CST. Go specifies simple rules for when to insert semicolons into the tokenization, but by design SableCC does not allow the user to specify arbitrary actions to execute when a token is encountered.\footnote{See \url{https://golang.org/doc/effective_go.html\#semicolons}.} This makes it impossible to use the typical technique employed with tools like Lex/Flex, which is to use the actions as hooks to alter the tokenizer's state and inject semicolons. To do this with SableCC, we subclassed \verb|Lexer| as \verb|GoLexer| and implemented the \verb|filter| method. The default lexer implementation overwrites the newline token, which is not semantically significant. We also created a subclass called \texttt{ConservingGoLexer} which maintains a queue of pending tokens and pushes the newline to the queue instead of overwriting it. We only use this for the \texttt{-dumptoks} output, because it is much more readable and still suggests where semicolons are inserted.
@@ -112,9 +117,14 @@ A final decision worth noting is our use of the \texttt{VoidType} class. Since u
 \section{Pretty printers}
 The class we used to implement pretty printing ended up providing the basis for our JavaScript code generation, implementing generic tools for outputting indented text.
 
-TODO
+\begin{figure}
+	\centering
+    \includegraphics[width=\textwidth]{screen_pptype}
+    \caption{Typed prettyprint (\texttt{-pptype} flag).}
+    \label{fig:screen_pptype}
+\end{figure}
 
-To support typed pretty printing we made a subclass the \verb|PrettyPrinter| class we implemented in Milestone 1 and had it print extra type information. By overriding the \verb|defaultOut| method, it was simple to have it look up and output the type of any node which is an instance of the \verb|PExp| (expression production) class as an inline comment.
+To support typed pretty printing we made a subclass the \verb|PrettyPrinter| class we implemented in Milestone 1 and had it print extra type information. By overriding the \verb|defaultOut| method, it was simple to have it look up and output the type of any node which is an instance of the \verb|PExp| (expression production) class as an inline comment. Figure \ref{fig:screen_pptype} shows a sample output.
 
 \section{Code generation}
 \subsection{Output considerations: JavaScript}
