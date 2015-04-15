@@ -46,7 +46,7 @@ In order to test the correctness of our scanning, we needed a way to display the
 TODO: insert graphic of highlighted source
 
 \subsection{Semicolon insertion}\label{subsec:semicolons}
-The fact that semicolons are optional makes it harder to construct our CST (TODO: Will, expand on that?). Therefore we must add semicolons to the tokenization following simple rules.\footnote{See \url{https://golang.org/doc/effective_go.html\#semicolons}.} To do this with SableCC, we subclassed \verb|Lexer| as \verb|GoLexer| and implemented the \verb|filter| method.
+The fact that semicolons are optional made it harder to construct our CST. Go specifies simple rules for when to insert semicolons into the tokenization, but by design SableCC does not allow the user to specify arbitrary actions to execute when a token is encountered.\footnote{See \url{https://golang.org/doc/effective_go.html\#semicolons}.} This makes it impossible to use the typical technique employed with tools like Lex/Flex, which is to use the actions as hooks to alter the tokenizer's state and inject semicolons. To do this with SableCC, we subclassed \verb|Lexer| as \verb|GoLexer| and implemented the \verb|filter| method. The default lexer implementation overwrites the newline token, which is not semantically significant. We also created a subclass called \texttt{ConservingGoLexer} which maintains a queue of pending tokens and pushes the newline to the queue instead of overwriting it. We only use this for the \texttt{-dumptoks} output, because it is much more readable and still suggests where semicolons are inserted.
 
 \section{Parsing}
 
