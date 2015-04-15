@@ -2,6 +2,7 @@
 
 \usepackage[margin=1in]{geometry}
 \usepackage{mathpazo,graphicx,hyperref}
+\usepackage{float}
 
 \hypersetup{
   colorlinks   = true, %Colours links instead of ugly boxes
@@ -43,7 +44,7 @@ Initially we scanned text literals entirely in the lexer, creating tokens which 
 \subsection{Visualizing tokenization}
 In order to test the correctness of our scanning, we needed a way to display the tokenization on top of the source without altering its layout. A simple solution was to generate HTML from the stream of tokens, adding the token's name as a \verb|title| attribute, and alternating colors to clearly see the break up of characters (see Figure \ref{fig:screen_dumptoks}). This test is available with the \verb|-dumptoks| flag.
 
-\begin{figure}
+\begin{figure}[H]
 	\centering
     \includegraphics[width=0.6\textwidth]{screen_dumptoks}
     \caption{Output of the \texttt{-dumptoks} flag.}
@@ -137,17 +138,144 @@ Where possible, we made the ``obvious'' translation from GoLite to JavaScript. F
 
 We used JavaScript's objects---essentially mappings from strings to arbitrary values\footnote{We did not make any use of JavaScript's prototype system.}---to implement structs. For both arrays and slices we used JavaScript's arrays, which are resizable and not inherently typed. JavaScript does not have pointers but instead implements both of these types as garbage-collected, pass-by-reference objects. This made them well suited to GoLite slices, but it was necessary to manually copy GoLite structs and arrays whenever they were reassigned to another value or passed to a function.
 
-TODO call-site monomorphism
+%TODO call-site monomorphism
 
 JavaScript does not have the same scoping rules as GoLite; scopes are only opened per function, rather than for for loops or other block statements. However, it is not an error to redeclare a variable in JavaScript, so all that we needed to do was handle places where a declared variable's name conflicted with that of a variable declared in a parent scope. We implemented a simple strategy to handle such cases: in the child scope, the variable is renamed by appending a suffix consisting of \texttt{\$} (so that there can't be a naming conflict with GoLite) followed by an index giving the number of times the variable has been declared in a visible scope. The following snippets give the flavor:
 
-TODO copy code from issue 17
+This
+\begin{verbatim}
+a := 1
+if a == 1 {
+    a := "a"
+    println(a)
+} else {
+    a := 1.3
+    println(a)
+}
+\end{verbatim}
+
+becomes:
+
+\begin{verbatim}
+var a = 1;
+if (a === 1) {
+    var a$1 = "a";
+    console.log(a);
+} else {
+    // It's okay for variables in sibling scopes to be the same
+    var a$1 = 1.3;
+    console.log(a);
+}
+\end{verbatim}
 
 \subsection{Potential enhancements}
-TODO typed arrays, source maps
+If we had more time, we could've implemented typed arrays and source maps.
 
 \subsection{A translated program}
-TODO
+\subsubsection{Input}
+\begin{verbatim}
+package main
+
+var seed int = 123456789;
+
+func rand() int {
+	//seed = (a * seed + c) % m;
+	seed = (69069 * seed + 1) % 4294967296
+	return seed
+}
+
+func bubblesort(a []int, length int) {
+    for itemCount := length - 1; ; itemCount-- {
+        hasChanged := false
+        for index := 0; index < itemCount; index++ {
+            if a[index] > a[index+1] {
+                a[index], a[index+1] = a[index+1], a[index]
+                hasChanged = true
+            }
+        }
+        if hasChanged == false {
+            break
+        }
+    }
+}
+
+func main() {
+	var list []int
+	var n = 125000
+	println("Generating random list of size", n, "...")
+	for i := 0; i < n; i++ {
+		list = append(list, rand())
+	}
+	println("Sorting...");
+	bubblesort(list, n)
+	println("Done!")
+}
+\end{verbatim}
+\subsubsection {Output}
+\begin{verbatim}
+(function ($console) {
+  'use strict';
+  var seed = 123456789;
+  function rand() {
+    seed = ((69069 * seed) + 1) % 4294967296;
+    return seed;
+  }
+  function bubblesort(a, length) {
+    for (var itemCount = length - 1;; itemCount--) {
+      var hasChanged = false;
+      for (var index = 0;index < itemCount; index++) {
+        if (golite$getIndex(a, index) > golite$getIndex(a, index + 1)) {
+          var $tmp0 = golite$getIndex(a, index + 1), $tmp1 = golite$getIndex(a, index);
+          var $tmpArrayIndex = index, $tmpArray = a;
+          if ($tmpArrayIndex < 0 || $tmpArray === null || $tmpArrayIndex >= $tmpArray.length)
+            throw new Error('index out of bounds');
+          $tmpArray[$tmpArrayIndex] = $tmp0;
+          var $tmpArrayIndex = index + 1, $tmpArray = a;
+          if ($tmpArrayIndex < 0 || $tmpArray === null || $tmpArrayIndex >= $tmpArray.length)
+            throw new Error('index out of bounds');
+          $tmpArray[$tmpArrayIndex] = $tmp1;
+          hasChanged = true;
+        }
+      }
+      if (hasChanged === false) {
+        break;
+      }
+    }
+  }
+  function main() {
+    var list = null;
+    var n = 125000;
+    golite$println(["Generating random list of size", n, "..."]);
+    for (var i = 0;i < n; i++) {
+      list = (list===null?[rand()]:(list.push(rand()),list));
+    }
+    golite$println(["Sorting..."]);
+    bubblesort(list, n);
+    golite$println(["Done!"]);
+  }
+  var golite$printbuffer = '';
+  function golite$print(a) {
+    golite$printbuffer += a.join('')
+  }
+  function golite$println(a) {
+    golite$printbuffer += a.join(' ');
+    $console.log(golite$printbuffer);
+    golite$printbuffer = '';
+  }
+  function golite$getIndex(a, i) {
+    if (i < 0 || a === null || i >= a.length) throw new Error('index out of bounds');
+    return a[i];
+  }
+  if (typeof main === 'function') {
+    try {
+      main()
+    } finally {
+      if (golite$printbuffer.length > 0)
+        $console.log(golite$printbuffer);
+    }
+  }
+})(console);
+\end{verbatim}
 
 \section{Testing infrastructure}
 We were provided with a wealth of test programs for the back end of the compiler; at present we have about 1000 programs in total. However, leveraging these programs effectively posed a challenge. We wanted to be able to run the whole suite in a tolerable time-frame and to extract meaningful information from the results, ideally without needing to alter or revize the majority of the programs or to manually examine their output.
@@ -175,6 +303,10 @@ Response?
 \end{verbatim}
 
 \section{Conclusion}
-TODO
+This project was a success on many levels:
+
+It was a project management success, because we were able to successfully complete almost all requirements without any trouble within the team. We successfully made use of the Source Control Management system git. We also used GitHub as a place to communicate in a structured way with comments and Issues. This way of working in a team is essential for industry. It improves the efficiency significantly.
+
+It was an educational success as we all feel that we learned a great deal about a topic that lies at the heart of computer science: programming. We came into this course with an idea of how a hardware architecture executes low-level instructions, and of how an OS puts the text we type on the keyboard into a source file. The remaining link in the chain has been uncovered and we now have a more fundamental, comprehensive understanding of programming.
 
 \end{document}
