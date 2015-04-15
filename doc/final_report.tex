@@ -118,11 +118,13 @@ The strict mode introduced by the ECMAScript 5 standard helps somewhat to allevi
 \subsection{Generation techniques}\label{subsec:gentech}
 Where possible, we made the ``obvious'' translation from GoLite to JavaScript. For many statements and expressions this was trivial. The control statements, for instance, were easily translated into JavaScript. However, we ran into a number of corner cases where the languages' semantics diverged. For instance, JavaScript does not raise an exception if an array index is out of bounds (instead, it gives the supremely unhelpful \texttt{undefined} object), so it was necessary to delegate to a function which tests the array bounds and raises an exception if the index is out of bounds.
 
-We used JavaScript's objects---essentially mappings from strings to arbitrary values\footnote{We did not make any use of JavaScript's prototype system.}---to implement structs. For both arrays and slices we used JavaScript's arrays, which are resizable and not inherently typed. JavaScript does not have pointers but instead implements both of these types as garbage-collected, pass-by-reference objects. This made them well suited to GoLite slices, but it was necessary to manually copy GoLite structs and arrays whenever they were reassigned to another value or passed to a function. ***
+We used JavaScript's objects---essentially mappings from strings to arbitrary values\footnote{We did not make any use of JavaScript's prototype system.}---to implement structs. For both arrays and slices we used JavaScript's arrays, which are resizable and not inherently typed. JavaScript does not have pointers but instead implements both of these types as garbage-collected, pass-by-reference objects. This made them well suited to GoLite slices, but it was necessary to manually copy GoLite structs and arrays whenever they were reassigned to another value or passed to a function.
 
 TODO call-site monomorphism
 
-TODO scopes, alpha renaming
+JavaScript does not have the same scoping rules as GoLite; scopes are only opened per function, rather than for for loops or other block statements. However, it is not an error to redeclare a variable in JavaScript, so all that we needed to do was handle places where a declared variable's name conflicted with that of a variable declared in a parent scope. We implemented a simple strategy to handle such cases: in the child scope, the variable is renamed by appending a suffix consisting of \texttt{\$} (so that there can't be a naming conflict with GoLite) followed by an index giving the number of times the variable has been declared in a visible scope. The following snippets give the flavor:
+
+TODO copy code from issue 17
 
 \subsection{Potential enhancements}
 TODO typed arrays, source maps
