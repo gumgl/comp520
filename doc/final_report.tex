@@ -50,11 +50,18 @@ The fact that semicolons are optional made it harder to construct our CST. Go sp
 
 \section{Parsing}
 
-TODO
+Thanks to SableCC we were able to specify the CST$\rightarrow$AST transformations right in our CST grammar. Supporting declaration of multiple variables in a single statement in Golite created a lot of nesting, but it was necessary to properly model the language.
 
 \section{Weeding}
 
-TODO
+The weeder is important. It does things that the scanner and parser alone cannot do. The parser only checks if the program corresponds to the defined context-free grammar. But there are some rules that cannot be specified using a CFG:
+\begin{itemize}
+\item Lvalue: They are checked by the parsers, but for the special case of short variable declaration, we must verify that they're only an ID.
+\item Blank IDs: They are allowed in identifiers, but only when assigning \textit{to} them. We must parse the tree and check whenever they cannot be used.
+\item \verb|fallthrough|: Cannot be used at the end of a \verb|switch| statement.
+\item Return statements: This is clearly context-sensitive. We must check that every return statement is well-typed and allowed at its location. We must also check that all code paths return.
+\item \verb|break| and \verb|continue|: These can only happen within a loop.
+\end{itemize}
 
 \section{Type checking}
 \subsection{Typechecker architecture}
