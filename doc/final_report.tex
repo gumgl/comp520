@@ -101,7 +101,6 @@ Second, we made \texttt{Symbol} an interface which is implemented by the \texttt
 A final decision worth noting is our use of the \texttt{VoidType} class. Since unfortunately Java does not make it possible to statically forbid null pointers, it is easy to introduce them accidentally. To help catch such cases, we use \texttt{VoidType} instead of \texttt{null} to represent the return type of a function that does not return a value.
 
 \section{Pretty printers}
-
 TODO
 
 We extended the \verb|PrettyPrinter| class we implemented in Milestone 1 to have it print extra type information. By overriding the \verb|defaultOut| method, it was simple to have it look up and output the type of any node which is an instance of the \verb|PExp| (expression production) class as an inline comment.
@@ -113,14 +112,48 @@ Transpiling to a higher level language like JavaScript entails different conside
 The strict mode introduced by the ECMAScript 5 standard helps somewhat to alleviate the correctness problem.\footnote{TODO cite} Code which requests strict mode opts in, in a backwards-compatible way, to slightly more stringent correctness checks. For instance, without strict mode assigning a value to an undeclared variable writes it to the global scope; with strict mode, this is an error. To move beyond what this could offer, we ran a suite of test programs through our compiler and compared the output to the Go source.
 
 \subsection{Generation techniques}
-TODO Where possible, we made the ``obvious'' translation; ...
+Where possible, we made the ``obvious'' translation from GoLite to JavaScript. For many statements and expressions this was trivial. The control statements, for instance, were easily translated into JavaScript. However, we ran into a number of corner cases where the languages' semantics diverged. For instance, JavaScript does not do any kind of bounds checking for arrays***
 
 TODO lvalues
 
-Because JavaScript does not have pointers but instead has pass-by-reference objects, it was necessary to manually copy ***.
+We used JavaScript's objects---essentially mappings from strings to arbitrary values\footnote{We did not make any use of JavaScript's prototype system}---to implement structs. For both arrays and slices we used JavaScript's arrays, which are resizable and not inherently typed. JavaScript does not have pointers but instead implements both of these types as garbage-collected, pass-by-reference objects. This made them well suited to GoLite slices, but it was necessary to manually copy GoLite structs and arrays whenever they were reassigned to another value or passed to a function. ***
 
 TODO call-site monomorphism
 
 TODO scopes, alpha renaming
+
+\subsection{Potential enhancements}
+TODO typed arrays, source maps
+
+\subsection{A translated program}
+TODO
+
+\section{Testing infrastructure}
+We were provided with a wealth of test programs for the back end of the compiler; at present we have about 1000 programs in total. However, leveraging these programs effectively posed a challenge. We wanted to be able to run the whole suite in a tolerable time-frame and to extract meaningful information from the results, ideally without needing to alter or revize the majority of the programs or to manually examine their output.
+
+In response, we developed a test running script, initially in Python. This script ran each of the programs and inferred the expected result from the program's path. For instance, \texttt{programs/invalid/parser/ trailing\_comma\_in\_print.go} should throw a parsing error. On the other hand, \texttt{programs/valid/teams/ parser/if\_else.go} (a test from another group) passes although it throws a type error, because it is only expected to be valid through the parsing stage. This was a sufficiently granular set of conditions to allow us to catch regressions, but it lacked flexibility. Some tests legitimately throw errors in a different stage that the one they test. For instance, some lexer tests only manifest in the parser. To handle these we wrote per-directory files called \texttt{test\_configuration.txt} which let us specify the expected error for a program without having to move it from the directory with the other programs that test the same issues.
+
+The problem with this script is that it was too slow, because it called into \texttt{golite} in a subprocess for each file. (It also waited for each subprocess to exit, when they could have run in parallel.) We achieved huge performance improvements by rewriting the test runner as a JUnit test suite; this enabled it to use the GoLite code base directly, rather than as a separate subprocess, and also made it easier to more narrowly tailor what needed to run; whereas the Python test runner fully compiled the program, the JUnit tests only executed the compilation stages which were actually needed. (We could have done this using command-line options, but it would have taken more effort.) As a result of these advantages, the JUnit test runner tests the whole suite in less than five seconds.
+
+However, we continued to maintain the Python implementation and expanded it with an interactive command-line interface to help administer the test suite. On encountering a failing test case, it gives the user options like editing the test case in Vim, changing what error is expected, writing a note about the program to file, reviewing the existing notes about the program, or ``tagging'' the program by writing to a file listing the test cases associated with a particular issue.
+
+\subsection{Sample test session}
+\begin{verbatim}
+$ tools/run_test_programs.py -i programs/invalid --exclude programs/invalid/parsing/
+TEST FAILED: programs/invalid/weeding/function_terminal_statement_is_for.go
+   Expected weeding error but the test passed all stages
+Response?
+   c: continue      e: edit     q: quit
+   s: set expected  r: rerun    ?: help
+-> e
+[opens in Vim]
+-> note See if this case is supported by the spec
+-> tag terminal_statements
+-> continue
+[...]
+\end{verbatim}
+
+\section{Conclusion}
+TODO
 
 \end{document}
