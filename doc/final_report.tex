@@ -108,11 +108,19 @@ We extended the \verb|PrettyPrinter| class we implemented in Milestone 1 to have
 
 \section{Code generation}
 \subsection{Output considerations: JavaScript}
+Transpiling to a higher level language like JavaScript entails different considerations than compiling to a lower-level language like C, or to bytecode or assembly language. Because JavaScript does not have static typing, it is possible to implement more flexible patterns, like functions which abstract over values of different types. But this flexibility comes at a cost, both in ensuring program correctness and in maintaining adequate performance. Short of syntax errors, flaws in the generated code will only ever be revealed when the code is run, rather than by the target-language compiler or a bytecode verifier. Similarly, unless performance is maintained as an explicit goal of code generation, it is very easy to generate output that is woefully inefficient---for instance, by delegating checks that could be done at compile time to runtime functions.
 
-TODO
+The strict mode introduced by the ECMAScript 5 standard helps somewhat to alleviate the correctness problem.\footnote{TODO cite} Code which requests strict mode opts in, in a backwards-compatible way, to slightly more stringent correctness checks. For instance, without strict mode assigning a value to an undeclared variable writes it to the global scope; with strict mode, this is an error. To move beyond what this could offer, we ran a suite of test programs through our compiler and compared the output to the Go source.
 
 \subsection{Generation techniques}
+TODO Where possible, we made the ``obvious'' translation; ...
 
-TODO
+TODO lvalues
+
+Because JavaScript does not have pointers but instead has pass-by-reference objects, it was necessary to manually copy ***.
+
+TODO call-site monomorphism
+
+TODO scopes, alpha renaming
 
 \end{document}
