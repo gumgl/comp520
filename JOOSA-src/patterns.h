@@ -273,9 +273,14 @@ int remove_null_check_string_const(CODE **c) {
   return 0;
 }
 
-/* Iterate over the code starting at d until we encounter a label which is
- * not dead. For every instruction which references a label, deallocate the
- * appropriate reference. Return the number of instructions encountered. */
+/* Helper function:
+ *
+ * Assuming that the entry point is an unreachable instruction, iterate over
+ * the code starting at this point until we encounter a label which is
+ * not dead, from which point the code will become reachable again. For
+ * every instruction which references a label, deallocate the
+ * appropriate reference. Return the number of unreachable instructions
+ * encountered. */
 int dealloc_dead_code(CODE *d) {
   int l1;
   int i = 0;
