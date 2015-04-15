@@ -19,7 +19,7 @@ public class VoidType extends Type {
 	}
 
 	public String toString() {
-		return ((Object)this).toString();
+		return "void";//((Object)this).toString();
 	}
 
 }
